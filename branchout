@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function branchoutDirectory() {
+  BRANCHOUT_DIRECTORY="${PWD}"
+  while test ! -f "${PROJECT_DIRECTORY}/.branchout"; do
+    PROJECT_DIRECTORY=$(dirname "${PROJECT_DIRECTORY}")
+    test "${PROJECT_DIRECTORY}" = '/' && echo ".branchout not found in parent directories" && exit 127
+  done
+}
+
+echo "branchout: a tool for managing multi-repo projects"
