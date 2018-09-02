@@ -1,5 +1,14 @@
 #!/bin/bash
 
+function usage() {
+    test -n "${1}" && echo "${1}" && echo
+    echo "branchout: a tool for managing multi-repo projects
+    
+    status: show the list of known projects and their current state
+    "
+  return 1
+}
+
 function branchoutDirectory() {
   BRANCHOUT_DIRECTORY="${PWD}"
   while test ! -f "${BRANCHOUT_DIRECTORY}/.branchout"; do
@@ -9,8 +18,17 @@ function branchoutDirectory() {
   export BRANCHOUT_DIRECTORY
 }
 
-function branchoutStatus() {
+function loadBranchout() {
   branchoutDirectory
+  
+  # shellcheck source=/dev/null
+  source "${BRANCHOUT_DIRECTORY}/.branchout"
+  
+  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in .branchout, run branchout init"
+}
+
+function branchoutStatus() {
+  loadBranchout  
 }
 
 
@@ -19,9 +37,6 @@ case "$1" in
     branchoutStatus
     ;;
   *)
-    echo "branchout: a tool for managing multi-repo projects
-    
-    status: show the list of known projects and their current state
-    "
+    usage
     ;;
 esac

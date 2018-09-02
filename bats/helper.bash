@@ -19,6 +19,14 @@ assert_success() {
   fi
 }
 
+assert_error() {
+  if [ "$status" -eq 0 ]; then
+    bail "expected failed exit status"
+  elif [ "$#" -gt 0 ]; then
+    assert_output_start "$1"
+  fi
+}
+
 assert_failure() {
   if [ "$status" -eq 0 ]; then
     bail "expected failed exit status"

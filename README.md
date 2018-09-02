@@ -14,4 +14,4 @@ Download branchout and add to your path
 
 The tests are written in bats https://github.com/sstephenson/bats
 
-```bats --tap test```
+```bats --tap bats```
