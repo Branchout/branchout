@@ -8,8 +8,10 @@ A tool for managing organisations with many repositories in a structured way
 
 ## Getting Started
 
+Download branchout and add to your path
+
 ## Running the tests
 
 The tests are written in bats https://github.com/sstephenson/bats
 
-```bats branchout.bats```
+```bats --tap test```
