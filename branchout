@@ -13,7 +13,7 @@ function branchoutDirectory() {
   BRANCHOUT_DIRECTORY="${PWD}"
   while test ! -f "${BRANCHOUT_DIRECTORY}/Branchoutfile"; do
     BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
-    test "${BRANCHOUT_DIRECTORY}" = '/' && usage ".branchout configuration not found in parent hierarchy, run branchout init" 
+    test "${BRANCHOUT_DIRECTORY}" = '/' && usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
   done
   export BRANCHOUT_DIRECTORY
 }
@@ -24,13 +24,18 @@ function loadBranchout() {
   # shellcheck source=examples/Branchoutfile
   source "${BRANCHOUT_DIRECTORY}/Branchoutfile"
   
-  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in .branchout, run branchout init"
+  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in Branchoutfile, run branchout init"
   BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
-  test -d "${BRANCHOUT_HOME}" || usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
+  test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
+}
+
+function projects() {
+  test -f "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "Branchoutprojects file missing, try branchout add [repository]"
 }
 
 function branchoutStatus() {
-  loadBranchout  
+  loadBranchout
+  projects
 }
 
 

@@ -11,10 +11,10 @@ load helper
   assert_error "branchout: a tool for managing multi-repo projects"
 }
 
-@test "no .branchout is error" {
+@test "no Branchoutfile is error" {
   cd /tmp
   run branchout status
-  assert_error ".branchout configuration not found in parent hierarchy, run branchout init" 
+  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
 }
 
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
@@ -22,7 +22,7 @@ load helper
   cd target/missing-name
   touch Branchoutfile
   run branchout status
-  assert_error "Branchout name not defined in .branchout, run branchout init" 
+  assert_error "Branchout name not defined in Branchoutfile, run branchout init" 
 }
 
 @test "branchout directory is missing fails" {
@@ -31,4 +31,13 @@ load helper
   echo "BRANCHOUT_NAME=notexists" > Branchoutfile
   run branchout status
   assert_error "Branchout home 'target/branchout/notexists' does not exist, run branchout init" 
+}
+
+@test "missing projects prompts" {
+  mkdir target -p
+  cp -fax examples/no-projects target
+  cd target/no-projects
+  HOME=./
+  run branchout status
+  assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
