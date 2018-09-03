@@ -36,7 +36,7 @@ load helper
 @test "missing projects prompts" {
   mkdir target/no-projects target/branchout/no-projects -p
   cd target/no-projects
-  HOME=../
+  HOME=..
   echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile 
   run branchout status
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
@@ -49,12 +49,13 @@ load helper
 }
 
 @test "one cloned projects" {
-  example one-clones
+  example one-clones toad-one
   run branchout status
+  assert_success_file no-clones.status 
 }
 
 @test "ones cloned projects" {
   example two-clones
   run branchout
-  assert_error "brancahout: a tool for managing multi-repo projects"
+  assert_success_file no-clones.status 
 }
