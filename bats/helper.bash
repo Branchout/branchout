@@ -5,6 +5,7 @@ bail() {
     else echo "$@"
     fi
   } >&2
+  return 1
 }
 
 assert_success() {
@@ -69,8 +70,8 @@ example() {
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir  "target/${1}" "target/branchout/${1}" -p
   cd "target/${1}"
-  HOME=../
-  echo 'BRANCHOUT_NAME="${1}"' > Branchoutfile 
+  export HOME=../
+  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
   echo "frog-one
 frog-two
 frog-three
@@ -79,6 +80,5 @@ rabbit-two
 rabbit-three
 toad-one
 toad-two
-toad-three
-" > Branchoutprojects
+toad-three" > Branchoutprojects
 }

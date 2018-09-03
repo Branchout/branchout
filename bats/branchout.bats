@@ -1,6 +1,3 @@
-export PATH=${PATH}:bin
-export HOME=target
-
 load helper
 
 @test "shellcheck compliant with no exceptions" {
@@ -27,13 +24,13 @@ load helper
   assert_error "Branchout name not defined in Branchoutfile, run branchout init" 
 }
 
-@test "branchout directory is missing fails" {
-  mkdir target/missing-branchout-home target/branchout/missing-branchout-home -p
+@test "branchout home is missing fails" {
+  mkdir target/missing-branchout-home -p
   cd target/missing-branchout-home
-  HOME=../
+  HOME=..
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 
   run branchout status
-  assert_error "Branchout home 'target/branchout/notexists' does not exist, run branchout init" 
+  assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
 }
 
 @test "missing projects prompts" {
@@ -46,13 +43,16 @@ load helper
 }
 
 @test "no cloned projects" {
-  example no-clones 
-  mkdir target/no-clones/branchout -p
-  cd target/no-clones
-  HOME=./
-  mkdir branchout/no-clones
-  echo 'BRANCHOUT_NAME="no-clones"' > Branchoutfile 
   example no-clones
   run branchout status
-  assert_error "Branchoutprojects file missing, try branchout add [repository]"
+}
+
+@test "one cloned projects" {
+  example one-clones
+  run branchout status
+}
+
+@test "ones cloned projects" {
+  run branchout
+  assert_error "brancahout: a tool for managing multi-repo projects"
 }

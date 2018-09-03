@@ -4,4 +4,4 @@ rm -rf target
 mkdir target/repositories -p
 tar xz -C target/repositories -f examples/repositories.tgz
 
-bats --tap bats
+bats --pretty bats
