@@ -1,5 +1,6 @@
 PATH=${PATH}:bin
 export PATH
+export HOME=target
 
 bail() {
   { if [ "$#" -eq 0 ]; then cat -
