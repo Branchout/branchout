@@ -1,13 +1,10 @@
-PATH=${PATH}:bin
-export PATH
-export HOME=target
+
 
 bail() {
   { if [ "$#" -eq 0 ]; then cat -
     else echo "$@"
     fi
   } >&2
-  return 1
 }
 
 assert_success() {
@@ -64,4 +61,24 @@ assert_equal() {
       diff -u <(echo "$1") <(echo "$2")
     } | bail
   fi
+}
+
+
+example() {
+  test -n "$1" && bail "exmaples need a name"
+  test -d "target/${1}" && bail "example already exists: ${1}"
+  mkdir  "target/${1}" "target/branchout/${1}" -p
+  cd "target/${1}"
+  HOME=../
+  echo 'BRANCHOUT_NAME="${1}"' > Branchoutfile 
+  echo "frog-one
+frog-two
+frog-three
+rabbit-one
+rabbit-two
+rabbit-three
+toad-one
+toad-two
+toad-three
+" > Branchoutprojects
 }

@@ -1,4 +1,6 @@
-rm -rf target
+export PATH=${PATH}:bin
+export HOME=target
+
 load helper
 
 @test "shellcheck compliant with no exceptions" {
@@ -26,18 +28,31 @@ load helper
 }
 
 @test "branchout directory is missing fails" {
-  mkdir target/missing-directory -p
-  cd target/missing-directory
-  echo "BRANCHOUT_NAME=notexists" > Branchoutfile
+  mkdir target/missing-branchout-home target/branchout/missing-branchout-home -p
+  cd target/missing-branchout-home
+  HOME=../
+  echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 
   run branchout status
   assert_error "Branchout home 'target/branchout/notexists' does not exist, run branchout init" 
 }
 
 @test "missing projects prompts" {
-  mkdir target -p
-  cp -fax examples/no-projects target
+  mkdir target/no-projects target/branchout/no-projects -p
   cd target/no-projects
+  HOME=../
+  echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile 
+  run branchout status
+  assert_error "Branchoutprojects file missing, try branchout add [repository]"
+}
+
+@test "no cloned projects" {
+  example no-clones 
+  mkdir target/no-clones/branchout -p
+  cd target/no-clones
   HOME=./
+  mkdir branchout/no-clones
+  echo 'BRANCHOUT_NAME="no-clones"' > Branchoutfile 
+  example no-clones
   run branchout status
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
