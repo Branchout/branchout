@@ -45,6 +45,7 @@ load helper
 @test "no cloned projects" {
   example no-clones
   run branchout status
+  assert_success_file no-clones.status 
 }
 
 @test "one cloned projects" {
@@ -53,6 +54,7 @@ load helper
 }
 
 @test "ones cloned projects" {
+  example two-clones
   run branchout
   assert_error "brancahout: a tool for managing multi-repo projects"
 }

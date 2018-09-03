@@ -18,6 +18,17 @@ assert_success() {
   fi
 }
 
+assert_success_file() {
+  if [ "$status" -ne 0 ]; then
+    { echo "command failed with exit status $status"
+      echo "output: $output"
+    } | bail
+  elif [ "$#" -gt 0 ]; then
+    test -f "../../output/${1}" || bail "Coult not find example output ${1}"
+    cat "../../output/${1}" | assert_output
+  fi
+}
+
 assert_error() {
   if [ "$status" -eq 0 ]; then
     bail "expected failed exit status"
@@ -66,7 +77,7 @@ assert_equal() {
 
 
 example() {
-  test -n "$1" && bail "exmaples need a name"
+  test -z "$1" && bail "exmaples need a name"
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir  "target/${1}" "target/branchout/${1}" -p
   cd "target/${1}"
