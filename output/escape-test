@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for each in $@; do
+  while read -r line; do echo -e $line; done < $each > "${each%.txt}.output"
+done
