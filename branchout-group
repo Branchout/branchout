@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if test $# -gt 0; then
+  echo "${1%%-*}"
+else
+  while read -r each; do
+    echo "${each%%-*}"
+  done
+fi

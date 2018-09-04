@@ -1,0 +1,51 @@
+#!/bin/bash
+
+function usage() {
+  echo "branchout-project list|status|pull [project]"
+  exit 1
+}
+
+function projectList() {
+  sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+}
+
+function projectListWithGroups() {
+  sort <(cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects") <(branchout-project groups)
+}
+
+function projectGroups() {
+  projectList | branchout-group | sort | uniq
+}
+
+function projectStatus() {
+   projectGroup=$(branchout-group ${1})
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"; then
+     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"
+     projectBranch=$(git rev-parse --abbrev-ref HEAD)
+     echo -e "${projectGroup}/${1}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
+   else
+     echo -e "${projectGroup}/${1}\033[70D\033[70C\033[35mNot cloned\033[0m"
+   fi
+}
+
+function main() {
+  case "${1}" in
+    list)
+      if test "${2}" = "--grouped"; then
+        projectListWithGroups
+      else
+        projectList
+      fi
+      ;;
+    groups)
+      projectGroups
+      ;;
+    status)
+      projectStatus "${2}"
+      ;;
+    *)
+      usage
+  esac
+}
+
+main "${@}"

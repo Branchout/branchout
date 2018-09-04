@@ -30,9 +30,10 @@ function loadBranchout() {
   test -f "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "Branchoutprojects file missing, try branchout add [repository]"
 }
 
-function projects() {
+function branchoutProjects() {
   cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
 }
+
 
 function branchoutProjectStatus() {
   if test -d "$1"; then
@@ -42,20 +43,13 @@ function branchoutProjectStatus() {
   fi
 }
 
-function branchoutStatus() {
+
+function main() {
+  test $# -gt 0 || usage
   loadBranchout
-  projects | xargs -P10 -I{} branchout project {}
+  branchoutModule="${1}"
+  shift
+  exec branchout-"${branchoutModule}" "${@}"
 }
 
-
-case "$1" in
-  status)
-    branchoutStatus
-    ;;
-  project)
-    branchoutProjectStatus "$@"
-    ;;
-  *)
-    usage
-    ;;
-esac
+main "${@}"
