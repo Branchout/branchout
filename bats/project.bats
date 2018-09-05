@@ -48,6 +48,7 @@ frog-gemel"
 
 @test "a project on master" {
   example master
+  run branchout project pull frog-gemel
   run branchout project status frog-gemel
   assert_success_file status/master
 }
