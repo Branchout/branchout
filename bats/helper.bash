@@ -78,9 +78,9 @@ assert_equal() {
 
 example() {
   test -z "$1" && bail "exmaples need a name"
-  test -d "target/${1}" && bail "example already exists: ${1}"
-  mkdir  "target/${1}" "target/branchout/${1}" -p
-  cd "target/${1}"
+  test -d "target/tests/${1}" && bail "example already exists: ${1}"
+  mkdir  "target/tests/${1}" "target/tests/branchout/${1}" -p
+  cd "target/tests/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
   echo "frog-one

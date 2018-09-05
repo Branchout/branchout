@@ -61,20 +61,9 @@ rabbit
 toad"
 }
 
-@test "no cloned projects" {
-  example no-clones
-  run branchout status
-  assert_success_file no-clones.status.raw
-}
 
-@test "one cloned projects" {
-  example one-clones toad-one
-  run branchout status
-  assert_success_file no-clones.status 
-}
-
-@test "ones cloned projects" {
-  example two-clones
-  run branchout
-  assert_success_file no-clones.status 
+@test "no cloned project" {
+  example no-clone
+  run branchout project frog-two status
+  assert_success_file status/no-clone
 }
