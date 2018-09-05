@@ -1,12 +1,20 @@
 #!/bin/bash
 
 function usage() {
-  echo "branchout-project list|status|pull [project]"
+  echo "branchout-project list|status|pull [project]
+  
+  status [prefix|project-name]
+  "
+  
   exit 1
 }
 
 function projectList() {
-  sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+  if test $# -eq 0; then
+    sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+  else
+    grep "^${1}" "${BRANCHOUT_DIRECTORY}/Branchoutprojects" | sort
+  fi
 }
 
 function projectListWithGroups() {
@@ -34,7 +42,7 @@ function main() {
       if test "${2}" = "--grouped"; then
         projectListWithGroups
       else
-        projectList
+        projectList "${2}"
       fi
       ;;
     groups)

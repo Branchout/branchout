@@ -1,4 +1,5 @@
-
+BASEDIR="$(pwd)"
+BUILD_DIRECTORY="${BASEDIR}/target"
 
 bail() {
   { if [ "$#" -eq 0 ]; then cat -
@@ -24,8 +25,8 @@ assert_success_file() {
       echo "output: $output"
     } | bail
   elif [ "$#" -gt 0 ]; then
-    test -f "../../output/${1}" || bail "Coult not find example output ${1}"
-    cat "../../output/${1}" | assert_output
+    test -f "${BUILD_DIRECTORY}/output/${1}" || bail "Could not find example output ${1}"
+    cat "${BUILD_DIRECTORY}/output/${1}" | assert_output
   fi
 }
 

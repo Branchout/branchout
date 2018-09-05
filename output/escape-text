@@ -1,5 +1,6 @@
 #!/bin/bash
 
 for each in $@; do
-  while read -r line; do echo -e $line; done < $each > "${each%.txt}.output"
+  mkdir -p $(dirname "target/${each}")
+  while read -r line; do echo -e $line; done < $each > "target/${each%.txt}.output"
 done

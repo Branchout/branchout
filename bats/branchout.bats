@@ -61,9 +61,3 @@ rabbit
 toad"
 }
 
-
-@test "no cloned project" {
-  example no-clone
-  run branchout project frog-two status
-  assert_success_file status/no-clone
-}
