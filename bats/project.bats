@@ -52,3 +52,16 @@ frog-gemel"
   run branchout project status frog-gemel
   assert_success_file status/master
 }
+
+@test "pull fails with changes" {
+  example changes
+  run branchout project pull frog-aleph
+  run branchout project status frog-aleph
+  cd frog/frog-aleph
+  git reset --hard step-2
+  echo "changes" >> README.md
+  cd ../..
+  run branchout project status frog-aleph
+  run branchout project pull frog-aleph
+  assert_success_file pull/changes
+}

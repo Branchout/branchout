@@ -49,7 +49,7 @@ function projectStatus() {
 
 function projectUpdate() {
   cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
-  git pull --rebase origin > /dev/null 2>&1 || (echo -e "\033[0mFailed: \033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m")
+  git pull --rebase origin > /dev/null 2>&1 || (echo -e "\033[0mFailed \033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m")
 }
 
 function projectClone() {
