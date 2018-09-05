@@ -48,23 +48,15 @@ function projectUpdate() {
   git pull --rebase origin > /dev/null 2>&1 || (echo -e "Failed: \033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m")
 }
 
-function groupClone() {
-  echo -e "Cloning group: \033[92m${projectGroup}\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${1}.git" > /dev/null 2>&1; then
-    projectStatus "${1}"
-  else
-    echo -e "Cloning failed: \033[31m${projectGroup}/${1}\033[0m"
-  fi
-}
-
 function projectClone() {
   test -d "${projectGroup}" || branchout-group pull "${projectGroup}"
   cd "${projectGroup}" || useage "Project group ${projectGroup} directory not found"
   echo -e "Cloning Project: \033[92m${projectGroup}/${1}\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${1}.git" > /dev/null 2>&1; then
+  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${1}.git")
+  if test $? -eq 0; then
     projectStatus "${1}"
   else
-    echo -e "Cloning failed: \033[31m${projectGroup}/${1}\033[0m"
+    echo -e "Cloning failed: \033[31m${projectGroup}/${1}\n${RESULT}\033[0m"
   fi
 }
 
