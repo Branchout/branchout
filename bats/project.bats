@@ -34,6 +34,12 @@ frog-two"
   assert_success_file status/no-clone
 }
 
+@test "project pull" {
+  example fresh-clone
+  run branchout project pull frog-one
+  assert_success_file pull/fresh-clone
+}
+
 @test "a project in rebase" {
   example rebase
   run branchout project status frog-two

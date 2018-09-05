@@ -3,7 +3,18 @@
 function usage() {
   echo "branchout-project list|status|pull [project]
   
-  status [prefix|project-name]
+  status project-name
+      
+      Return the status of the given project, Not cloned, branch, rebasing
+  
+  pull project-name
+  
+      Attempt to pull the project, show the branch or error
+  
+  list [prefix]
+  
+      List all the projects with the given prefix
+  
   "
   
   exit 1
@@ -26,14 +37,18 @@ function projectGroups() {
 }
 
 function projectStatus() {
-   projectGroup=$(branchout-group ${1})
+   projectGroup=$(branchout-group "${1}")
    if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"
+     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
      projectBranch=$(git rev-parse --abbrev-ref HEAD)
      echo -e "${projectGroup}/${1}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
    else
      echo -e "${projectGroup}/${1}\033[70D\033[70C\033[35mNot cloned\033[0m"
    fi
+}
+
+function projectPull() {
+   projectGroup=$(branchout-group "${1}")
 }
 
 function main() {
@@ -49,7 +64,12 @@ function main() {
       projectGroups
       ;;
     status)
+      test -n "${2}" || usage "Must provide project"
       projectStatus "${2}"
+      ;;
+    pull)
+      test -n "${2}" || usage "Must provide project"
+      proujectPull "${2}"
       ;;
     *)
       usage
