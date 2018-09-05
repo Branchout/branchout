@@ -84,6 +84,7 @@ example() {
   cd "target/tests/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
+  echo "BRANCHOUT_GIT_BASEURL=\"file:///${BUILD_DIRECTORY}/repositories/\"" >> Branchoutfile 
   echo "frog-one
 frog-two
 frog-three

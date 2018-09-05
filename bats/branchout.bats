@@ -57,22 +57,3 @@ load helper
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
-@test "branchout group prefix" {
-  run branchout-group a-b-c
-  assert_success "a"
-  
-  run branchout-group some-artifact
-  assert_success "some"
-  
-  run branchout-group artifact
-  assert_success "artifact"
-}
-
-@test "branchout groups" {
-  example groups
-  run branchout project groups
-  assert_success "frog
-rabbit
-toad"
-}
-

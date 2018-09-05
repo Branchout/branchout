@@ -1,8 +1,58 @@
 #!/bin/bash
+function usage() {
+  echo "branchout-group derive [project]
+  
+  status 
+      
+      Return the status of the given group, Not cloned, branch, rebasing
+  
+  pull group
+  
+      Attempt to pull the group, show the branch or error
+  
+  list
+  
+      List all the groups
+      
+  STDIN
+  
+      Derive the group for all the projects piped in
+  
+  "
+  
+  exit 1
+}
+
+function projectClone() {
+  mkdir "${1}"
+}
+
+function projectGroups() {
+  branchout-project list | branchout-group | sort | uniq
+}
+
+function main() {
+  case $1 in
+    derive) 
+      echo "${2%%-*}"
+      ;;
+    pull)
+      projectClone "${2}"
+      ;;
+    list)
+      projectGroups
+      ;;
+
+    *)
+      usage
+      ;;
+  esac
+}
 
 if test $# -gt 0; then
-  echo "${1%%-*}"
+  main "${@}"
 else
+  # STDIN is always derived
   while read -r each; do
     echo "${each%%-*}"
   done

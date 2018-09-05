@@ -1,0 +1,2 @@
+Cloning \033[92mfrog/frog-one[0m
+Pulled  frog/frog-one\033[70D\033[70C\033[321mmaster\033[0m

@@ -47,7 +47,7 @@ frog-two"
 }
 
 @test "a project on master" {
-  example rebase
+  example master
   run branchout project status frog-two
-  assert_success_file status/rebase
+  assert_success_file status/master
 }

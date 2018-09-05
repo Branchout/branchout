@@ -32,12 +32,8 @@ function projectListWithGroups() {
   sort <(cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects") <(branchout-project groups)
 }
 
-function projectGroups() {
-  projectList | branchout-group | sort | uniq
-}
-
 function projectStatus() {
-   projectGroup=$(branchout-group "${1}")
+   projectGroup=$(branchout-group derive "${1}")
    if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"; then
      cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
      projectBranch=$(git rev-parse --abbrev-ref HEAD)
@@ -47,8 +43,38 @@ function projectStatus() {
    fi
 }
 
+function projectUpdate() {
+  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
+  git pull --rebase origin > /dev/null 2>&1 || (echo -e "Failed: \033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m")
+}
+
+function groupClone() {
+  echo -e "Cloning group: \033[92m${projectGroup}\033[0m"
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${1}.git" > /dev/null 2>&1; then
+    projectStatus "${1}"
+  else
+    echo -e "Cloning failed: \033[31m${projectGroup}/${1}\033[0m"
+  fi
+}
+
+function projectClone() {
+  test -d "${projectGroup}" || branchout-group pull "${projectGroup}"
+  cd "${projectGroup}" || useage "Project group ${projectGroup} directory not found"
+  echo -e "Cloning Project: \033[92m${projectGroup}/${1}\033[0m"
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${1}.git" > /dev/null 2>&1; then
+    projectStatus "${1}"
+  else
+    echo -e "Cloning failed: \033[31m${projectGroup}/${1}\033[0m"
+  fi
+}
+
 function projectPull() {
-   projectGroup=$(branchout-group "${1}")
+   projectGroup=$(branchout-group derive "${1}")
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}/.git"; then
+     projectUpdate "${1}"
+   else
+     projectClone "${1}"
+   fi
 }
 
 function main() {
@@ -60,16 +86,13 @@ function main() {
         projectList "${2}"
       fi
       ;;
-    groups)
-      projectGroups
-      ;;
     status)
       test -n "${2}" || usage "Must provide project"
       projectStatus "${2}"
       ;;
     pull)
       test -n "${2}" || usage "Must provide project"
-      proujectPull "${2}"
+      projectPull "${2}"
       ;;
     *)
       usage
