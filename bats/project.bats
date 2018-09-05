@@ -30,7 +30,7 @@ frog-two"
 
 @test "project not cloned yet" {
   example no-clone
-  run branchout project status frog-two
+  run branchout project status frog-one
   assert_success_file status/no-clone
 }
 
