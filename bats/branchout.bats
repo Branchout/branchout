@@ -49,10 +49,10 @@ load helper
 
 @test "branchout home is missing fails" {
   mkdir target/missing-branchout-home -p
-  cd target/missing-branchout-home
   HOME=..
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 
   echo 'BRANCHOUT_GIT_BASEURL="missing-branchout-home"' >> Branchoutfile 
+  cd target/missing-branchout-home
   run branchout status
   assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
 }
@@ -67,3 +67,12 @@ load helper
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
+@test "can pull all" {
+  example pull-all
+  run branchout project status frog-aleph
+  assert_success_file all/frog-aleph-before-pull
+  run branchout pull
+  assert_success 
+  run branchout project status frog-aleph
+  assert_success_file all/frog-aleph
+}

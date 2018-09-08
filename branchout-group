@@ -24,7 +24,7 @@ function usage() {
 }
 
 function projectClone() {
-  mkdir "${1}"
+  test -d "${1}"|| mkdir "${1}"
 }
 
 function projectGroups() {

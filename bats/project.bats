@@ -57,10 +57,12 @@ frog-gemel"
   example changes
   run branchout project pull frog-aleph
   run branchout project status frog-aleph
+  pwd 1>&2
   cd frog/frog-aleph
   git reset --hard step-2
   echo "changes" >> README.md
   cd ../..
+  pwd 1>&2
   run branchout project status frog-aleph
   run branchout project pull frog-aleph
   assert_success_file pull/changes
