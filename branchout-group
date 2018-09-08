@@ -42,12 +42,7 @@ function branchoutGroupDerive() {
 }
 
 function branchoutProjectDerive() {
-  if test -z "${BRANCHOUT_PREFIX}"; then
-    echo "${1}"
-  else
-    echo "${1#*-}"
-  fi
-
+  echo "${1}"
 }
 
 function main() {

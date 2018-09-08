@@ -23,6 +23,12 @@ load helper
   assert_success "some"
 }
 
+@test "branchout group has a prefix for project name" {
+  export BRANCHOUT_PREFIX=prefix
+  run branchout-group derive prefix-some-artifact
+  assert_success "some"
+}
+
 @test "branchout group list" {
   example branchout-group-list
   run branchout group list

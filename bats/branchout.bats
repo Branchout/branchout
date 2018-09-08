@@ -76,7 +76,7 @@ load helper
   echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile 
   echo 'prefix-frog-aleph' > Branchoutprojects
   run branchout status
-  assert_success_file status/no-clone
+  assert_success_file status/no-clone-prefix
 }
 
 @test "can pull all" {
