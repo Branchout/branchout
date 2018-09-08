@@ -24,7 +24,7 @@ function projectList() {
   if test $# -eq 0; then
     sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
   else
-    grep "^${1}" "${BRANCHOUT_DIRECTORY}/Branchoutprojects" | sort
+    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/Branchoutprojects" | sort
   fi
 }
 
