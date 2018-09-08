@@ -42,7 +42,17 @@ frog-gemel"
 
 @test "a project in rebase" {
   example rebase
-  run branchout project status frog-gemel
+  run branchout project pull frog-bet
+  cd frog/frog-bet
+  git reset --hard step-2
+  echo "changes" > README.md
+  git config user.email "branchout@example.com"
+  git config user.name "branchout"
+  git commit -a -m"conflict"
+  cd ../..
+  run branchout project pull frog-bet
+  assert_success_file pull/rebase
+  run branchout project status frog-bet
   assert_success_file status/rebase
 }
 

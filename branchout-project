@@ -36,9 +36,12 @@ function projectStatus() {
    projectGroup=$(branchout-group derive "${1}")
    if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"; then
      cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
+     
      projectBranch=$(git rev-parse --abbrev-ref HEAD)
      if test "${projectBranch}" = "master"; then
-       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033m${projectBranch}\033[0m"
+       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C${projectBranch}\033[0m"
+     elif test "${projectBranch}" = "HEAD"; then
+       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
      else
        echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
      fi
@@ -47,9 +50,18 @@ function projectStatus() {
    fi
 }
 
+function projectUpdateError() {
+  projectBranch=$(git rev-parse --abbrev-ref HEAD)
+  if test "${projectBranch}" = "HEAD"; then
+    echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
+  else
+    echo -e "\033[0m${2}\033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m" 
+  fi
+}
+
 function projectUpdate() {
   cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
-  git pull --rebase origin > /dev/null 2>&1 || (echo -e "\033[0mFailed \033[31m${projectGroup}/${1}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m")
+  git pull --rebase origin > /dev/null 2>&1 || projectUpdateError "${1}" "Failed "
 }
 
 function projectClone() {
