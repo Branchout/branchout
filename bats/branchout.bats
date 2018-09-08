@@ -67,6 +67,18 @@ load helper
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
+@test "project prefix is removed" {
+  mkdir target/prefix target/branchout/prefix -p
+  cd target/prefix
+  HOME=..
+  echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile 
+  echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> Branchoutfile 
+  echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile 
+  echo 'prefix-frog-aleph' > Branchoutprojects
+  run branchout status
+  assert_success_file status/no-clone
+}
+
 @test "can pull all" {
   example pull-all
   run branchout project status frog-aleph

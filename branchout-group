@@ -31,10 +31,32 @@ function projectGroups() {
   branchout-project list | branchout-group | sort | uniq
 }
 
+function branchoutGroupDerive() {
+  if test -z "${BRANCHOUT_PREFIX}"; then
+    echo "${1%%-*}"
+  else
+    noPrefix="${1#${BRANCHOUT_PREFIX}-}"
+    echo "${noPrefix%%-*}"
+  fi
+
+}
+
+function branchoutProjectDerive() {
+  if test -z "${BRANCHOUT_PREFIX}"; then
+    echo "${1}"
+  else
+    echo "${1#*-}"
+  fi
+
+}
+
 function main() {
   case $1 in
     derive) 
-      echo "${2%%-*}"
+      branchoutGroupDerive "${2}"
+      ;;
+    deriveProject) 
+      branchoutProjectDerive "${2}"
       ;;
     pull)
       projectClone "${2}"
@@ -54,6 +76,6 @@ if test $# -gt 0; then
 else
   # STDIN is always derived
   while read -r each; do
-    echo "${each%%-*}"
+    branchoutGroupDerive "${each}"
   done
 fi

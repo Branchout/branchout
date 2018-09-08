@@ -29,6 +29,7 @@ function loadBranchout() {
 
   test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in Branchoutfile, run branchout init"
   export BRANCHOUT_GIT_BASEURL
+  export BRANCHOUT_PREFIX
   
   test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
   test -f "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "Branchoutprojects file missing, try branchout add [repository]"

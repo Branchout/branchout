@@ -32,21 +32,23 @@ function projectListWithGroups() {
   sort <(cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects") <(branchout-project groups)
 }
 
+
 function projectStatus() {
+   projectName=$(branchout-group deriveProject "${1}")
    projectGroup=$(branchout-group derive "${1}")
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${projectName}"; then
+     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${projectName}" || usage "Failed to enter project directory"
      
      projectBranch=$(git rev-parse --abbrev-ref HEAD)
      if test "${projectBranch}" = "master"; then
-       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C${projectBranch}\033[0m"
+       echo -e "\033[0m${2}${projectGroup}/${projectName}\033[70D\033[70C${projectBranch}\033[0m"
      elif test "${projectBranch}" = "HEAD"; then
-       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
+       echo -e "\033[0m${2}${projectGroup}/${projectName}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
      else
-       echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
+       echo -e "\033[0m${2}${projectGroup}/${projectName}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
      fi
    else
-     echo -e "\033[0m${2}${projectGroup}/${1}\033[70D\033[70C\033[35mNot cloned\033[0m"
+     echo -e "\033[0m${2}${projectGroup}/${projectName}\033[70D\033[70C\033[35mNot cloned\033[0m"
    fi
 }
 
@@ -60,28 +62,30 @@ function projectUpdateError() {
 }
 
 function projectUpdate() {
-  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}" || usage "Failed to enter project directory"
-  git pull --rebase origin > /dev/null 2>&1 || projectUpdateError "${1}" "Failed "
+  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${projectName}" || usage "Failed to enter project directory"
+  git pull --rebase origin > /dev/null 2>&1 || projectUpdateError "${projectName}" "Failed "
 }
 
 function projectClone() {
   test -d "${projectGroup}" || branchout-group pull "${projectGroup}"
   cd "${projectGroup}" || useage "Project group ${projectGroup} directory not found"
-  echo -e "\033[0mCloning \033[92m${projectGroup}/${1}\033[0m"
-  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${1}" 2>&1)
+  echo -e "\033[0mCloning \033[92m${projectGroup}/${projectName}\033[0m"
+  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" 2>&1)
   if test $? -eq 0; then
-    projectStatus "${1}" "Pulled "
+    projectStatus "${projectName}" "Pulled "
   else
-    echo -e "\033[0mCloning failed: \033[31m${projectGroup}/${1}\n${RESULT}\033[0m"
+    echo -e "\033[0mCloning failed: \033[31m${projectGroup}/${projectName}\n${RESULT}\033[0m"
   fi
 }
 
 function projectPull() {
+   projectName=$(branchout-group deriveProject "${1}")
    projectGroup=$(branchout-group derive "${1}")
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${1}/.git"; then
-     projectUpdate "${1}"
+   gitProject="${1}"
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/${projectName}/.git"; then
+     projectUpdate 
    else
-     projectClone "${1}"
+     projectClone 
    fi
 }
 
