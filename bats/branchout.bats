@@ -5,21 +5,6 @@ load helper
   assert_success
 }
 
-@test "shellcheck compliant branchout-project" {
-  run shellcheck -x branchout-project
-  assert_success
-}
-
-@test "shellcheck compliant branchout-status" {
-  run shellcheck -x branchout-status
-  assert_success
-}
-
-@test "shellcheck compliant branchout-group" {
-  run shellcheck -x branchout-group
-  assert_success
-}
-
 @test "invoking branchout prints usage" {
   run branchout
   assert_error "branchout: a tool for managing multi-repo projects"

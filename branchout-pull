@@ -1,3 +1,0 @@
-#!/bin/bash
-
-branchout-project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout-project pull {}
