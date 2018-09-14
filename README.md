@@ -8,7 +8,7 @@ A tool for managing organisations with many repositories in a structured way
 
 ## Getting Started
 
-Download branchout and add to your path
+Download branchout and add it to your path, then run branchout init
 
 ## Running the tests
 
