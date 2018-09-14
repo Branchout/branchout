@@ -54,7 +54,7 @@ function main() {
   loadBranchout
   branchoutModule="${1}"
   shift
-  if which branchout-"${branchoutModule}"; then
+  if which branchout-"${branchoutModule}" >/dev/null; then
     exec branchout-"${branchoutModule}" "${@}"
   else
     exec branchout-pull "${branchoutModule}" "${@}"

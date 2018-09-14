@@ -36,3 +36,9 @@ load helper
 rabbit
 toad"
 }
+
+@test "branchout group list filtering" {
+  example branchout-group-filter
+  run branchout group list frog
+  assert_success "frog"
+}

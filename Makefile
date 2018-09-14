@@ -1,3 +1,5 @@
+export PATH := $(PWD):$(PATH)
+
 target/output/**/*.output: output/**/*.txt
 	mkdir target/output -p
 	./output/escape-text $?

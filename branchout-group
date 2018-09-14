@@ -28,7 +28,7 @@ function projectClone() {
 }
 
 function projectGroups() {
-  branchout-project list | branchout-group | sort | uniq
+  branchout-project list "${1}" | branchout-group | sort | uniq
 }
 
 function branchoutGroupDerive() {
@@ -57,7 +57,7 @@ function main() {
       projectClone "${2}"
       ;;
     list)
-      projectGroups
+      projectGroups "${2}"
       ;;
 
     *)
