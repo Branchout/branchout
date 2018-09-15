@@ -25,7 +25,7 @@ load helper
 }
 
 @test "branchout configuration missing BRANCHOUT_GIT_BASEURL fails" {
-  mkdir target/missing-giturl target/branchout/missing-giturl -p
+  mkdir -p target/missing-giturl target/branchout/missing-giturl 
   cd target/missing-giturl
   echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile 
   run branchout status
@@ -43,7 +43,7 @@ load helper
 }
 
 @test "missing projects prompts" {
-  mkdir target/no-projects target/branchout/no-projects -p
+  mkdir -p target/no-projects target/branchout/no-projects 
   cd target/no-projects
   HOME=..
   echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile 
@@ -53,7 +53,7 @@ load helper
 }
 
 @test "project prefix is removed" {
-  mkdir target/prefix target/branchout/prefix -p
+  mkdir -p target/prefix target/branchout/prefix 
   cd target/prefix
   HOME=..
   echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile 
@@ -72,4 +72,14 @@ load helper
   assert_success 
   run branchout project status frog-aleph
   assert_success_file all/frog-aleph
+}
+
+@test "branchout init" {
+  run branchout init <<< 'init'
+  assert_success
+  mkdir -p target/init target/branchout/init 
+  cd target/init
+  HOME=..
+  run branchout status
+  assert_success ""
 }

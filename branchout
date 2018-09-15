@@ -242,6 +242,24 @@ function branchoutProjectStatus() {
   fi
 }
 
+function branchout_init_name() {
+  BRANCHOUT_NAME="$(basename "${PWD}")"
+  printf "Enter branchout name [%s]: ", "${DEFAULT_BRANCHOUT_NAME}"
+  read -r BRANCHOUT_NAME
+  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")"
+}
+
+function branchout_init() {
+  branchout_init_name
+  
+  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin | cut -d/ -f1)"
+  test $? -ne 0 && usage "Could not determine git baserul"
+  
+  echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}
+BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" > Branchoutfile
+  touch Branchoutprojects
+}
+
 function branchout_status() {
   branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout project status {}
 }
@@ -253,13 +271,19 @@ function branchout_pull() {
 
 function main() {
   test $# -gt 0 || usage
-  loadBranchout
-  branchoutModule="${1}"
-  shift
-  if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
-    eval branchout_"${branchoutModule}" "${@}"
+  
+  if test "${1}" = "init"; then
+    branchout_init
+   
   else
-    eval branchout_pull "${branchoutModule}" "${@}"
+    loadBranchout
+    branchoutModule="${1}"
+    shift
+    if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
+      eval branchout_"${branchoutModule}" "${@}"
+    else
+      eval branchout_pull "${branchoutModule}" "${@}"
+    fi
   fi
 }
 
