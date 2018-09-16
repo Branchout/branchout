@@ -196,6 +196,17 @@ function usage() {
   echo "branchout: a tool for managing multi-repo projects
     
     status: show the list of known projects and their current state
+    
+    pull: pull all the projects and display their status
+    
+    add: add a project to the list
+    
+    init: Intialise the current git repository as a branchout root project
+    
+    project: see branchout project help
+    
+    group: see branchout group help
+
     "
   exit 1
 }
@@ -278,6 +289,7 @@ function branchout_add() {
 
 function main() {
   test $# -gt 0 || usage
+  test "${1}" = "help" && usage
   
   if test "${1}" = "init"; then
     branchout_init
