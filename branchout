@@ -261,11 +261,18 @@ BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" > Branchoutfile
 }
 
 function branchout_status() {
+  test -s "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "No projects to show, try branchout add <project-name>"
   branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout project status {}
 }
 
 function branchout_pull() {
   branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout project pull {}
+}
+
+function branchout_add() {
+  sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects" <(echo "$1") > "${BRANCHOUT_DIRECTORY}/Branchoutprojects.tmp"
+  mv "${BRANCHOUT_DIRECTORY}/Branchoutprojects.tmp" "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+  branchout_status "$(branchoutGroupDerive "$1")"
 }
 
 

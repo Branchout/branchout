@@ -75,11 +75,28 @@ load helper
 }
 
 @test "branchout init" {
-  run branchout init <<< 'init'
-  assert_success
   mkdir -p target/init target/branchout/init 
   cd target/init
   HOME=..
+  run branchout init <<< 'init'
+  assert_success
   run branchout status
-  assert_success ""
+  assert_error "No projects to show, try branchout add <project-name>"
 }
+
+@test "branchout add" {
+  mkdir -p target/add target/branchout/add
+  cd target/add
+  HOME=..
+  run branchout init <<< 'add'
+  assert_success
+  run branchout status
+  assert_error "No projects to show, try branchout add <project-name>"
+  run branchout add frog-aleph
+  assert_success_file status/no-clone
+  run branchout status
+  assert_success_file status/no-clone
+  run branchout add frog-beta
+  assert_success_file status/two-no-clone
+}
+
