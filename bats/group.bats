@@ -13,6 +13,13 @@ load helper
   assert_success "some"
 }
 
+@test "branchout group with plugin is plugin" {
+  example plugin-is-plugin
+  
+  run branchout group derive wait-maven-plugin
+  assert_success "plugins"
+}
+
 @test "branchout group is just one word" {
   example group-is-project
   run branchout group derive artifact

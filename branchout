@@ -152,8 +152,12 @@ function branchoutGroups() {
 }
 
 function branchoutGroupDerive() {
-  if test -z "${BRANCHOUT_PREFIX}"; then
+  if test "${1#*-}" = "maven-plugin"; then
+    echo "plugins"
+    
+  elif test -z "${BRANCHOUT_PREFIX}"; then
     echo "${1%%-*}"
+    
   else
     noPrefix="${1#${BRANCHOUT_PREFIX}-}"
     echo "${noPrefix%%-*}"
