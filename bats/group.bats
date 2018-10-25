@@ -46,3 +46,17 @@ toad"
   run branchout group list frog
   assert_success "frog"
 }
+
+@test "branchout a group" {
+  example branchout-a-group
+  run branchout frog
+  assert_success 
+}
+
+@test "branchout a group then update" {
+  example branchout-a-group-then-update
+  run branchout frog
+  assert_success 
+  run branchout frog
+  assert_success 
+}

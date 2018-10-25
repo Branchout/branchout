@@ -88,7 +88,7 @@ load helper
   mkdir -p target/add target/branchout/add
   cd target/add
   HOME=..
-  run branchout init <<< 'add'
+  run branchout init <<< 'init'
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"

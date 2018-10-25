@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function usage_branchout_project() {
   echo "branchout project list|status|pull [project]
   
@@ -164,7 +166,7 @@ function groupUpdateError() {
   fi
 }
 
-function groupUpdate() {
+function branchoutGroupUpdate() {
   cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
   if git pull --rebase origin > /dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled "
@@ -322,7 +324,7 @@ function branchout_init_name() {
   BRANCHOUT_NAME="$(basename "${PWD}")"
   printf "Enter branchout name [%s]: ", "${DEFAULT_BRANCHOUT_NAME}"
   read -r BRANCHOUT_NAME
-  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")"
+  test -n "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")"
 }
 
 function branchout_init() {
