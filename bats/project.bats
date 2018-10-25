@@ -40,6 +40,14 @@ frog-gemel"
   assert_success_file pull/fresh-clone
 }
 
+@test "project pull twice" {
+  example fresh-clone-then-pull
+  run branchout project pull frog-gemel
+  assert_success_file pull/fresh-clone
+  run branchout project pull frog-gemel
+  assert_success_file pull/fresh-clone-then-pull
+}
+
 @test "a project in rebase" {
   example rebase
   run branchout project pull frog-bet

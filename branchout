@@ -63,7 +63,11 @@ function projectUpdateError() {
 
 function projectUpdate() {
   cd "${BRANCHOUT_DIRECTORY}/${projectGroup}/${projectName}" || usage_branchout_project "Failed to enter project directory"
-  git pull --rebase origin > /dev/null 2>&1 || projectUpdateError "${projectName}" "Failed "
+  if git pull --rebase origin > /dev/null 2>&1; then
+    projectStatus "${projectName}" "Pulled "
+  else
+    projectUpdateError "${projectName}" "Failed "
+  fi
 }
 
 function projectClone() {
@@ -142,16 +146,42 @@ function branchoutGroupDeriveStdin() {
   done
 }
 
+function branchoutGroupPull() {
+  projectGroup="${1}"
+  if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
+    branchoutGroupUpdate
+  else
+    branchoutGroupClone
+  fi
+}
+
+function groupUpdateError() {
+  projectBranch=$(git rev-parse --abbrev-ref HEAD)
+  if test "${projectBranch}" = "HEAD"; then
+    echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
+  else
+    echo -e "\033[0m${2}\033[31m${projectGroup}\033[0m \033[70D\033[70C\033[1m $( git pull --rebase origin 2>&1| head -n1)\033[0m" 
+  fi
+}
+
+function groupUpdate() {
+  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
+  if git pull --rebase origin > /dev/null 2>&1; then
+    groupStatus "${projectGroup}" "Pulled "
+  else
+    groupUpdateError "${projectGroup}" "Failed "
+  fi
+}
+
 function branchoutGroupClone() {
-  if test ! -d "${1}"; then 
-    echo -e "\033[0mCloning \033[92m${1}\033[0m"
-    RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${1}" 2>&1)
-    if test $? -eq 0; then
-      groupStatus "${1}" "Pulled "
-    else
-      echo -e "\033[0mCloning failed: \033[31m${1}\n${RESULT}\033[0m"
-      mkdir "${1}"
-    fi
+  test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage_branchout_group "Trying to clone a group that already exists"
+  echo -e "\033[0mCloning \033[92m${projectGroup}\033[0m"
+  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)
+  if test $? -eq 0; then
+    groupStatus "${projectGroup}" "Pulled "
+  else
+    echo -e "\033[0mCloning failed: making raw directory \033[31m${projectGroup}\n${RESULT}\033[0m"
+    mkdir "${projectGroup}"
   fi
 }
 
@@ -211,7 +241,7 @@ function branchout_group() {
       ;;
     pull)
       test -n "${2}" || usage_branchout_group "Must provide group"
-      branchoutGroupClone "${2}"
+      branchoutGroupPull "${2}"
       ;;
     list)
       branchoutGroups "${2}"
