@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 function usage_branchout_project() {
   echo "branchout project list|status|pull [project]
   
@@ -281,6 +280,7 @@ function branchout_status() {
 }
 
 function branchout_pull() {
+  branchout_group list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" branchout group pull {}
   branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout project pull {}
 }
 
