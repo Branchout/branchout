@@ -35,9 +35,9 @@ load helper
 @test "branchout home is missing fails" {
   mkdir target/missing-branchout-home -p
   HOME=..
+  cd target/missing-branchout-home
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 
   echo 'BRANCHOUT_GIT_BASEURL="missing-branchout-home"' >> Branchoutfile 
-  cd target/missing-branchout-home
   run branchout status
   assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
 }

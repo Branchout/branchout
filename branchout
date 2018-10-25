@@ -68,7 +68,7 @@ function projectUpdate() {
 
 function projectClone() {
   test -d "${projectGroup}" || branchout_group pull "${projectGroup}"
-  cd "${projectGroup}" || useage_branchout_project "Project group ${projectGroup} directory not found"
+  cd "${projectGroup}" || usage_branchout_project "Project group ${projectGroup} directory not found"
   echo -e "\033[0mCloning \033[92m${projectGroup}/${projectName}\033[0m"
   RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" 2>&1)
   if test $? -eq 0; then
@@ -143,7 +143,16 @@ function branchoutGroupDeriveStdin() {
 }
 
 function branchoutGroupClone() {
-  test -d "${1}"|| mkdir "${1}"
+  if test ! -d "${1}"; then 
+    echo -e "\033[0mCloning \033[92m${1}\033[0m"
+    RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${1}" 2>&1)
+    if test $? -eq 0; then
+      groupStatus "${1}" "Pulled "
+    else
+      echo -e "\033[0mCloning failed: \033[31m${1}\n${RESULT}\033[0m"
+      mkdir "${1}"
+    fi
+  fi
 }
 
 function branchoutGroups() {
@@ -163,6 +172,26 @@ function branchoutGroupDerive() {
   fi
 
 }
+
+function groupStatus() {
+   projectGroup="${1}"
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
+     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
+     
+     projectBranch=$(git rev-parse --abbrev-ref HEAD)
+     if test "${projectBranch}" = "master"; then
+       echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C${projectBranch}\033[0m"
+     elif test "${projectBranch}" = "HEAD"; then
+       echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[38;5;202m<rebase>\033[0m"
+     else
+       echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
+     fi
+     cd ..
+   else
+     echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[35mNot cloned\033[0m"
+   fi
+}
+
 
 function branchoutProjectDerive() {
   echo "${1}"
@@ -186,6 +215,9 @@ function branchout_group() {
       ;;
     list)
       branchoutGroups "${2}"
+      ;;
+    status)
+      branchoutGroupStatus "${2}"
       ;;
 
     *)
