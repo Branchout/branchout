@@ -88,10 +88,15 @@ example() {
   echo "frog-aleph
 frog-gemel
 frog-bet
+lion-aleph
 rabbit-aleph
-rabbit-gemel
-rabbit-bet
 toad-aleph
 toad-gemel
-toad-bet" > Branchoutprojects
+toad-bet
+snake-aleph
+snake-bet
+snake-gemel
+fox-aleph
+fox-bet
+fox-gemel" > Branchoutprojects
 }

@@ -3,12 +3,17 @@ load helper
 @test "project list" {
   example project-list
   run branchout project list
-  assert_success "frog-aleph
+  assert_success "fox-aleph
+fox-bet
+fox-gemel
+frog-aleph
 frog-bet
 frog-gemel
+lion-aleph
 rabbit-aleph
-rabbit-bet
-rabbit-gemel
+snake-aleph
+snake-bet
+snake-gemel
 toad-aleph
 toad-bet
 toad-gemel"
@@ -85,3 +90,19 @@ frog-gemel"
   run branchout project pull frog-aleph
   assert_success_file pull/changes
 }
+
+
+@test "branchout a non repository project group then update" {
+  example branchout-a-non-repository-project-group-then-update
+  run branchout lion-aleph
+  assert_success_file pull/lion-clone
+  run branchout lion-aleph
+  assert_success_file pull/lion-update
+}
+
+@test "branchout imaginary project does nothing" {
+  example branchout-imaginary-project-does-nothing
+  run branchout elephant
+  assert_success ""
+}
+

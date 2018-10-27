@@ -168,7 +168,9 @@ function groupUpdateError() {
 
 function branchoutGroupUpdate() {
   cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
-  if git pull --rebase origin > /dev/null 2>&1; then
+  if test ! -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/.git"; then
+     echo -e "\033[0mNothing ${projectGroup}\033[70D\033[70C\033[35mNot a repository\033[0m"
+   elif git pull --rebase origin > /dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled "
   else
     groupUpdateError "${projectGroup}" "Failed "
@@ -178,12 +180,12 @@ function branchoutGroupUpdate() {
 function branchoutGroupClone() {
   test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage_branchout_group "Trying to clone a group that already exists"
   echo -e "\033[0mCloning \033[92m${projectGroup}\033[0m"
-  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)
-  if test $? -eq 0; then
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" >/dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled "
   else
-    echo -e "\033[0mCloning failed: making raw directory \033[31m${projectGroup}\n${RESULT}\033[0m"
-    mkdir "${projectGroup}"
+    echo -e "\033[0mCloning failed: \033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\033[0m"
+    echo -e "\033[0mJust using plain directory \033[32m${projectGroup}\033[0m"
+    mkdir "${BRANCHOUT_DIRECTORY}/${projectGroup}"
   fi
 }
 
@@ -218,7 +220,7 @@ function groupStatus() {
      else
        echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[32m${projectBranch}\033[0m"
      fi
-     cd ..
+     cd "${BRANCHOUT_DIRECTORY}"
    else
      echo -e "\033[0m${2}${projectGroup}\033[70D\033[70C\033[35mNot cloned\033[0m"
    fi

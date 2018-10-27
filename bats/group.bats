@@ -36,8 +36,11 @@ load helper
 @test "branchout group list" {
   example branchout-group-list
   run branchout group list
-  assert_success "frog
+  assert_success "fox
+frog
+lion
 rabbit
+snake
 toad"
 }
 
@@ -49,14 +52,22 @@ toad"
 
 @test "branchout a group" {
   example branchout-a-group
-  run branchout frog
-  assert_success 
+  run branchout rabbit
+  assert_success_file pull/rabbit-clone 
 }
 
 @test "branchout a group then update" {
   example branchout-a-group-then-update
-  run branchout frog
-  assert_success 
-  run branchout frog
-  assert_success 
+  run branchout rabbit
+  assert_success_file pull/rabbit-clone
+  run branchout rabbit
+  assert_success_file pull/rabbit-update
+}
+
+@test "branchout a non repository group then update" {
+  example branchout-a-non-repository-group-then-update
+  run branchout lion
+  assert_success_file pull/lion-clone
+  run branchout lion
+  assert_success_file pull/lion-update
 }

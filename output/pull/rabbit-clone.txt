@@ -1,0 +1,4 @@
+\033[0mCloning \033[92mrabbit\033[0m
+\033[0mPulled  rabbit\033[70D\033[70Cmaster\033[0m
+\033[0mCloning \033[92mrabbit/rabbit-aleph\033[0m
+\033[0mPulled  rabbit/rabbit-aleph\033[70D\033[70Cmaster\033[0m
