@@ -1,1 +1,1 @@
-\033[0mFailed \033[31mfrog/frog-aleph\033[0m \033[70D\033[70C\033[1m error: cannot pull with rebase: You have unstaged changes.\033[0m
+\033[0mFailed  \033[31mfrog/frog-aleph\033[0m \033[70D\033[70C\033[1m error: cannot pull with rebase: You have unstaged changes.\033[0m
