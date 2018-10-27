@@ -73,8 +73,8 @@ function projectUpdate() {
 }
 
 function projectClone() {
-  test -d "${projectGroup}" || branchout_group pull "${projectGroup}"
-  cd "${projectGroup}" || usage_branchout_project "Project group ${projectGroup} directory not found"
+  test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" || branchout_group pull "${projectGroup}"
+  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_project "Project group ${projectGroup} directory not found"
   echo -e "\033[0mCloning \033[92m${projectGroup}/${projectName}\033[0m"
   RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" 2>&1)
   if test $? -eq 0; then
@@ -180,7 +180,7 @@ function branchoutGroupUpdate() {
 function branchoutGroupClone() {
   test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage_branchout_group "Trying to clone a group that already exists"
   echo -e "\033[0mCloning \033[92m${projectGroup}\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" >/dev/null 2>&1; then
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${BRANCHOUT_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled "
   else
     echo -e "\033[0mCloning failed: \033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\033[0m"

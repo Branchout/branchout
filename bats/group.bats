@@ -71,3 +71,27 @@ toad"
   run branchout lion
   assert_success_file pull/lion-update
 }
+
+@test "branchout a group from another group directory then update" {
+  example branchout-a-group-not-from-basedir
+  HOME=$(dirname ${PWD})
+  run branchout lion
+  assert_success_file pull/lion-clone
+  cd lion
+  run branchout rabbit
+  assert_success_file pull/rabbit-clone
+  run branchout rabbit
+  assert_success_file pull/rabbit-update
+}
+
+@test "branchout a non repository group not from basedir then update" {
+  example branchout-a-non-repository-group-then-update-not-from-basedir
+  HOME=$(dirname ${PWD})
+  run branchout rabbit
+  assert_success_file pull/rabbit-clone
+  cd rabbit
+  run branchout lion
+  assert_success_file pull/lion-clone
+  run branchout lion
+  assert_success_file pull/lion-update
+}
