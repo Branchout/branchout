@@ -35,7 +35,7 @@ brew install branchout
 
 ### Otherwise
 
-Download [https://github.com/Branchout/branchout/blob/v1.3/branchout](branchout 1.3) and add it to your path
+Download [branchout 1.3](https://github.com/Branchout/branchout/blob/v1.3/branchout) and add it to your path
 
 
 ### Initialise a project
