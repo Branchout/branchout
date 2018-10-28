@@ -80,6 +80,15 @@ load helper
   assert_success_file all/frog-aleph
 }
 
+@test "branchout init from url" {
+  HOME=./target
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base
+  assert_success "Cloning into 'base'..."
+  cd target/projects/base
+  run branchout status
+  assert_success ""
+}
+
 @test "branchout init" {
   mkdir -p target/init target/branchout/init 
   cd target/init
