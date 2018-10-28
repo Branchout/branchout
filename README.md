@@ -26,7 +26,16 @@ The reason is simple, it gives a consistent structure for developers
 
 ## Getting Started
 
-Download branchout and add it to your path
+### MacOS
+
+```
+brew tap Branchout/homebrew-branchout
+brew install branchout
+```
+
+### Otherwise
+
+Download [https://github.com/Branchout/branchout/blob/v1.3/branchout](branchout 1.3) and add it to your path
 
 
 ### Initialise a project
