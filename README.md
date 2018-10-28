@@ -22,7 +22,7 @@ group two
 The reason is simple, it gives a consistent structure for developers
 * if you name a project badly it ends up in a weird place, and is more likely to be fixed
 * when looking for something you have a pattern to follow to find it
-* things are group so its easy to start in one place esp for new people to reduce congnitive load
+* things are grouped so its easy to start in one place especially for new people, which reduces congnitive load
 
 ## Getting Started
 
