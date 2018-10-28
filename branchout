@@ -329,7 +329,16 @@ function branchout_init_name() {
   test -n "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")"
 }
 
-function branchout_init() {
+function branchoutInitFromUrl() {
+  test -d "${HOME}/projects" || mkdir -p "${HOME}/projects"
+  cd "${HOME}/projects"
+  git clone "${1}" || usage "Failed to clone ${1}"
+  cd $(basename "${1}")
+  source "Branchoutfile"
+  test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
+}
+
+function branchoutInitInteractive() {
   branchout_init_name
   
   BRANCHOUT_GIT_BASEURL="$(git remote get-url origin | cut -d/ -f1)"
@@ -338,6 +347,14 @@ function branchout_init() {
   echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}
 BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" > Branchoutfile
   touch Branchoutprojects
+}
+
+function branchout_init() {
+  if test -n "${1}"; then
+    branchoutInitFromUrl "${1}"
+  else
+    branchoutInitInteractive
+  fi
 }
 
 function branchout_status() {
@@ -365,7 +382,8 @@ function main() {
   test "${1}" = "help" && usage
   
   if test "${1}" = "init"; then
-    branchout_init
+    shift
+    branchout_init "${@}"
    
   else
     loadBranchout

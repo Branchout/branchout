@@ -1,0 +1,84 @@
+#!/bin/bash
+
+makeBase() {
+  rm -rf ${1}
+  mkdir ${1}
+  pushd ${1}
+  git init
+  git config user.email "someone@example.com"; 
+  git config user.name "hopefully_not_real"; 
+
+  echo "# ${each}" > README.md; 
+  echo "frog-aleph
+frog-gemel
+toad-aleph" > Branchoutprojects
+  echo "BRANCHOUT_NAME=base" > Branchoutfile
+  echo "BRANCHOUT_GIT_BASEURL=file://../target/repositories" >> Branchoutfile
+  git add README.md Branchoutprojects Branchoutfile;
+  git commit -a -m"Initial commit"; 
+  
+  popd
+}
+
+makeGroup() {
+  rm -rf ${1}
+  mkdir ${1}
+  pushd ${1}
+  git init
+  git config user.email "someone@example.com"; 
+  git config user.name "hopefully_not_real"; 
+
+  echo "# ${each}" >> README.md; 
+  git add README.md; 
+  git  commit -a -m"Initial commit"; 
+  
+  popd
+}
+
+makeProject() {
+    rm -rf ${each}-${counter}
+    mkdir ${each}-${counter}; 
+    pushd ${each}-${counter}; 
+
+    git init; 
+    git config user.email "someone@example.com"; 
+    git config user.name "hopefully_not_real"; 
+
+    echo "# ${each}-${counter}" >> README.md; 
+    git add README.md; 
+    git  commit -a -m"Initial commit"; 
+
+    echo "# ${each}-${counter}" >> README.md; 
+    git commit -a -m"step 2";
+    git tag -a step-2 -m "step 2"
+
+    echo "# ${each}-${counter}" >> README.md; 
+    git  commit -a -m"step 3";
+ 
+    git checkout -b feature-${counter}; 
+    echo "* feature ${counter}" >> README.md; 
+    git commit -a -m "Adding feature ${counter}";
+    git checkout master
+    popd; 
+}
+
+mkdir -p target/repositories
+cd target/repositories
+
+for each in frog toad; do 
+  makeGroup ${each}
+  for counter in aleph bet gemel; do 
+    makeProject
+  done; 
+done
+for each in snake fox; do 
+  for counter in aleph bet gemel; do 
+    makeProject
+  done; 
+done
+makeGroup rabbit
+each=rabbit counter=aleph makeProject
+each=lion counter=aleph makeProject
+makeBase base
+
+
