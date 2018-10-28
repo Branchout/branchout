@@ -5,6 +5,12 @@ load helper
   assert_success
 }
 
+
+@test "invoke version" {
+  run branchout version
+  assert_success "branchout-1.3"
+}
+
 @test "invoking branchout prints usage" {
   run branchout
   assert_error "branchout: a tool for managing multi-repo projects"

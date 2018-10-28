@@ -356,6 +356,9 @@ function branchout_add() {
   branchout_status "$(branchoutGroupDerive "$1")"
 }
 
+function branchout_version() {
+  echo "branchout-1.3"
+}
 
 function main() {
   test $# -gt 0 || usage
