@@ -86,7 +86,7 @@ load helper
   assert_success "Cloning into 'base'..."
   cd target/projects/base
   run branchout status
-  assert_success ""
+  assert_success_file_sort init/from-url
 }
 
 @test "branchout init" {

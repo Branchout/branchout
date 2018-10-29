@@ -334,6 +334,7 @@ function branchoutInitFromUrl() {
   cd "${HOME}/projects"
   git clone "${1}" || usage "Failed to clone ${1}"
   cd "$(basename "${1}")"
+  # shellcheck source=examples/Branchoutfile
   source "Branchoutfile"
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
 }
@@ -379,22 +380,29 @@ function branchout_version() {
 
 function main() {
   test $# -gt 0 || usage
-  test "${1}" = "help" && usage
   
-  if test "${1}" = "init"; then
-    shift
-    branchout_init "${@}"
-   
-  else
-    loadBranchout
-    branchoutModule="${1}"
-    shift
-    if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
-      eval branchout_"${branchoutModule}" "${@}"
-    else
-      eval branchout_pull "${branchoutModule}" "${@}"
-    fi
-  fi
+  case "${1}" in
+    help)
+      usage
+      ;;
+	init)
+	  shift
+      branchout_init "${@}"
+      ;;
+	version)
+	  branchout_version
+	  ;;
+	*)
+      loadBranchout
+      branchoutModule="${1}"
+      shift
+      if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
+        eval branchout_"${branchoutModule}" "${@}"
+      else
+        eval branchout_pull "${branchoutModule}" "${@}"
+      fi
+      ;;
+  esac
 }
 
 main "${@}"
