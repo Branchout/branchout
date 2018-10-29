@@ -1,4 +1,3 @@
 language: minimal
 script: 
-- env
-- make test
+- make travis
