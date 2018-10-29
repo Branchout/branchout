@@ -12,7 +12,7 @@ makeBase() {
   echo "frog-aleph
 frog-gemel
 toad-aleph" > Branchoutprojects
-  echo "BRANCHOUT_NAME=base" > Branchoutfile
+  echo "BRANCHOUT_NAME=${1}" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=file://../target/repositories" >> Branchoutfile
   git add README.md Branchoutprojects Branchoutfile;
   git commit -a -m"Initial commit"; 
@@ -80,5 +80,6 @@ makeGroup rabbit
 each=rabbit counter=aleph makeProject
 each=lion counter=aleph makeProject
 makeBase base
+makeBase ghbase.git
 
 
