@@ -323,38 +323,66 @@ function branchoutProjectStatus() {
 }
 
 function branchout_init_name() {
-  BRANCHOUT_NAME="$(basename "${PWD}")"
-  printf "Enter branchout name [%s]: ", "${DEFAULT_BRANCHOUT_NAME}"
+  DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
+  printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
   read -r BRANCHOUT_NAME
-  test -n "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")"
+  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")" && echo
+  BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
+}
+
+function branchout_init_baseurl()  {
+  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| cut -d/ -f1)"  || true 
+  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
+    printf "Enter git baseurl: "
+    read -r BRANCHOUT_GIT_BASEURL || true
+    test -z "${BRANCHOUT_GIT_BASEURL}" && usage "git baseurl is not defined"
+  fi
+  
+  return 0
 }
 
 function branchoutInitFromUrl() {
   test -d "${HOME}/projects" || mkdir -p "${HOME}/projects"
   cd "${HOME}/projects"
+  BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
+  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/projects/${BRANCHOUT_NAME} is already initialised"
   git clone "${1}" || usage "Failed to clone ${1}"
-  cd "$(basename "${1}")"
-  # shellcheck source=examples/Branchoutfile
-  source "Branchoutfile"
-  test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
+  cd "${BRANCHOUT_NAME}"
+  
+  branchoutInit
 }
 
-function branchoutInitInteractive() {
-  branchout_init_name
+function branchoutInitLocal() {
+  test -d .git || usage "$(pwd) is not a git repository, try git init first"
+  branchoutInit
+}
+
+function branchoutInit() {
+  test -f Branchoutfile || touch Branchoutfile
+  test -f Branchoutprojects || touch Branchoutprojects
+
+  # shellcheck source=examples/Branchoutfile
+  source "Branchoutfile"  
   
-  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin | cut -d/ -f1)"
-  test $? -ne 0 && usage "Could not determine git baserul"
+  if test -z "${BRANCHOUT_NAME}"; then
+    branchout_init_name
+    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a Branchoutfile
+  fi
   
-  echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}
-BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" > Branchoutfile
-  touch Branchoutprojects
+  test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
+
+  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
+    branchout_init_baseurl
+    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a Branchoutfile
+  fi
+  
 }
 
 function branchout_init() {
   if test -n "${1}"; then
     branchoutInitFromUrl "${1}"
   else
-    branchoutInitInteractive
+    branchoutInitLocal
   fi
 }
 
