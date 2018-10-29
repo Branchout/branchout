@@ -53,7 +53,7 @@ assert_output_start() {
   else 
     expected="$1"
   fi
-  assert_equal $(echo "$expected" | head -n1) $(echo "$output" | head -n1)
+  assert_equal "$(echo "$expected" | head -n1)" "$(echo "$output" | head -n1)"
 }
 
 assert_output() {
