@@ -1,2 +1,4 @@
 language: minimal
-script: make test
+script: 
+- env
+- make test
