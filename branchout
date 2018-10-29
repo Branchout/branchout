@@ -333,7 +333,7 @@ function branchoutInitFromUrl() {
   test -d "${HOME}/projects" || mkdir -p "${HOME}/projects"
   cd "${HOME}/projects"
   git clone "${1}" || usage "Failed to clone ${1}"
-  cd $(basename "${1}")
+  cd "$(basename "${1}")"
   source "Branchoutfile"
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
 }
