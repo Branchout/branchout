@@ -2,5 +2,5 @@
 
 for each in $@; do
   mkdir -p $(dirname "target/${each}")
-  while read -r line; do echo -e "$line"; done < "$each" > "target/${each%.txt}.output"
+  while read -r line; do echo -e "$line"; done < "$each" | sed -e "s,BASE_DIRECTORY,$(pwd)," > "target/${each%.txt}.output"
 done
