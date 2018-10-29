@@ -112,6 +112,6 @@ load helper
   run branchout status
   assert_success_file status/no-clone
   run branchout add frog-beta
-  assert_success_file status/two-no-clone
+  assert_success_file_sort status/two-no-clone
 }
 
