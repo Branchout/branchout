@@ -30,6 +30,17 @@ assert_success_file() {
   fi
 }
 
+assert_success_file_sort() {
+  if [ "$status" -ne 0 ]; then
+    { echo "command failed with exit status $status"
+      echo "output: $output"
+    } | bail
+  elif [ "$#" -gt 0 ]; then
+    test -f "${BUILD_DIRECTORY}/output/${1}.output" || bail "Could not find example output ${BUILD_DIRECTORY}/output/${1}.output"
+    cat "${BUILD_DIRECTORY}/output/${1}.output" | assert_output_sort
+  fi
+}
+
 assert_error() {
   if [ "$status" -eq 0 ]; then
     bail "expected failed exit status"
@@ -54,6 +65,16 @@ assert_output_start() {
     expected="$1"
   fi
   assert_equal "$(echo "$expected" | head -n1)" "$(echo "$output" | head -n1)"
+}
+
+assert_output_sort() {
+  local expected
+  if [ $# -eq 0 ]; then 
+    expected="$(cat -)"
+  else 
+    expected="$1"
+  fi
+  assert_equal "$(echo "$expected" | sort)" "$(echo "$output" | sort)"
 }
 
 assert_output() {
