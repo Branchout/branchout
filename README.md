@@ -6,6 +6,10 @@ A tool for managing organisations with many repositories in a structured way
 * fast updates
 * single command line view
 
+## Badges
+
+[![Build Status](https://travis-ci.com/Branchout/branchout.svg?branch=master)](https://travis-ci.com/Branchout/branchout)
+
 ## Structure
 
 Project repositories are named group-project-name
