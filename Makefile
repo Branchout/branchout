@@ -14,3 +14,6 @@ repositories:
 
 test: clean output repositories
 	bats --pretty bats
+
+travis: clean output repositories
+	bats --tap bats
