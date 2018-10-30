@@ -124,7 +124,7 @@ load helper
   cd target/tests/init-ingit
   HOME=${BUILD_DIRECTORY}
   git init
-  run branchout init <<< '' ''
+  run branchout init <<< ''
   assert_error "Enter branchout name [init-ingit]: "
 }
 
@@ -133,11 +133,8 @@ load helper
   cd target/tests/init-interactive
   HOME=${BUILD_DIRECTORY}
   git init
-  run branchout init <<< $(echo "brname
-  gitty
-  gitty
-  gitty
-  gitty")
+  run branchout init <<< "brname
+gitty"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -148,11 +145,8 @@ load helper
   cd target/tests/init-git
   HOME=${BUILD_DIRECTORY}
   git init
-  run branchout init <<< $(echo "brname
-  gitty
-  gitty
-  gitty
-  gitty")
+  run branchout init <<< "brname
+gitty"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -165,11 +159,8 @@ load helper
   cd target/tests/add
   HOME=${BUILD_DIRECTORY}
   git init
-  run branchout init <<< $(echo "brname
-  gitty
-  gitty
-  gitty
-  gitty")  
+  run branchout init <<< "brname
+gitty"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
