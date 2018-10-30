@@ -100,6 +100,17 @@ load helper
   assert_success_file_sort init/with-toad
 }
 
+@test "branchout init from url.git with local name" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname
+  assert_success "Cloning into 'localname'..."
+  cd target/projects/localname
+  run branchout status
+  assert_success_file_sort init/from-url
+  run branchout add toad-gemel
+  assert_success_file_sort init/with-toad
+}
+
 @test "branchout init not in git repository" {
   mkdir -p target/tests/init-notgit
   cd target/tests/init-notgit
