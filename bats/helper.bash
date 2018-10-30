@@ -97,7 +97,6 @@ assert_equal() {
   fi
 }
 
-
 example() {
   test -z "$1" && bail "exmaples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
@@ -120,4 +119,28 @@ snake-gemel
 fox-aleph
 fox-bet
 fox-gemel" > Branchoutprojects
+}
+
+legacyExample() {
+  test -z "$1" && bail "exmaples need a name"
+  test -d "target/tests/${1}" && bail "example already exists: ${1}"
+  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}" 
+  cd "target/tests/${1}"
+  export HOME=../
+  echo "BRANCHOUT_NAME=\"${1}\"" > .branchout 
+  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> .branchout
+  echo "frog-aleph
+frog-gemel
+frog-bet
+lion-aleph
+rabbit-aleph
+toad-aleph
+toad-gemel
+toad-bet
+snake-aleph
+snake-bet
+snake-gemel
+fox-aleph
+fox-bet
+fox-gemel" > .projects
 }

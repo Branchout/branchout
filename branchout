@@ -24,14 +24,14 @@ function usage_branchout_project() {
 
 function projectList() {
   if test $# -eq 0; then
-    sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+    sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   else
-    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/Branchoutprojects" | sort
+    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
   fi
 }
 
 function projectListWithGroups() {
-  sort <(cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects") <(branchout_project groups)
+  sort <(cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
 }
 
 
@@ -280,13 +280,32 @@ function usage() {
   exit 1
 }
 
+# Check if the give directory contains the branchout files
+function branchoutFiles() {
+  if test -f "${1}/Branchoutfile"; then
+    BRANCHOUT_FILE=Branchoutfile
+    BRANCHOUT_PROJECTS=Branchoutprojects
+    return 0
+  fi
+  
+  if test -f "${1}/.branchout"; then
+    BRANCHOUT_FILE=.branchout
+    BRANCHOUT_PROJECTS=.projects
+    return 0
+  fi
+  
+  return 1
+}
 function branchoutDirectory() {
   BRANCHOUT_DIRECTORY="${PWD}"
-  while test ! -f "${BRANCHOUT_DIRECTORY}/Branchoutfile"; do
+  while test "${BRANCHOUT_DIRECTORY}" != '/'; do
+    if branchoutFiles "${BRANCHOUT_DIRECTORY}"; then
+      export BRANCHOUT_DIRECTORY
+      return 0
+    fi
     BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
-    test "${BRANCHOUT_DIRECTORY}" = '/' && usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
   done
-  export BRANCHOUT_DIRECTORY
+  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
 }
 
 function loadBranchout() {
@@ -294,23 +313,23 @@ function loadBranchout() {
   branchoutDirectory
   
   # shellcheck source=examples/Branchoutfile
-  source "${BRANCHOUT_DIRECTORY}/Branchoutfile"
+  source "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
   
-  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in Branchoutfile, run branchout init"
+  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
   export BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
 
-  test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in Branchoutfile, run branchout init"
+  test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in ${BRANCHOUT_FILE}, run branchout init"
   export BRANCHOUT_GIT_BASEURL
   export BRANCHOUT_PREFIX
   
   test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
-  test -f "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "Branchoutprojects file missing, try branchout add [repository]"
+  test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
   
   export BRANCHOUT_LOADED="true"
 }
 
 function branchoutProjects() {
-  cat "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+  cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
 }
 
 
@@ -358,23 +377,31 @@ function branchoutInitLocal() {
   branchoutInit
 }
 
+function branchoutDefaultFiles() {
+   BRANCHOUT_FILE=Branchoutfile
+   BRANCHOUT_PROJECTS=Branchoutprojects
+   touch Branchoutfile
+   test -f Branchoutprojects || touch Branchoutprojects
+ }
+
 function branchoutInit() {
-  test -f Branchoutfile || touch Branchoutfile
-  test -f Branchoutprojects || touch Branchoutprojects
+  if ! branchoutFiles "${PWD}"; then
+    branchoutDefaultFiles
+  fi
 
   # shellcheck source=examples/Branchoutfile
-  source "Branchoutfile"  
+  source "${BRANCHOUT_FILE}"  
   
   if test -z "${BRANCHOUT_NAME}"; then
     branchout_init_name
-    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a Branchoutfile
+    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a ${BRANCHOUT_FILE}
   fi
   
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
 
   if test -z "${BRANCHOUT_GIT_BASEURL}"; then
     branchout_init_baseurl
-    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a Branchoutfile
+    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a ${BRANCHOUT_FILE}
   fi
   
 }
@@ -388,7 +415,7 @@ function branchout_init() {
 }
 
 function branchout_status() {
-  test -s "${BRANCHOUT_DIRECTORY}/Branchoutprojects" || usage "No projects to show, try branchout add <project-name>"
+  test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
   branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} branchout project status {}
 }
 
@@ -398,8 +425,8 @@ function branchout_pull() {
 }
 
 function branchout_add() {
-  sort "${BRANCHOUT_DIRECTORY}/Branchoutprojects" <(echo "$1") > "${BRANCHOUT_DIRECTORY}/Branchoutprojects.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/Branchoutprojects.tmp" "${BRANCHOUT_DIRECTORY}/Branchoutprojects"
+  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   branchout_status "$(branchoutGroupDerive "$1")"
 }
 

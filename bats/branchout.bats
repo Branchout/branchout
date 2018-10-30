@@ -8,7 +8,7 @@ load helper
 
 @test "invoke version" {
   run branchout version
-  assert_success "branchout-1.3"
+  assert_success "branchout-1.7"
 }
 
 @test "invoking branchout prints usage" {
