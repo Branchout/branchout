@@ -345,8 +345,9 @@ function branchoutInitFromUrl() {
   test -d "${HOME}/projects" || mkdir -p "${HOME}/projects"
   cd "${HOME}/projects"
   BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
+  test -n "${2}" && BRANCHOUT_NAME="${2}"
   test -d "${BRANCHOUT_NAME}" && usage "${HOME}/projects/${BRANCHOUT_NAME} is already initialised"
-  git clone "${1}" || usage "Failed to clone ${1}"
+  git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
   cd "${BRANCHOUT_NAME}"
   
   branchoutInit
@@ -380,7 +381,7 @@ function branchoutInit() {
 
 function branchout_init() {
   if test -n "${1}"; then
-    branchoutInitFromUrl "${1}"
+    branchoutInitFromUrl "${1}" "${2}"
   else
     branchoutInitLocal
   fi
