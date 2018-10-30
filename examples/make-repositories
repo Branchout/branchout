@@ -96,7 +96,13 @@ for each in snake fox; do
     makeProject
   done; 
 done
-
+for animal in goat sheep; do 
+  for counter in aleph bet gemel; do 
+    each=prefix-${animal}
+    makeProject
+  done; 
+done
+makeGroup sheep
 makeGroup rabbit
 each=rabbit counter=aleph makeProject
 each=lion counter=aleph makeProject

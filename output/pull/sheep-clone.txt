@@ -1,0 +1,8 @@
+\033[0mCloning \033[92msheep\033[0m
+\033[0mPulled  sheep\033[70D\033[70Cmaster\033[0m
+\033[0mCloning \033[92msheep/prefix-sheep-aleph\033[0m
+\033[0mPulled  sheep/prefix-sheep-aleph\033[70D\033[70Cmaster\033[0m
+\033[0mCloning \033[92msheep/prefix-sheep-bet\033[0m
+\033[0mPulled  sheep/prefix-sheep-bet\033[70D\033[70Cmaster\033[0m
+\033[0mCloning \033[92msheep/prefix-sheep-gemel\033[0m
+\033[0mPulled  sheep/prefix-sheep-gemel\033[70D\033[70Cmaster\033[0m

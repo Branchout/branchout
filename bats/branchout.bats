@@ -48,7 +48,7 @@ load helper
   assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
 }
 
-@test "missing projects prompts" {
+@test "branchout missing projects prompts" {
   mkdir -p target/no-projects target/branchout/no-projects 
   cd target/no-projects
   HOME=..
@@ -58,7 +58,7 @@ load helper
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
-@test "project prefix is removed" {
+@test "branchout prefix is removed" {
   mkdir -p target/prefix target/branchout/prefix 
   cd target/prefix
   HOME=..
@@ -70,7 +70,7 @@ load helper
   assert_success_file status/no-clone-prefix
 }
 
-@test "can pull all" {
+@test "branchout can pull all" {
   example pull-all
   run branchout project status frog-aleph
   assert_success_file all/frog-aleph-before-pull
