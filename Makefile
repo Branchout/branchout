@@ -1,6 +1,9 @@
 export PATH := $(PWD):$(PATH)
 
-target/output/**/*.output: output/**/*.txt
+target:
+	mkdir target
+
+target/output/**/*.output: output/**/*.txt target
 	mkdir -p target/output
 	./output/escape-text $?
 
@@ -9,7 +12,7 @@ output: target/output/**/*.output
 clean:
 	rm -rf target
 
-repositories: 
+repositories: target
 	examples/make-repositories > target/repositories.log  2>&1
 
 test: clean output repositories
