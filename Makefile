@@ -4,7 +4,7 @@ target/output/**/*.output: output/**/*.txt
 	mkdir -p target/output
 	./output/escape-text $?
 
-output: target/output/**/*.output
+canned-output: target/output/**/*.output
 
 clean:
 	rm -rf target
@@ -13,9 +13,8 @@ repositories:
 	mkdir -p target
 	examples/make-repositories > target/repositories.log  2>&1
 
-test: clean output repositories
-	ls
+test: clean canned-output repositories
 	bats --pretty bats
 
-travis: clean output repositories
+travis: clean canned-output repositories
 	bats --tap bats
