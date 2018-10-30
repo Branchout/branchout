@@ -404,7 +404,7 @@ function branchout_add() {
 }
 
 function branchout_version() {
-  echo "branchout-1.3"
+  echo "branchout-1.5"
 }
 
 function main() {
