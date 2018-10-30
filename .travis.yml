@@ -6,7 +6,7 @@ language: minimal
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bats    ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bats shellcheck  ; fi
 
 script: 
 - make travis
