@@ -30,23 +30,27 @@ The reason is simple, it gives a consistent structure for developers
 
 ## Getting Started
 
-### MacOS
+### Brew
+
+Brew is a handy tool for consistent tooling, it can be run on OSX and Linux
 
 ```
 brew tap Branchout/homebrew-branchout
 brew install branchout
 ```
 
-### Otherwise
+### Initialise an existing organisation
 
-Download [branchout 1.4](https://github.com/Branchout/branchout/blob/v1.4/branchout) and add it to your path
+To start with an existing project just init it from the git url
 
+```
+branchout init https://github.com/Branchout/branchout-reactor.git
+cd ~/project/branchout-reactor
+branchout status
+branchout pull
+```
 
-### Initialise a project
-
-You need repository to act as the root, 
-* create it or clone it
-* then ```run branchout init```
+This will create the Branchoutfile and Branchoutprojects if needed
 
 The default branchout name is the name of the root project
 
