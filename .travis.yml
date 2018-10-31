@@ -4,9 +4,11 @@ os:
 
 language: minimal
 
-before_install:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bats shellcheck  ; fi
+addons:
+  homebrew:
+    packages:
+    - bats
+    - shellcheck
 
 script: 
 - make travis
