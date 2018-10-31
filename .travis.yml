@@ -4,11 +4,8 @@ os:
 
 language: minimal
 
-addons:
-  homebrew:
-    packages:
-    - bats
-    - shellcheck
+before_install:
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck  ; fi
 
 script: 
 - make travis
