@@ -23,7 +23,7 @@ load helper
 }
 
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
-  mkdir target/missing-name -p
+  mkdir -p target/missing-name
   cd target/missing-name
   touch Branchoutfile
   run branchout status
@@ -39,7 +39,7 @@ load helper
 }
 
 @test "branchout home is missing fails" {
-  mkdir target/missing-branchout-home -p
+  mkdir -p target/missing-branchout-home 
   HOME=..
   cd target/missing-branchout-home
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 

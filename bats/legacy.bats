@@ -1,7 +1,7 @@
 load helper
 
 @test "legacy branchout configuration missing BRANCHOUT_NAME fails" {
-  mkdir target/legacy/missing-name -p
+  mkdir -p target/legacy/missing-name 
   cd target/legacy/missing-name
   touch .branchout
   run branchout status
@@ -17,7 +17,7 @@ load helper
 }
 
 @test "legacy branchout home is missing fails" {
-  mkdir target/legacy/missing-branchout-home -p
+  mkdir -p target/legacy/missing-branchout-home 
   HOME=${BUILD_DIRECTORY}
   cd target/legacy/missing-branchout-home
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > .branchout 
