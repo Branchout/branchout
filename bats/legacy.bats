@@ -61,7 +61,8 @@ load helper
 @test "legacy branchout init from url" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/legacy
-  assert_success "Cloning into 'legacy'..."
+  assert_success "Cloning into 'legacy'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   cd target/projects/legacy
   run branchout status
   assert_success_file_sort init/from-url
