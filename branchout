@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 function usage_branchout_project() {
@@ -350,7 +349,7 @@ function branchout_init_name() {
 }
 
 function branchout_init_baseurl()  {
-  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| sed -e 's,/[^/]*$,/,')"  || true
+  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| sed -e 's,/[^/]*$,,')"  || true
   if test -z "${BRANCHOUT_GIT_BASEURL}"; then
     printf "Enter git baseurl: "
     read -r BRANCHOUT_GIT_BASEURL || true
@@ -431,7 +430,7 @@ function branchout_add() {
 }
 
 function branchout_version() {
-  echo "branchout-1.9"
+  echo "branchout-1.10"
 }
 
 function main() {

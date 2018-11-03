@@ -13,7 +13,6 @@ makeBase() {
 frog-gemel
 toad-aleph" > Branchoutprojects
   echo "BRANCHOUT_NAME=${1}" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=file://../target/repositories" >> Branchoutfile
   git add README.md Branchoutprojects Branchoutfile;
   git commit -a -m"Initial commit"; 
   
@@ -33,7 +32,6 @@ makeLegacyBase() {
 frog-gemel
 toad-aleph" > .projects
   echo "BRANCHOUT_NAME=${1}" > .branchout
-  echo "BRANCHOUT_GIT_BASEURL=file://../target/repositories" >> .branchout
   git add README.md .projects .branchout;
   git commit -a -m"Initial commit"; 
   

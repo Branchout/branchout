@@ -8,7 +8,7 @@ load helper
 
 @test "invoke version" {
   run branchout version
-  assert_success "branchout-1.9"
+  assert_success
 }
 
 @test "invoking branchout prints usage" {
@@ -83,7 +83,8 @@ load helper
 @test "branchout init from url" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/base
-  assert_success "Cloning into 'base'..."
+  assert_success "Cloning into 'base'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   cd target/projects/base
   run branchout status
   assert_success_file_sort init/from-url
@@ -92,7 +93,8 @@ load helper
 @test "branchout init from url.git" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git
-  assert_success "Cloning into 'ghbase'..."
+  assert_success "Cloning into 'ghbase'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   cd target/projects/ghbase
   run branchout status
   assert_success_file_sort init/from-url
@@ -103,7 +105,8 @@ load helper
 @test "branchout init from url.git with local name" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname
-  assert_success "Cloning into 'localname'..."
+  assert_success "Cloning into 'localname'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   cd target/projects/localname
   run branchout status
   assert_success_file_sort init/from-url
