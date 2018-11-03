@@ -61,11 +61,22 @@ They will show as not cloned until you ```branchout pull```
 
 ## Grokking the code and contributing
 
+
+### Tooling
+
+Installing the required tools
+
+```
+brew install git bats shellcheck
+```
+
 ### Running the tests
 
 The tests are written in bats https://github.com/sstephenson/bats
 
-```make test```
+```
+make test
+```
 
 ### PRs Welcome
 
