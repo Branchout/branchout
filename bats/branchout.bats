@@ -157,6 +157,18 @@ gitty"
   assert_success_file status/no-clone
 }
 
+@test "branchout init copies templates" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/templates
+  assert_success "Cloning into 'templates'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+  cd target/projects/templates
+  run branchout status
+  assert_success_file_sort init/from-url
+  run cat target/branchout/templates/maven/settings.xml
+  assert_success_file init/settings.xml
+}
+
 @test "branchout add" {
   mkdir -p target/tests/add
   cd target/tests/add
@@ -174,4 +186,6 @@ gitty"
   run branchout add frog-beta
   assert_success_file_sort status/two-no-clone
 }
+
+
 

@@ -19,6 +19,43 @@ toad-aleph" > Branchoutprojects
   popd
 }
 
+makeTemplates() {
+  pushd ${1}
+  mkdir -p Branchouttemplates/maven
+  echo '<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <localRepository>${user.home}/branchout/#{BRANCHOUT_NAME}/maven/repository</localRepository>
+
+  <servers>
+    <server>
+      <username>#{BRANCHOUT_MAVEN_USER}</username>
+      <password>#{BRANCHOUT_MAVEN_PASSWORD}</password>
+      <id>branchout-maven</id>
+    </server>   
+  </servers>
+
+  <mirrors>
+    <mirror>
+      <mirrorOf>*</mirrorOf>
+      <name>branchout-maven</name>
+      <url>#{BRANCHOUT_MAVEN_MIRROR}</url>
+      <id>branchout-maven</id>
+    </mirror>
+  </mirrors>
+
+  <pluginGroups>
+    <pluginGroup>net.stickycode.plugins</pluginGroup>
+  </pluginGroups>
+  
+</settings>
+' > Branchouttemplates/maven/settings.xml
+  git add Branchouttemplates
+  git commit -a -m'templates'
+  popd
+}
+
 makeLegacyBase() {
   rm -rf ${1}
   mkdir ${1}
@@ -108,5 +145,8 @@ each=lion counter=aleph makeProject
 makeBase base
 makeBase ghbase.git
 makeLegacyBase legacy
+
+makeBase templates
+makeTemplates templates
 
 
