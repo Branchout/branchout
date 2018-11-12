@@ -114,7 +114,7 @@ makeBase ghbase.git
 # Legacy files .branchout and .projects are supported
 makeLegacyBase legacy
 
-# For validating that base and group produce a flat structuer
+# For validating that base and group produce a flat structure
 makeBase frog
 
 
