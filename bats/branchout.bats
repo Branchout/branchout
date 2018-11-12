@@ -157,6 +157,16 @@ gitty"
   assert_success_file status/no-clone
 }
 
+@test "branchout init from url with flat structure" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/frog
+  assert_success "Cloning into 'frog'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+  cd target/projects/frog
+  run branchout pull frog
+  assert_success_file_sort init/from-url-with-flat-structure
+}
+
 @test "branchout add" {
   mkdir -p target/tests/add
   cd target/tests/add

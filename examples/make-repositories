@@ -100,13 +100,21 @@ for animal in goat sheep; do
     makeProject
   done; 
 done
+
+# Projects with no group project in a repository
 makeGroup sheep
 makeGroup rabbit
 each=rabbit counter=aleph makeProject
 each=lion counter=aleph makeProject
 
+# Setup base projects for init testing
 makeBase base
 makeBase ghbase.git
+
+# Legacy files .branchout and .projects are supported
 makeLegacyBase legacy
+
+# For validating that base and group produce a flat structuer
+makeBase frog
 
 
