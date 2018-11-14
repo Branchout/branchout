@@ -19,6 +19,7 @@ When the projects are branched out locally they look like this
 group one
 - project one
 - project two
+
 group two
 - project three
 - project four
