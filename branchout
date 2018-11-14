@@ -310,6 +310,7 @@ function branchoutFiles() {
   
   return 1
 }
+
 function branchoutDirectory() {
   BRANCHOUT_DIRECTORY="${PWD}"
   while test "${BRANCHOUT_DIRECTORY}" != '/'; do
@@ -322,8 +323,16 @@ function branchoutDirectory() {
   usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
 }
 
+function branchoutConfiguration() {
+  BRANCHOUT_PROJECTS_DIRECTORY=projects
+  # shellcheck source=examples/branchoutrc
+  test -f ~/.config/branchoutrc && source ~/.config/branchoutrc
+  export BRANCHOUT_PROJECTS_DIRECTORY
+}
+
 function loadBranchout() {
   test -n "${BRANCHOUT_LOADED}" && return 0
+  
   branchoutDirectory
   
   # shellcheck source=examples/Branchoutfile
@@ -377,11 +386,11 @@ function branchout_init_baseurl()  {
 }
 
 function branchoutInitFromUrl() {
-  test -d "${HOME}/projects" || mkdir -p "${HOME}/projects"
-  cd "${HOME}/projects"
+  test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}" || mkdir -p "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
+  cd "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
   BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
   test -n "${2}" && BRANCHOUT_NAME="${2}"
-  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/projects/${BRANCHOUT_NAME} is already initialised"
+  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${BRANCHOUT_NAME} is already initialised"
   git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
   cd "${BRANCHOUT_NAME}"
   
@@ -453,18 +462,20 @@ function branchout_version() {
 function main() {
   test $# -gt 0 || usage
   
+  branchoutConfiguration
+  
   case "${1}" in
     help)
       usage
       ;;
-	init)
-	  shift
+    init)
+      shift
       branchout_init "${@}"
       ;;
-	version)
-	  branchout_version
-	  ;;
-	*)
+    version)
+      branchout_version
+      ;;
+    *)
       loadBranchout
       branchoutModule="${1}"
       shift
