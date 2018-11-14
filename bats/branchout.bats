@@ -167,6 +167,18 @@ BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   assert_success_file_sort init/from-url-with-flat-structure
 }
 
+@test "branchout init with relocated projects folder" {
+  HOME=${BUILD_DIRECTORY}/relocated
+  mkdir -p ${BUILD_DIRECTORY}/relocated/.config
+  echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > ${BUILD_DIRECTORY}/relocated/.config/branchoutrc
+  run branchout init file://${BUILD_DIRECTORY}/repositories/frog
+  assert_success "Cloning into 'frog'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+  cd target/relocated/notprojects/frog
+  run branchout pull frog
+  assert_success_file_sort init/from-url-with-flat-structure
+}
+
 @test "branchout add" {
   mkdir -p target/tests/add
   cd target/tests/add
