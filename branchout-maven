@@ -1,0 +1,25 @@
+#!/bin/bash
+set -x
+PROJECT_DIRECTORY=`pwd`
+while test ! -f ${PROJECT_DIRECTORY}/Branchoutfile; do
+  PROJECT_DIRECTORY=`dirname ${PROJECT_DIRECTORY}`
+  test "${PROJECT_DIRECTORY}" = '/' && bail "Branchoutfile not found in parent directories"
+done
+
+source ${PROJECT_DIRECTORY}/Branchoutfile
+
+test -n "${BRANCHOUT_NAME}" || BRANCHOUT_NAME="${FORCE_NAME}"
+export BRANCHOUT_HOME=~/branchout/${BRANCHOUT_NAME}
+
+test -f ${BRANCHOUT_HOME}/maven/settings.xml || exit 127
+
+MAVEN_SETTINGS=${BRANCHOUT_HOME}/maven
+
+MAVEN_OPTS="-s $MAVEN_SETTINGS/settings.xml $MAVEN_OPTS"
+
+echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_AUTHOR_EMAIL"
+
+test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
+
+exec mvn $MAVEN_OPTS $*
+
