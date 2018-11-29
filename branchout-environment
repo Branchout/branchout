@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e
+
+# Check if the give directory contains the branchout files
+function branchoutFiles() {
+  if test -f "${1}/Branchoutfile"; then
+    BRANCHOUT_FILE=Branchoutfile
+    BRANCHOUT_PROJECTS=Branchoutprojects
+    return 0
+  fi
+  
+  if test -f "${1}/.branchout"; then
+    BRANCHOUT_FILE=.branchout
+    BRANCHOUT_PROJECTS=.projects
+    return 0
+  fi
+  
+  return 1
+}
+
+function branchoutDirectory() {
+  BRANCHOUT_DIRECTORY="${PWD}"
+  while test "${BRANCHOUT_DIRECTORY}" != '/'; do
+    if branchoutFiles "${BRANCHOUT_DIRECTORY}"; then
+      return 0
+    fi
+    BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
+  done
+  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
+}
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-environment: a tool for managing multi-repo projects
+    
+    status: show the list of known projects and their current state
+    
+    pull: pull all the projects and display their status
+    
+    add: add a project to the list
+    
+    init: Intialise the current git repository as a branchout root project
+    
+    project: see branchout project help
+    
+    group: see branchout group help
+
+    "
+  exit 1
+}
+
+test -n "${BRANCHOUT_LOADED}" && return 0
+
+branchoutDirectory
+
+export BRANCHOUT_DIRECTORY
+export BRANCHOUT_PROJECTS
+export BRANCHOUT_FILE
+
+# shellcheck source=examples/Branchoutfile
+source "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
+
+test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
+export BRANCHOUT_NAME
+BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
+export BRANCHOUT_HOME
+
+test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in ${BRANCHOUT_FILE}, run branchout init"
+export BRANCHOUT_GIT_BASEURL
+export BRANCHOUT_PREFIX
+
+test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
+test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
+
+export BRANCHOUT_LOADED="true"

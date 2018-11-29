@@ -1,0 +1,144 @@
+#!/bin/bash
+
+set -e
+
+function projectList() {
+  if test $# -eq 0; then
+    sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  else
+    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
+  fi
+}
+
+function projectListWithGroups() {
+  sort <(cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
+}
+
+function projectContextStatus() {
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
+     cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
+     
+     projectBranch=$(git rev-parse --abbrev-ref HEAD)
+     if test "${projectBranch}" = "master"; then
+       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C${projectBranch}\\033[0m"
+     elif test "${projectBranch}" = "HEAD"; then
+       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+     else
+       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
+     fi
+   else
+     echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
+   fi
+}
+
+function projectUpdateError() {
+  projectBranch=$(git rev-parse --abbrev-ref HEAD)
+  if test "${projectBranch}" = "HEAD"; then
+    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+  else
+    echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m" 
+  fi
+}
+
+function projectUpdate() {
+  cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
+  if git pull --rebase origin > /dev/null 2>&1; then
+    projectContextStatus "${projectName}" "Pulled  "
+  else
+    projectUpdateError "${projectName}" "Failed  "
+  fi
+}
+
+function projectClone() {
+  test -d "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || "${BRANCHOUT_PATH}/branchout-group" pull "${projectGroup}"
+  cd "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || usage "Project group ${projectGroup} directory not found"
+  echo -e "\\033[0mCloning \\033[92m${projectContext}\\033[0m"
+  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" 2>&1)
+  if test $? -eq 0; then
+    projectContextStatus "${projectName}" "Pulled  "
+  else
+    echo -e "\\033[0mCloning failed: \\033[31m${projectContext}\\n${RESULT}\\033[0m"
+  fi
+}
+
+function projectContext() {
+  projectName=$("${BRANCHOUT_PATH}/branchout-group" deriveProject "${1}")
+  projectGroup=$("${BRANCHOUT_PATH}/branchout-group" derive "${1}")
+  
+  if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
+    projectContext="${projectName}"
+  else
+    projectContext="${projectGroup}/${projectName}"
+  fi
+}
+
+function projectStatus() {
+   projectContext  "${1}"
+   projectContextStatus "${1}" "${2}"
+}
+
+function projectPull() {
+  projectContext "${1}"
+  
+  gitProject="${1}"
+  if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}/.git"; then
+    projectUpdate 
+  else
+    projectClone 
+  fi
+}
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-project list|status|pull [project]
+  
+  status project-name
+      
+      Return the status of the given project, Not cloned, branch, rebasing
+  
+  pull project-name
+  
+      Attempt to pull the project, show the branch or error
+  
+  list [prefix]
+  
+      List all the projects with the given prefix
+  
+  "
+  
+  exit 1
+}
+
+function main() {
+  test $# -gt 0 || usage
+  
+  BRANCHOUT_PATH="$(dirname "$0")"
+  
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+
+        
+  case "${1}" in
+    list)
+      if test "${2}" = "--grouped"; then
+        projectListWithGroups
+      else
+        projectList "${2}"
+      fi
+      ;;
+    status)
+      test -n "${2}" || usage "Must provide project"
+      projectStatus "${2}"
+      ;;
+    pull)
+      test -n "${2}" || usage "Must provide project"
+      projectPull "${2}"
+      ;;
+    *)
+      usage
+  esac
+}
+
+main "${@}"

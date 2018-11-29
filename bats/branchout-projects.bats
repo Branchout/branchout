@@ -1,5 +1,10 @@
 load helper
 
+@test "branchout project is shellcheck compliant with no exceptions" {
+  run shellcheck -x branchout-project
+  assert_success
+}
+
 @test "project list" {
   example project-list
   run branchout project list

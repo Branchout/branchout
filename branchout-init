@@ -1,0 +1,111 @@
+#!/bin/bash
+
+set -e
+
+# Check if the give directory contains the branchout files
+function branchoutFiles() {
+  if test -f "${1}/Branchoutfile"; then
+    BRANCHOUT_FILE=Branchoutfile
+    BRANCHOUT_PROJECTS=Branchoutprojects
+    return 0
+  fi
+  
+  if test -f "${1}/.branchout"; then
+    BRANCHOUT_FILE=.branchout
+    BRANCHOUT_PROJECTS=.projects
+    return 0
+  fi
+  
+  return 1
+}
+
+function branchout_init_name() {
+  DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
+  printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
+  read -r BRANCHOUT_NAME
+  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")" && echo
+  echo "BRANCHOUT_HOME=\"${HOME}/branchout/${BRANCHOUT_NAME}\"" >> ${BRANCHOUT_FILE}
+}
+
+function branchout_init_baseurl()  {
+  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| sed -e 's,/[^/]*$,,')"  || true
+  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
+    printf "Enter git baseurl: "
+    read -r BRANCHOUT_GIT_BASEURL || true
+    test -z "${BRANCHOUT_GIT_BASEURL}" && usage "git baseurl is not defined"
+  fi
+  
+  return 0
+}
+
+function branchoutInitFromUrl() {
+  test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}" || mkdir -p "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
+  cd "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
+  BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
+  test -n "${2}" && BRANCHOUT_NAME="${2}"
+  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${BRANCHOUT_NAME} is already initialised"
+  git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
+  cd "${BRANCHOUT_NAME}"
+  
+  branchoutInit
+}
+
+function branchoutInitLocal() {
+  test -d .git || usage "$(pwd) is not a git repository, try git init first"
+  branchoutInit
+}
+
+function branchoutDefaultFiles() {
+   BRANCHOUT_FILE=Branchoutfile
+   BRANCHOUT_PROJECTS=Branchoutprojects
+   touch Branchoutfile
+   test -f Branchoutprojects || touch Branchoutprojects
+ }
+
+function branchoutInit() {
+  if ! branchoutFiles "${PWD}"; then
+    branchoutDefaultFiles
+  fi
+
+  # shellcheck source=examples/Branchoutfile
+  source "${BRANCHOUT_FILE}"  
+  
+  if test -z "${BRANCHOUT_NAME}"; then
+    branchout_init_name
+    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a ${BRANCHOUT_FILE}
+  fi
+  
+  test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
+
+  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
+    branchout_init_baseurl
+    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a ${BRANCHOUT_FILE}
+  fi
+  
+}
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-init [git-url] [relocation]
+  
+  "
+  
+  exit 1
+}
+
+function main() {
+  test $# -gt 0 || usage
+  
+  BRANCHOUT_PATH="$(dirname "$0")"
+  
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  
+  if test -n "${1}"; then
+    branchoutInitFromUrl "${1}" "${2}"
+  else
+    branchoutInitLocal
+  fi
+}
+
+main "${@}"

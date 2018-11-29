@@ -1,277 +1,21 @@
 #!/bin/bash
+
 set -e
 
-function usage_branchout_project() {
-  echo "branchout project list|status|pull [project]
-  
-  status project-name
-      
-      Return the status of the given project, Not cloned, branch, rebasing
-  
-  pull project-name
-  
-      Attempt to pull the project, show the branch or error
-  
-  list [prefix]
-  
-      List all the projects with the given prefix
-  
-  "
-  
-  exit 1
+function branchout_status() {
+  test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
+  exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" status {}
 }
 
-function projectList() {
-  if test $# -eq 0; then
-    sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
-  else
-    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
-  fi
+function branchout_pull() {
+  "${BRANCHOUT_PATH}/branchout-group" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-group" pull {}
+  exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" pull {}
 }
 
-function projectListWithGroups() {
-  sort <(cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
-}
-
-function projectContextStatus() {
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
-     
-     projectBranch=$(git rev-parse --abbrev-ref HEAD)
-     if test "${projectBranch}" = "master"; then
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C${projectBranch}\\033[0m"
-     elif test "${projectBranch}" = "HEAD"; then
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
-     else
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
-     fi
-   else
-     echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
-   fi
-}
-
-function projectUpdateError() {
-  projectBranch=$(git rev-parse --abbrev-ref HEAD)
-  if test "${projectBranch}" = "HEAD"; then
-    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
-  else
-    echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m" 
-  fi
-}
-
-function projectUpdate() {
-  cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
-  if git pull --rebase origin > /dev/null 2>&1; then
-    projectContextStatus "${projectName}" "Pulled  "
-  else
-    projectUpdateError "${projectName}" "Failed  "
-  fi
-}
-
-function projectClone() {
-  test -d "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || branchout_group pull "${projectGroup}"
-  cd "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || usage_branchout_project "Project group ${projectGroup} directory not found"
-  echo -e "\\033[0mCloning \\033[92m${projectContext}\\033[0m"
-  RESULT=$(git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" 2>&1)
-  if test $? -eq 0; then
-    projectContextStatus "${projectName}" "Pulled  "
-  else
-    echo -e "\\033[0mCloning failed: \\033[31m${projectContext}\\n${RESULT}\\033[0m"
-  fi
-}
-
-function projectContext() {
-  projectName=$(branchout_group deriveProject "${1}")
-  projectGroup=$(branchout_group derive "${1}")
-  
-  if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
-    projectContext="${projectName}"
-  else
-    projectContext="${projectGroup}/${projectName}"
-  fi
-}
-
-function projectStatus() {
-   projectContext  "${1}"
-   projectContextStatus "${1}" "${2}"
-}
-
-function projectPull() {
-  projectContext "${1}"
-  
-  gitProject="${1}"
-  if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}/.git"; then
-    projectUpdate 
-  else
-    projectClone 
-  fi
-}
-
-function branchout_project() {
-  case "${1}" in
-    list)
-      if test "${2}" = "--grouped"; then
-        projectListWithGroups
-      else
-        projectList "${2}"
-      fi
-      ;;
-    status)
-      test -n "${2}" || usage_branchout_project "Must provide project"
-      projectStatus "${2}"
-      ;;
-    pull)
-      test -n "${2}" || usage_branchout_project "Must provide project"
-      projectPull "${2}"
-      ;;
-    *)
-      usage_branchout_project
-  esac
-}
-
-function usage_branchout_group() {
-  echo "branchout group derive [project]
-  
-  status 
-      
-      Return the status of the given group, Not cloned, branch, rebasing
-  
-  pull group
-  
-      Attempt to pull the group, show the branch or error
-  
-  list
-  
-      List all the groups
-      
-  STDIN
-  
-      Derive the group for all the projects piped in
-  
-  "
-  
-  exit 1
-}
-
-function branchoutGroupDeriveStdin() {
-  # STDIN is always derived
-  while read -r each; do
-    branchoutGroupDerive "${each}"
-  done
-}
-
-function branchoutGroupPull() {
-  projectGroup="${1}"
-  if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
-    branchoutGroupUpdate
-  else
-    branchoutGroupClone
-  fi
-}
-
-function groupUpdateError() {
-  projectBranch=$(git rev-parse --abbrev-ref HEAD)
-  if test "${projectBranch}" = "HEAD"; then
-    echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
-  else
-    echo -e "\\033[0m${2}\\033[31m${projectGroup}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m" 
-  fi
-}
-
-function branchoutGroupUpdate() {
-  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
-  if test ! -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/.git"; then
-     echo -e "\\033[0mNothing ${projectGroup}\\033[70D\\033[70C\\033[35mNot a repository\\033[0m"
-   elif git pull --rebase origin > /dev/null 2>&1; then
-    groupStatus "${projectGroup}" "Pulled  "
-  else
-    groupUpdateError "${projectGroup}" "Failed  "
-  fi
-}
-
-function branchoutGroupClone() {
-  test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage_branchout_group "Trying to clone a group that already exists"
-  echo -e "\\033[0mCloning \\033[92m${projectGroup}\\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${BRANCHOUT_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
-    groupStatus "${projectGroup}" "Pulled  "
-  else
-    echo -e "\\033[0mCloning failed: \\033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\\033[0m"
-    echo -e "\\033[0mJust using plain directory \\033[32m${projectGroup}\\033[0m"
-    mkdir "${BRANCHOUT_DIRECTORY}/${projectGroup}"
-  fi
-}
-
-function branchoutGroups() {
-  branchout_project list "${1}" | branchout_group derive --stdin | sort | uniq
-}
-
-function branchoutGroupDerive() {
-  if test "${1#*-}" = "maven-plugin"; then
-    echo "plugins"
-    
-  elif test -z "${BRANCHOUT_PREFIX}"; then
-    echo "${1%%-*}"
-    
-  else
-    noPrefix="${1#${BRANCHOUT_PREFIX}-}"
-    echo "${noPrefix%%-*}"
-  fi
-
-}
-
-function groupStatus() {
-   projectGroup="${1}"
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage_branchout_group "Failed to enter group directory"
-     
-     projectBranch=$(git rev-parse --abbrev-ref HEAD)
-     if test "${projectBranch}" = "master"; then
-       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C${projectBranch}\\033[0m"
-     elif test "${projectBranch}" = "HEAD"; then
-       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
-     else
-       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
-     fi
-     cd "${BRANCHOUT_DIRECTORY}"
-   else
-     echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
-   fi
-}
-
-
-function branchoutProjectDerive() {
-  echo "${1}"
-}
-
-function branchout_group() {
-  case $1 in
-    derive) 
-      if test "${2}" = "--stdin"; then
-        branchoutGroupDeriveStdin
-      else
-        branchoutGroupDerive "${2}"
-      fi
-      ;;
-    deriveProject) 
-      branchoutProjectDerive "${2}"
-      ;;
-    pull)
-      test -n "${2}" || usage_branchout_group "Must provide group"
-      if test "${BRANCHOUT_NAME}" != "${2}"; then
-        branchoutGroupPull "${2}"
-      fi
-      ;;
-    list)
-      branchoutGroups "${2}"
-      ;;
-    status)
-      branchoutGroupStatus "${2}"
-      ;;
-
-    *)
-      usage_branchout_project
-      ;;
-  esac
+function branchout_add() {
+  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq | tee "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" | grep -C 5 "${1}"
+  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  exec "${BRANCHOUT_PATH}/branchout status" "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function usage() {
@@ -294,175 +38,13 @@ function usage() {
   exit 1
 }
 
-# Check if the give directory contains the branchout files
-function branchoutFiles() {
-  if test -f "${1}/Branchoutfile"; then
-    BRANCHOUT_FILE=Branchoutfile
-    BRANCHOUT_PROJECTS=Branchoutprojects
-    return 0
-  fi
-  
-  if test -f "${1}/.branchout"; then
-    BRANCHOUT_FILE=.branchout
-    BRANCHOUT_PROJECTS=.projects
-    return 0
-  fi
-  
-  return 1
-}
-
-function branchoutDirectory() {
-  BRANCHOUT_DIRECTORY="${PWD}"
-  while test "${BRANCHOUT_DIRECTORY}" != '/'; do
-    if branchoutFiles "${BRANCHOUT_DIRECTORY}"; then
-      export BRANCHOUT_DIRECTORY
-      return 0
-    fi
-    BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
-  done
-  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
-}
-
-function branchoutConfiguration() {
-  BRANCHOUT_PROJECTS_DIRECTORY=projects
-  # shellcheck source=examples/branchoutrc
-  test -f ~/.config/branchoutrc && source ~/.config/branchoutrc
-  export BRANCHOUT_PROJECTS_DIRECTORY
-}
-
-function loadBranchout() {
-  test -n "${BRANCHOUT_LOADED}" && return 0
-  
-  branchoutDirectory
-  
-  # shellcheck source=examples/Branchoutfile
-  source "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
-  
-  
-  test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
-  export BRANCHOUT_NAME
-  export BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
-
-  test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in ${BRANCHOUT_FILE}, run branchout init"
-  export BRANCHOUT_GIT_BASEURL
-  export BRANCHOUT_PREFIX
-  
-  test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
-  test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
-  
-  export BRANCHOUT_LOADED="true"
-}
-
-function branchoutProjects() {
-  cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
-}
-
-
-function branchoutProjectStatus() {
-  if test -d "$1"; then
-    echo "$1 master"
-  else
-    echo "$1 Not cloned"
-  fi
-}
-
-function branchout_init_name() {
-  DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
-  printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
-  read -r BRANCHOUT_NAME
-  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")" && echo
-  BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
-}
-
-function branchout_init_baseurl()  {
-  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| sed -e 's,/[^/]*$,,')"  || true
-  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
-    printf "Enter git baseurl: "
-    read -r BRANCHOUT_GIT_BASEURL || true
-    test -z "${BRANCHOUT_GIT_BASEURL}" && usage "git baseurl is not defined"
-  fi
-  
-  return 0
-}
-
-function branchoutInitFromUrl() {
-  test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}" || mkdir -p "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
-  cd "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
-  BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
-  test -n "${2}" && BRANCHOUT_NAME="${2}"
-  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${BRANCHOUT_NAME} is already initialised"
-  git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
-  cd "${BRANCHOUT_NAME}"
-  
-  branchoutInit
-}
-
-function branchoutInitLocal() {
-  test -d .git || usage "$(pwd) is not a git repository, try git init first"
-  branchoutInit
-}
-
-function branchoutDefaultFiles() {
-   BRANCHOUT_FILE=Branchoutfile
-   BRANCHOUT_PROJECTS=Branchoutprojects
-   touch Branchoutfile
-   test -f Branchoutprojects || touch Branchoutprojects
- }
-
-function branchoutInit() {
-  if ! branchoutFiles "${PWD}"; then
-    branchoutDefaultFiles
-  fi
-
-  # shellcheck source=examples/Branchoutfile
-  source "${BRANCHOUT_FILE}"  
-  
-  if test -z "${BRANCHOUT_NAME}"; then
-    branchout_init_name
-    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a ${BRANCHOUT_FILE}
-  fi
-  
-  test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
-
-  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
-    branchout_init_baseurl
-    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a ${BRANCHOUT_FILE}
-  fi
-  
-}
-
-function branchout_init() {
-  if test -n "${1}"; then
-    branchoutInitFromUrl "${1}" "${2}"
-  else
-    branchoutInitLocal
-  fi
-}
-
-function branchout_status() {
-  test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
-  branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${0}" project status {}
-}
-
-function branchout_pull() {
-  branchout_group list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${0}" group pull {}
-  branchout_project list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${0}" project pull {}
-}
-
-function branchout_add() {
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
-  branchout_status "$(branchoutGroupDerive "$1")"
-}
-
-function branchout_version() {
-  echo "branchout-1.11"
-}
-
 function main() {
   test $# -gt 0 || usage
   
-  branchoutConfiguration
+  BRANCHOUT_PATH="$(dirname "$0")"
+  
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
   
   case "${1}" in
     help)
@@ -470,19 +52,25 @@ function main() {
       ;;
     init)
       shift
-      branchout_init "${@}"
+      exec "${BRANCHOUT_PATH}/branchout-init" "${@}"
       ;;
     version)
       branchout_version
       ;;
     *)
-      loadBranchout
+       # shellcheck source=branchout-environment
+      . "${BRANCHOUT_PATH}/branchout-environment"
       branchoutModule="${1}"
       shift
       if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
-        eval branchout_"${branchoutModule}" "${@}"
+         eval branchout_"${branchoutModule}" "${@}"
+        
+      elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
+        exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
+        
       else
         eval branchout_pull "${branchoutModule}" "${@}"
+
       fi
       ;;
   esac
