@@ -1,0 +1,156 @@
+#!/bin/bash
+
+set -e
+
+function branchoutGroupDeriveStdin() {
+  # STDIN is always derived
+  while read -r each; do
+    branchoutGroupDerive "${each}"
+  done
+}
+
+function branchoutGroupPull() {
+  projectGroup="${1}"
+  if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
+    branchoutGroupUpdate
+  else
+    branchoutGroupClone
+  fi
+}
+
+function groupUpdateError() {
+  projectBranch=$(git rev-parse --abbrev-ref HEAD)
+  if test "${projectBranch}" = "HEAD"; then
+    echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+  else
+    echo -e "\\033[0m${2}\\033[31m${projectGroup}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m" 
+  fi
+}
+
+function branchoutGroupUpdate() {
+  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
+  if test ! -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/.git"; then
+     echo -e "\\033[0mNothing ${projectGroup}\\033[70D\\033[70C\\033[35mNot a repository\\033[0m"
+   elif git pull --rebase origin > /dev/null 2>&1; then
+    groupStatus "${projectGroup}" "Pulled  "
+  else
+    groupUpdateError "${projectGroup}" "Failed  "
+  fi
+}
+
+function branchoutGroupClone() {
+  test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage "Trying to clone a group that already exists"
+  echo -e "\\033[0mCloning \\033[92m${projectGroup}\\033[0m"
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${BRANCHOUT_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
+    groupStatus "${projectGroup}" "Pulled  "
+  else
+    echo -e "\\033[0mCloning failed: \\033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\\033[0m"
+    echo -e "\\033[0mJust using plain directory \\033[32m${projectGroup}\\033[0m"
+    mkdir "${BRANCHOUT_DIRECTORY}/${projectGroup}"
+  fi
+}
+
+function branchoutGroups() {
+  "${BRANCHOUT_PATH}/branchout-project" list "${1}" | "${BRANCHOUT_PATH}/branchout-group" derive --stdin | sort | uniq
+}
+
+function branchoutGroupDerive() {
+  if test "${1#*-}" = "maven-plugin"; then
+    echo "plugins"
+    
+  elif test -z "${BRANCHOUT_PREFIX}"; then
+    echo "${1%%-*}"
+    
+  else
+    noPrefix="${1#${BRANCHOUT_PREFIX}-}"
+    echo "${noPrefix%%-*}"
+  fi
+
+}
+
+function groupStatus() {
+   projectGroup="${1}"
+   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
+     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
+     
+     projectBranch=$(git rev-parse --abbrev-ref HEAD)
+     if test "${projectBranch}" = "master"; then
+       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C${projectBranch}\\033[0m"
+     elif test "${projectBranch}" = "HEAD"; then
+       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+     else
+       echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
+     fi
+     cd "${BRANCHOUT_DIRECTORY}"
+   else
+     echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
+   fi
+}
+
+
+function branchoutProjectDerive() {
+  echo "${1}"
+}
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-project list|status|pull [project]
+  
+  status project-name
+      
+      Return the status of the given project, Not cloned, branch, rebasing
+  
+  pull project-name
+  
+      Attempt to pull the project, show the branch or error
+  
+  list [prefix]
+  
+      List all the projects with the given prefix
+  
+  "
+  
+  exit 1
+}
+
+function main() {
+  test $# -gt 0 || usage
+  
+  BRANCHOUT_PATH="$(dirname "$0")"
+  
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+  
+   case $1 in
+    derive) 
+      if test "${2}" = "--stdin"; then
+        branchoutGroupDeriveStdin
+      else
+        branchoutGroupDerive "${2}"
+      fi
+      ;;
+    deriveProject) 
+      branchoutProjectDerive "${2}"
+      ;;
+    pull)
+      test -n "${2}" || usage "Must provide group"
+      if test "${BRANCHOUT_NAME}" != "${2}"; then
+        branchoutGroupPull "${2}"
+      fi
+      ;;
+    list)
+      branchoutGroups "${2}"
+      ;;
+    status)
+      branchoutGroupStatus "${2}"
+      ;;
+
+    *)
+      usage
+      ;;
+  esac
+}
+
+main "${@}"

@@ -1,5 +1,10 @@
 load helper
 
+@test "branchout group is shellcheck compliant with no exceptions" {
+  run shellcheck -x branchout-group
+  assert_success
+}
+
 @test "group works for single letter" {
   example group-is-a-single-letter
   run branchout group derive a-b-c

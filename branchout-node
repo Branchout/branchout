@@ -1,6 +1,5 @@
 #!/bin/bash
 set -x
-
 PROJECT_DIRECTORY=`pwd`
 while test ! -f ${PROJECT_DIRECTORY}/Branchoutfile; do
   PROJECT_DIRECTORY=`dirname ${PROJECT_DIRECTORY}`
