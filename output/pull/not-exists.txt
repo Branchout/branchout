@@ -1,0 +1,4 @@
+\033[0mCloning \033[92mfrog\033[0m
+\033[0mPulled  frog\033[70D\033[70Cmaster\033[0m
+\033[0mCloning \033[92mfrog/frog-lamed\033[0m
+\033[0mCloning failed: \033[31mfrog/frog-lamed\033[0m  \033[70D\033[70C\033[1m fatal: 'BASE_DIRECTORY/target/repositories/frog-lamed' does not appear to be a git repository\033[0m
