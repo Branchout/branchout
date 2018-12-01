@@ -111,3 +111,8 @@ frog-gemel"
   assert_success ""
 }
 
+@test "project that does not exist" {
+  example not-exists
+  run branchout project pull frog-lamed
+  assert_success_file pull/not-exists
+}
