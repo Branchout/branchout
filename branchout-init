@@ -94,8 +94,6 @@ function usage() {
 }
 
 function main() {
-  test $# -gt 0 || usage
-  
   BRANCHOUT_PATH="$(dirname "$0")"
   
   # shellcheck source=branchout-configuration
@@ -106,6 +104,9 @@ function main() {
   else
     branchoutInitLocal
   fi
+  
+  export BRANCHOUT_PROJECTS
+  export BRANCHOUT_FILE
 }
 
 main "${@}"

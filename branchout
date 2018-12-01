@@ -13,9 +13,9 @@ function branchout_pull() {
 }
 
 function branchout_add() {
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq | tee "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" | grep -C 5 "${1}"
+  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
-  exec "${BRANCHOUT_PATH}/branchout status" "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
+  exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function usage() {

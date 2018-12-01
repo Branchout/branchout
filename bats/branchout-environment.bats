@@ -6,22 +6,6 @@ load helper
 }
 
 
-@test "invoke version" {
-  run branchout version
-  assert_success
-}
-
-@test "invoking branchout prints usage" {
-  run branchout
-  assert_error "branchout: a tool for managing multi-repo projects"
-}
-
-@test "no Branchoutfile is error" {
-  cd /tmp
-  run branchout status
-  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
-}
-
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
   mkdir -p target/missing-name
   cd target/missing-name
@@ -68,33 +52,5 @@ load helper
   echo 'prefix-frog-aleph' > Branchoutprojects
   run branchout status
   assert_success_file status/no-clone-prefix
-}
-
-@test "branchout can pull all" {
-  example pull-all
-  run branchout project status frog-aleph
-  assert_success_file all/frog-aleph-before-pull
-  run branchout pull
-  assert_success 
-  run branchout project status frog-aleph
-  assert_success_file all/frog-aleph
-}
-
-@test "branchout add" {
-  mkdir -p target/tests/add
-  cd target/tests/add
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout init <<< "brname
-gitty"
-  assert_success
-  run branchout status
-  assert_error "No projects to show, try branchout add <project-name>"
-  run branchout add frog-aleph
-  assert_success_file status/no-clone
-  run branchout status
-  assert_success_file status/no-clone
-  run branchout add frog-beta
-  assert_success_file_sort status/two-no-clone
 }
 
