@@ -16,7 +16,7 @@ function projectListWithGroups() {
 
 function projectContextStatus() {
    if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
+     cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
      
      projectBranch=$(git rev-parse --abbrev-ref HEAD)
      if test "${projectBranch}" = "master"; then
@@ -87,6 +87,19 @@ function projectPull() {
   fi
 }
 
+function projectContextCommand() {
+  if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
+    cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
+    ${1}
+  fi
+}   
+   
+
+function projectCommand() {
+   projectContext  "${1}"
+   projectContextCommand "${2#* }"
+}
+
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout-project list|status|pull [project]
@@ -127,14 +140,23 @@ function main() {
         projectList "${2}"
       fi
       ;;
+      
     status)
       test -n "${2}" || usage "Must provide project"
       projectStatus "${2}"
       ;;
+      
     pull)
       test -n "${2}" || usage "Must provide project"
       projectPull "${2}"
       ;;
+      
+    command)
+      test -n "${2}" || usage "Must provide project"
+      test -n "${3}" || usage "Must provide command"
+      projectCommand "${2}" "${3}"
+      ;;
+      
     *)
       usage
   esac

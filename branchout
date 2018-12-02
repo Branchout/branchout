@@ -12,6 +12,10 @@ function branchout_pull() {
   exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" pull {}
 }
 
+function branchout_foreach() {
+  exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" command {} "${*}"
+}
+
 function branchout_add() {
   sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"

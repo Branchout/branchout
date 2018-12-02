@@ -17,3 +17,11 @@ test: clean canned repositories
 
 travis: clean canned repositories
 	bats --tap bats
+
+watch:
+	while true; do \
+		make test; \
+		inotifywait -qre close_write . bats; \
+	done
+
+
