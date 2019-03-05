@@ -1,13 +1,19 @@
 #!/bin/bash
-set -x
 
+bail() {
+  echo "$*"
+  exit 127
+}
+ 
 PROJECT_DIRECTORY=`pwd`
-while test ! -f ${PROJECT_DIRECTORY}/Branchoutfile; do
+while test ! -f ${PROJECT_DIRECTORY}/Branchoutfile -a ! -f ${PROJECT_DIRECTORY}/.branchout; do
   PROJECT_DIRECTORY=`dirname ${PROJECT_DIRECTORY}`
   test "${PROJECT_DIRECTORY}" = '/' && bail "Branchoutfile not found in parent directories"
 done
 
-source ${PROJECT_DIRECTORY}/Branchoutfile
+test -f ${PROJECT_DIRECTORY}/Branchoutfile && source ${PROJECT_DIRECTORY}/Branchoutfile
+test -f ${PROJECT_DIRECTORY}/.branchout && source ${PROJECT_DIRECTORY}/.branchout
+
 
 test -n "${BRANCHOUT_NAME}" || BRANCHOUT_NAME="${FORCE_NAME}"
 export BRANCHOUT_HOME=~/branchout/${BRANCHOUT_NAME}
@@ -23,4 +29,3 @@ echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_
 test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
 
 exec mvn $MAVEN_OPTS $*
-
