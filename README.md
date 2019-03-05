@@ -1,6 +1,6 @@
 # branchout
 
-A tool for managing organisations with many repositories in a structured way, commonly called a Project Monorepo
+A tool for managing organisations with many repositories in a structured way, commonly called a Projected Monorepo
 
 * consistent naming
 * fast updates
