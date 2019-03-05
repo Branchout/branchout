@@ -18,6 +18,12 @@ function branchout_add() {
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
+function branchout_clone() {
+  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  exec "${BRANCHOUT_PATH}/branchout" pull "$1"
+}
+
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
