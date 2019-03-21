@@ -15,5 +15,14 @@ repositories:
 test: clean canned repositories
 	bats --pretty bats
 
+test-branchout: clean canned repositories
+	bats --pretty bats/branchout.bats
+
+test-branchout-init: clean canned repositories
+	bats --pretty bats/branchout-init.bats
+
+test-group: clean canned repositories
+	bats --pretty bats/branchout-group.bats
+
 travis: clean canned repositories
 	bats --tap bats
