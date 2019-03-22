@@ -82,6 +82,35 @@ gitty"
   assert_success_file status/no-clone
 }
 
+@test "branchout init from url then clone projects" {
+  HOME=${BUILD_DIRECTORY}
+  
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base clone
+  assert_success "Cloning into 'clone'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+
+  cd target/projects/clone
+  run branchout status
+  assert_success_file_sort init/from-url
+  run branchout clone toad-aleph
+  assert_success_file clone/clone-one
+}
+
+@test "branchout init from url then clone projects with group folder" {
+  HOME=${BUILD_DIRECTORY}
+  
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base clone-folder
+  assert_success "Cloning into 'clone-folder'...
+BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+
+  cd target/projects/clone-folder
+  run branchout status
+  assert_success_file_sort init/from-url
+  mkdir toad
+  run branchout clone toad-aleph
+  assert_success_file status/clone-one-with-group-folder
+}
+
 @test "branchout init from url with flat structure" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/frog
