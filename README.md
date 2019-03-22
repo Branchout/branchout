@@ -60,6 +60,9 @@ You can now add projects
 
 They will show as not cloned until you ```branchout pull```
 
+If you want to clone when you add 
+```branchout clone <project-name>```
+
 ## Grokking the code and contributing
 
 

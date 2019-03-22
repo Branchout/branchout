@@ -75,6 +75,20 @@ toad"
   assert_success_file pull/rabbit-clone 
 }
 
+@test "group project pull where plain directory exists" {
+  example branchout-a-group-that-exists
+  mkdir lion
+  run branchout lion
+  assert_success_file pull/lion-already-exists
+}
+
+@test "group pull where plain directory exists" {
+  example branchout-group-that-exists
+  mkdir lion
+  run branchout group pull lion
+  assert_success_file pull/lion-is-not-a-repository
+}
+
 @test "group pull then update" {
   example branchout-a-group-then-update
   run branchout rabbit

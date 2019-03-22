@@ -86,9 +86,21 @@ gitty"
   assert_error "No projects to show, try branchout add <project-name>"
   run branchout add frog-aleph
   assert_success_file status/no-clone
-  run branchout status
+  run branchout status frog-aleph
   assert_success_file status/no-clone
   run branchout add frog-beta
   assert_success_file_sort status/two-no-clone
+}
+
+@test "branchout clone" {
+  example clone
+  run branchout status rabbit-aleph
+  assert_success_file all/rabbit-aleph-before-pull
+  run branchout clone toad-aleph
+  assert_success_file clone/clone-one
+  run branchout status toad-aleph
+  assert_success_file status/clone-one
+  run branchout clone frog-aleph
+  assert_success_file_sort clone/clone-two
 }
 

@@ -1,0 +1,3 @@
+\033[0mNothing lion\033[70D\033[70C\033[35mNot a repository\033[0m
+\033[0mCloning \033[92mlion/lion-aleph\033[0m
+\033[0mPulled  lion/lion-aleph\033[70D\033[70Cmaster\033[0m
