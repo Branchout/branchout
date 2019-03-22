@@ -60,6 +60,9 @@ function main() {
     help)
       usage
       ;;
+    version)
+      readlink  $(which branchout) | sed -e 's,.*branchout/\(.*\)/bin/branchout,branchout-\1,'
+      ;;
     init)
       shift
       exec "${BRANCHOUT_PATH}/branchout-init" "${@}"
