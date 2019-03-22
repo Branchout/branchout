@@ -24,6 +24,10 @@ function branchout_clone() {
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
 }
 
+function branchout_version() {
+  readlink "$(command -v branchout)" | sed -e 's,.*branchout/\(.*\)/bin/branchout,branchout-\1,'
+}
+
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
