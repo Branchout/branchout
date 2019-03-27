@@ -1,31 +1,87 @@
 #!/bin/bash
 
-bail() {
-  echo "$*"
-  exit 127
+
+function runMaven() {
+  echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_AUTHOR_EMAIL"
+  
+  MAVEN_OPTS="-s ${BRANCHOUT_HOME}/maven/settings.xml $MAVEN_OPTS"
+  test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
+  exec mvn "$MAVEN_OPTS" "$*"
 }
- 
-PROJECT_DIRECTORY=`pwd`
-while test ! -f ${PROJECT_DIRECTORY}/Branchoutfile -a ! -f ${PROJECT_DIRECTORY}/.branchout; do
-  PROJECT_DIRECTORY=`dirname ${PROJECT_DIRECTORY}`
-  test "${PROJECT_DIRECTORY}" = '/' && bail "Branchoutfile not found in parent directories"
-done
 
-test -f ${PROJECT_DIRECTORY}/Branchoutfile && source ${PROJECT_DIRECTORY}/Branchoutfile
-test -f ${PROJECT_DIRECTORY}/.branchout && source ${PROJECT_DIRECTORY}/.branchout
+function mavenSettings() {
+  echo "Maven settings not implemented"
+}
 
+function mavenReactor() {
+  echo "Maven reactor not implemented"
+}
 
-test -n "${BRANCHOUT_NAME}" || BRANCHOUT_NAME="${FORCE_NAME}"
-export BRANCHOUT_HOME=~/branchout/${BRANCHOUT_NAME}
+function expandMavenCommands() {
+  echo "${*}"
+}
 
-test -f ${BRANCHOUT_HOME}/maven/settings.xml || exit 127
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-maven settings|reactor|<alias>|<maven command>
+  
+  settings
+      
+      Generate the maven settings file
+  
+  reactor
+  
+      Generate the reactor.xml for the current directory
+  
+  alias
+  
+      cv     clean verify
+      cvi    clean verify -Pwebapp-interactive
+  
+  maven command
+      
+      clean
+      generate-resources
+      process-resouces
+      compile
+      process-classes
+      test
+      prepare-package
+      package
+      integration-test
+      verify
+  
+  "
+  
+  exit 1
+}
 
-MAVEN_SETTINGS=${BRANCHOUT_HOME}/maven
+function main() {
+  test $# -gt 0 || usage
+  
+  BRANCHOUT_PATH="$(dirname "$0")"
+  
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
 
-MAVEN_OPTS="-s $MAVEN_SETTINGS/settings.xml $MAVEN_OPTS"
+        
+  case "${1}" in
+    reactor)
+      mavenReactor "${*}"
+      ;;
+    settings)
+      mavenSettings "${*}"
+      ;;
+    pull)
+      test -n "${2}" || usage "Must provide project"
+      projectPull "${2}"
+      ;;
+    *)
+      test -f "${BRANCHOUT_HOME}/maven/settings.xml" || mavenSettings
+      runMaven expandMavenCommands "${*}"
+  esac
+}
 
-echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_AUTHOR_EMAIL"
-
-test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
-
-exec mvn $MAVEN_OPTS $*
+main "${@}"
