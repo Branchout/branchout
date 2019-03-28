@@ -2,6 +2,22 @@
 
 set -e
 
+function branchout_get() {
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+  grep "^${1}=" "${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+}
+
+function branchout_set() {
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+  printf "Enter ${1} [%s]: " "${2}"
+  read -r VALUE
+  test -z "${VALUE}" && VALUE="${2}"
+  echo "${1}=\"${VALUE}\"" >> ${BRANCHOUT_FILE}
+  export "${1}=${VALUE}"
+}
+
 function branchout_status() {
   test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
   exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" status {}
@@ -60,7 +76,7 @@ function main() {
     help)
       usage
       ;;
-    init)
+    init*)
       shift
       exec "${BRANCHOUT_PATH}/branchout-init" "${@}"
       ;;

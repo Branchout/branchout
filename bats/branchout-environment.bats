@@ -6,7 +6,7 @@ load helper
 }
 
 
-@test "branchout configuration missing BRANCHOUT_NAME fails" {
+@test "branchout environment configuration missing BRANCHOUT_NAME fails" {
   mkdir -p target/missing-name
   cd target/missing-name
   touch Branchoutfile
@@ -14,7 +14,7 @@ load helper
   assert_error "Branchout name not defined in Branchoutfile, run branchout init" 
 }
 
-@test "branchout configuration missing BRANCHOUT_GIT_BASEURL fails" {
+@test "branchout environment configuration missing BRANCHOUT_GIT_BASEURL fails" {
   mkdir -p target/missing-giturl target/branchout/missing-giturl 
   cd target/missing-giturl
   echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile 
@@ -22,7 +22,7 @@ load helper
   assert_error "Git base url is not defined in Branchoutfile, run branchout init" 
 }
 
-@test "branchout home is missing fails" {
+@test "branchout environment home is missing fails" {
   mkdir -p target/missing-branchout-home 
   HOME=..
   cd target/missing-branchout-home
@@ -32,7 +32,7 @@ load helper
   assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
 }
 
-@test "branchout missing projects prompts" {
+@test "branchout environment missing projects prompts" {
   mkdir -p target/no-projects target/branchout/no-projects 
   cd target/no-projects
   HOME=..
@@ -42,7 +42,7 @@ load helper
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
-@test "branchout prefix is removed" {
+@test "branchout environment prefix is removed" {
   mkdir -p target/prefix target/branchout/prefix 
   cd target/prefix
   HOME=..
