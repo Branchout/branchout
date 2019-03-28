@@ -102,7 +102,7 @@ example() {
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/branchout/${1}" 
   cd "target/tests/${1}"
-  export HOME=../
+  export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile 
   echo "frog-aleph
