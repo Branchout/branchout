@@ -61,4 +61,7 @@ export BRANCHOUT_PREFIX
 test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
 test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
+export BRANCHOUT_MAVEN_REPOSITORY
+export BRANCHOUT_DOCKER_REGISTRY
+
 export BRANCHOUT_LOADED="true"

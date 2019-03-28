@@ -59,11 +59,11 @@ function mavenSettings() {
   if test -z "${BRANCHOUT_MAVEN_REPOSITORY}"; then
     readValue "your maven repository" "BRANCHOUT_MAVEN_REPOSITORY"
     [[ ${BRANCHOUT_MAVEN_REPOSITORY} =~ ^https:// ]] || BRANCHOUT_MAVEN_REPOSITORY="https://${BRANCHOUT_MAVEN_REPOSITORY}"
-    branchout set "BRANCHOUT_MAVEN_REPOSITORY" "${BRANCHOUT_MAVEN_REPOSITORY}"
+    "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_MAVEN_REPOSITORY" "${BRANCHOUT_MAVEN_REPOSITORY}"
   fi
   if test -z "${BRANCHOUT_DOCKER_REGISTRY}"; then
     readValue "your docker registry" "BRANCHOUT_DOCKER_REGISTRY"
-    branchout set "BRANCHOUT_DOCKER_REGISTRY" "${BRANCHOUT_DOCKER_REGISTRY}"
+    "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_DOCKER_REGISTRY" "${BRANCHOUT_DOCKER_REGISTRY}"
   fi
   readValue "your artifact repository username" "REPOSITORY_USER"
   readSecret "your artifact repository secret" "REPOSITORY_API_KEY"
