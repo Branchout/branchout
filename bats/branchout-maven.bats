@@ -5,7 +5,19 @@ load helper
   assert_success
 }
 
-@test "invoking branchout prints usage" {
+@test "branchout-maven prints usage" {
   run branchout maven
   assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
+}
+
+@test "maven clean - no settings asks for details" {
+  example maven-clean
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/settings
 }
