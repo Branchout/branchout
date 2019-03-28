@@ -19,6 +19,21 @@ function branchoutFiles() {
   return 1
 }
 
+function branchout_init_getvalue() {
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+  grep "^${1}=" "${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+}
+
+function branchout_init_setvalue() {
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+  printf "Enter ${1} [%s]: " "${2}"
+  read -r VALUE
+  test -z "${VALUE}" && VALUE="${2}"
+  echo "${1}=\"${VALUE}\"" >> ${BRANCHOUT_FILE}
+}
+
 function branchout_init_name() {
   DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
   printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
@@ -99,8 +114,15 @@ function main() {
   # shellcheck source=branchout-configuration
   . "${BRANCHOUT_PATH}/branchout-configuration"
   
-  if test -n "${1}"; then
+  if test "${1}" = "get"; then
+    branchout_init_getvalue "${2}"
+    
+  elif test "${1}" = "set"; then
+    branchout_init_setvalue "${2}" "${3}"
+
+  elif test -n "${1}"; then
     branchoutInitFromUrl "${1}" "${2}"
+    
   else
     branchoutInitLocal
   fi
