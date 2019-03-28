@@ -1,0 +1,1 @@
+-s ..//branchout/maven-commands/maven/settings.xml clean verify -Pwebapp-interactive clean verify help:effective-pom dependency:tree versions:update-parent versions:display-plugin-updates

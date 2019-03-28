@@ -110,31 +110,37 @@ gitty"
   assert_success "file://${BUILD_DIRECTORY}/repositories"
 }
 
-@test "branchout setvalue with no default" {
-  example init-setvalue-nodefault
-  run branchout set BRANCHOUT_VALUE <<< "SAMESAME"
-  assert_success "Enter BRANCHOUT_VALUE []: "
-  run branchout get BRANCHOUT_VALUE
-  assert_success "SAMESAME"
-}
-
-@test "branchout setvalue with default" {
-  example init-setvalue-with-default
-  run branchout set BRANCHOUT_VALUE Example <<< ""
-  assert_success "Enter BRANCHOUT_VALUE [Example]: "
+@test "branchout setvalue" {
+  example init-setvalue
+  run branchout set BRANCHOUT_VALUE Example
+  assert_success
   run branchout get BRANCHOUT_VALUE
   assert_success "Example"
 }
 
-@test "branchout setvalue twice with no default" {
+@test "branchout setvalue twice" {
   example init-setvalue-twice
-  run branchout set BRANCHOUT_VALUE <<< "SAMESAME"
-  assert_success "Enter BRANCHOUT_VALUE []: "
+  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  assert_success 
   run branchout get BRANCHOUT_VALUE
   assert_success "SAMESAME"
-  run branchout set BRANCHOUT_VALUE2 <<< "SAMESAME2"
-  assert_success "Enter BRANCHOUT_VALUE2 []: "
+  run branchout set BRANCHOUT_VALUE "SAMESAME2"
+  assert_success
+  run branchout get BRANCHOUT_VALUE
+  assert_success "SAMESAME2"
+}
+
+@test "branchout setvalue many values" {
+  example init-setvalue-many
+  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  assert_success 
+  run branchout get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
+  run branchout set BRANCHOUT_VALUE2 "SAMESAME2"
+  assert_success
   run branchout get BRANCHOUT_VALUE2
   assert_success "SAMESAME2"
+  run branchout get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
 }
 

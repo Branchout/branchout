@@ -10,8 +10,8 @@ load helper
   assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
 }
 
-@test "maven clean - no settings asks for details" {
-  example maven-clean
+@test "branchout maven - ask for settings" {
+  example maven-settings
   run branchout maven clean <<< "https://maven.example.org/maven/branchout
 docker.example.org
 stickycode
@@ -20,4 +20,19 @@ sshsupersecret
   assert_success
   run branchout maven show 
   assert_success_file maven/settings
+}
+
+@test "branchout maven - expand commands" {
+  example maven-commands
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  assert_success
+  run branchout maven cv
+  assert_success_file maven/cv
+  
+  run branchout maven cv cvi pom tree par plu
+  assert_success_file maven/all-expansions
 }
