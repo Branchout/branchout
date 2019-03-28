@@ -35,8 +35,8 @@ function runMaven() {
     esac
   done
 
-  echo "mvn -f ${POM_FILE} -s ${BRANCHOUT_HOME}/maven/settings.xml ${expandedCommands[*]}"
-  exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_HOME}/maven/settings.xml" "${expandedCommands[*]}"
+  echo "mvn -f ${POM_FILE} -s ${BRANCHOUT_HOME}/maven/settings.xml ${expandedCommands[@]}"
+  exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_HOME}/maven/settings.xml" "${expandedCommands[@]}"
 }
 
 function readValue() {
