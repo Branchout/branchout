@@ -1,43 +1,42 @@
 #!/bin/bash
 
-declare -A mavenAliases=(
-  ['cv']='clean verify'
-  ['cvi']='-Pwebapp-interactive clean verify'
-  ['vi']='-Pwebapp-interactive verify'
-  ['hth']='-f head-to-head.xml clean verify'
-  ['hthi']='-f head-to-head.xml -Pwebapp-interactive clean verify'
-
-  # Release commands
-  ['tag']='-B validate release:prepare'
-  ['up']='release:perform'
-
-  # Project information commands
-  ['dep']='dependency:resolve'
-  ['src']='dependency:sources'
-  ['tree']='dependency:tree'
-  ['pom']='help:effective-pom'
-  ['set']='help:effective-settings'
-
-  # Project definition update commands
-  ['par']='versions:update-parent'
-  ['plu']='versions:display-plugin-updates'
-  ['update']='bounds:update'
-  ['upgrade']='bounds:upgrade'
-)
-
 function runMaven() {
   commands=("${@}")
+  declare -a expandedCommands
+  POM_FILE="pom.xml"
+  test -f reactor.xml && POM_FILE="reactor.xml"
+
   for each in ${!commands[*]}; do
-    if test -n "${mavenAliases[${commands[$each]}]}"; then
-      commands[$each]="${mavenAliases[${commands[$each]}]}"
-    fi
+    case "${commands[$each]}" in
+      cv)   expandedCommands+=('clean' 'verify');;
+      cvi)  expandedCommands+=('-Pwebapp-interactive' 'clean' 'verify');;
+      vi)   expandedCommands+=('-Pwebapp-interactive' 'verify');;
+      
+      hth)  expandedCommands+=('clean' 'verify'); POM_FILE="head-to-head.xml";;
+      hthi) expandedCommands+=('-Pwebapp-interactive' 'clean' 'verify'); POM_FILE="head-to-head.xml";;
+      
+      tag) expandedCommands+=('-B' 'validate' 'release:prepare');;
+      up) expandedCommands+=('release:perform');;
+      
+      # Project information commands
+      dep) expandedCommands+=('dependency:resolve');;
+      src) expandedCommands+=('dependency:sources');;
+      tree) expandedCommands+=('dependency:tree');;
+      pom) expandedCommands+=('help:effective-pom');;
+      set) expandedCommands+=('help:effective-settings');;
+      
+      # Project definition update commands
+      par) expandedCommands+=('versions:update-parent');;
+      plu) expandedCommands+=('versions:display-plugin-updates');;
+      update) expandedCommands+=('bounds:update');;
+      upgrade) expandedCommands+=('bounds:upgrade');;
+      
+      *)    expandedCommands+=("${commands[$each]}");;
+    esac
   done
-  
-  POM_FILE=""
-  test -f reactor.xml && POM_FILE="-f reactor.xml "
-  
-  echo "mvn ${POM_FILE}-s ${BRANCHOUT_HOME}/maven/settings.xml ${commands[*]}"
-  exec mvn "${POM_FILE}-s ${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
+
+  echo "mvn -f ${POM_FILE} -s ${BRANCHOUT_HOME}/maven/settings.xml ${expandedCommands[*]}"
+  exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_HOME}/maven/settings.xml" "${expandedCommands[*]}"
 }
 
 function readValue() {
@@ -158,7 +157,6 @@ function main() {
   . "${BRANCHOUT_PATH}/branchout-configuration"
   # shellcheck source=branchout-environment
   . "${BRANCHOUT_PATH}/branchout-environment"
-
         
   case "${1}" in
     version)

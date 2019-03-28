@@ -44,7 +44,26 @@ sshsupersecret
   assert_success
   run branchout maven cv
   assert_success_file maven/cv
-  
+}
+
+@test "branchout maven - expand commands many" {
+  example maven-commands-many
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
   run branchout maven cv cvi pom tree par plu
   assert_success_file maven/all-expansions
+}
+
+@test "branchout maven - expand commands head to head" {
+  example maven-commands-hth
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  run branchout maven hth
+  assert_success_file maven/hth
 }

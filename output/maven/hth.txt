@@ -1,0 +1,1 @@
+mvn -f head-to-head.xml -s ..//branchout/maven-commands-hth/maven/settings.xml clean verify
