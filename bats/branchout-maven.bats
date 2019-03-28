@@ -6,6 +6,7 @@ load helper
 }
 
 @test "branchout-maven prints usage" {
+  example maven-usage
   run branchout maven
   assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
 }
