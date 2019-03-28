@@ -1,21 +1,61 @@
 #!/bin/bash
 
+declare -A mavenAliases=(
+  ['cv']='clean verify'
+  ['cvi']='-Pwebapp-interactive clean verify'
+  ['vi']='-Pwebapp-interactive verify'
+  ['hth']='-f head-to-head.xml clean verify'
+  ['hthi']='-f head-to-head.xml -Pwebapp-interactive clean verify'
+
+  # Release commands
+  ['tag']='-B validate release:prepare'
+  ['up']='release:perform'
+
+  # Project information commands
+  ['dep']='dependency:resolve'
+  ['src']='dependency:sources'
+  ['tree']='dependency:tree'
+  ['pom']='help:effective-pom'
+  ['set']='help:effective-settings'
+
+  # Project definition update commands
+  ['par']='versions:update-parent'
+  ['plu']='versions:display-plugin-updates'
+  ['update']='bounds:update'
+  ['upgrade']='bounds:upgrade'
+)
 
 function runMaven() {
-  #echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as $GIT_AUTHOR_EMAIL"
-  set -x
-  MAVEN_OPTS="-s ${BRANCHOUT_HOME}/maven/settings.xml $MAVEN_OPTS"
-  test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
-  exec mvn "$MAVEN_OPTS" "$*"
+  commands=("${@}")
+  for each in ${!commands[*]}; do
+    if test -n "${mavenAliases[${commands[$each]}]}"; then
+      commands[$each]="${mavenAliases[${commands[$each]}]}"
+    fi
+  done
+
+  test -f reactor.xml && exec mvn -f reactor.xml -s "${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
+  exec mvn -s "${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
+}
+
+function readValue() {
+  printf "Please provide %s:", "${1}"
+  read -r VALUE
+  test -z "${VALUE}" && usage "You must supply $1"
+  export "${2}=${VALUE}"
 }
 
 function mavenSettings() {
-  test -z "${BRANCHOUT_DOCKER_REGISTRY}" && branchout set "BRANCHOUT_DOCKER_REGISTRY"
-  test -z "${BRANCHOUT_MAVEN_REPOSITORY}" && branchout set "BRANCHOUT_MAVEN_REPOSITORY"
-  echo "Please provide your artifact repository username"
-  read -r -s REPOSITORY_USER
-  echo "Please provide your artifact repository secret"
-  read -r -s REPOSITORY_API_KEY
+  if test -z "${BRANCHOUT_MAVEN_REPOSITORY}"; then
+    readValue "your maven repository" "BRANCHOUT_MAVEN_REPOSITORY"
+    branchout set "BRANCHOUT_MAVEN_REPOSITORY" "${BRANCHOUT_MAVEN_REPOSITORY}"
+  fi
+  if test -z "${BRANCHOUT_DOCKER_REGISTRY}"; then
+    readValue "your docker registry" "BRANCHOUT_DOCKER_REGISTRY"
+    branchout set "BRANCHOUT_DOCKER_REGISTRY" "${BRANCHOUT_DOCKER_REGISTRY}"
+  fi
+  readValue "your artifact repository username" "REPOSITORY_USER"
+  readValue "your artifact repository secret" "REPOSITORY_API_KEY"
+  
   mkdir -p "${BRANCHOUT_HOME}/maven/"
   echo "writing ${BRANCHOUT_HOME}/maven/settings.xml"
   if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/maven-settings.xml"; then
@@ -59,10 +99,6 @@ function mavenSettings() {
 
 function mavenReactor() {
   echo "Maven reactor not implemented"
-}
-
-function expandMavenCommands() {
-  echo "${*}"
 }
 
 function usage() {
@@ -112,6 +148,10 @@ function main() {
 
         
   case "${1}" in
+    version)
+      echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as $GIT_AUTHOR_EMAIL"
+      runMaven --version
+      ;;
     reactor)
       mavenReactor "${*}"
       ;;
@@ -123,7 +163,7 @@ function main() {
       ;;
     *)
       test -f "${BRANCHOUT_HOME}/maven/settings.xml" || mavenSettings
-      runMaven expandMavenCommands "${*}"
+      runMaven "${@}"
   esac
 }
 

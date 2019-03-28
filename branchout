@@ -11,11 +11,10 @@ function branchout_get() {
 function branchout_set() {
   # shellcheck source=branchout-environment
   . "${BRANCHOUT_PATH}/branchout-environment"
-  printf "Enter ${1} [%s]: " "${2}"
-  read -r VALUE
-  test -z "${VALUE}" && VALUE="${2}"
-  echo "${1}=\"${VALUE}\"" >> ${BRANCHOUT_FILE}
-  export "${1}=${VALUE}"
+  grep -v "${1}" "${BRANCHOUT_FILE}" > "${BRANCHOUT_FILE}".tmp
+  echo "${1}=\"${2}\"" >> ${BRANCHOUT_FILE}.tmp
+  sort ${BRANCHOUT_FILE}.tmp > ${BRANCHOUT_FILE}
+  rm ${BRANCHOUT_FILE}.tmp
 }
 
 function branchout_status() {
