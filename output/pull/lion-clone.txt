@@ -1,7 +1,7 @@
 \033[0mCloning \033[92mlion\033[0m
 \033[0mCloning failed: \033[31mCloning into 'lion'...
-fatal: 'BASE_DIRECTORY/target/repositories/lion' does not appear to be a git repository                                                                                                                                                                 
-fatal: Could not read from remote repository.                                                                                                                                                                                                                                          
+fatal: 'BASE_DIRECTORY/target/repositories/lion' does not appear to be a git repository
+fatal: Could not read from remote repository.
 
 Please make sure you have the correct access rights
 and the repository exists.\033[0m

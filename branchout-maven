@@ -2,15 +2,59 @@
 
 
 function runMaven() {
-  echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_AUTHOR_EMAIL"
-  
+  #echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as $GIT_AUTHOR_EMAIL"
+  set -x
   MAVEN_OPTS="-s ${BRANCHOUT_HOME}/maven/settings.xml $MAVEN_OPTS"
   test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
   exec mvn "$MAVEN_OPTS" "$*"
 }
 
 function mavenSettings() {
-  echo "Maven settings not implemented"
+  test -z "${BRANCHOUT_DOCKER_REGISTRY}" && branchout set "BRANCHOUT_DOCKER_REGISTRY"
+  test -z "${BRANCHOUT_MAVEN_REPOSITORY}" && branchout set "BRANCHOUT_MAVEN_REPOSITORY"
+  echo "Please provide your artifact repository username"
+  read -r -s REPOSITORY_USER
+  echo "Please provide your artifact repository secret"
+  read -r -s REPOSITORY_API_KEY
+  mkdir -p "${BRANCHOUT_HOME}/maven/"
+  echo "writing ${BRANCHOUT_HOME}/maven/settings.xml"
+  if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/maven-settings.xml"; then
+    echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_HOME}/maven/settings.xml"
+  else
+    echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"
+    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
+
+  <localRepository>${BRANCHOUT_NAME}/maven/repository</localRepository>
+
+  <servers>
+    <server>
+      <username>${REPOSITORY_USER}</username>
+      <password>${REPOSITORY_API_KEY}</password>
+      <id>branchout-maven</id>
+    </server>   
+    <server>
+      <username>${REPOSITORY_USER}</username>
+      <password>${REPOSITORY_API_KEY}</password>
+      <id>${BRANCHOUT_DOCKER_REGISTRY}</id>
+    </server>   
+  </servers>
+
+  <mirrors>
+    <mirror>
+      <mirrorOf>*</mirrorOf>
+      <url>${BRANCHOUT_MAVEN_REPOSITORY}</url>
+      <id>branchout-maven</id>
+    </mirror>
+  </mirrors>
+
+  <pluginGroups>
+    <pluginGroup>net.stickycode.plugins</pluginGroup>
+  </pluginGroups>
+
+</settings>
+" > "${BRANCHOUT_HOME}/maven/settings.xml"
+  fi
 }
 
 function mavenReactor() {
@@ -74,9 +118,8 @@ function main() {
     settings)
       mavenSettings "${*}"
       ;;
-    pull)
-      test -n "${2}" || usage "Must provide project"
-      projectPull "${2}"
+    show)
+      sed -e 's,<password>.*</password>,<password>XXXXX</password>,g' "${BRANCHOUT_HOME}/maven/settings.xml"
       ;;
     *)
       test -f "${BRANCHOUT_HOME}/maven/settings.xml" || mavenSettings
