@@ -11,7 +11,7 @@ function branchout_get() {
 function branchout_set() {
   # shellcheck source=branchout-environment
   . "${BRANCHOUT_PATH}/branchout-environment"
-  grep -v "${1}" "${BRANCHOUT_FILE}" > "${BRANCHOUT_FILE}".tmp
+  grep -v "^${1}=" "${BRANCHOUT_FILE}" > "${BRANCHOUT_FILE}".tmp && true
   echo "${1}=\"${2}\"" >> ${BRANCHOUT_FILE}.tmp
   sort ${BRANCHOUT_FILE}.tmp > ${BRANCHOUT_FILE}
   rm ${BRANCHOUT_FILE}.tmp
