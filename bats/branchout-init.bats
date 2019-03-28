@@ -132,3 +132,37 @@ BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
   run branchout pull frog
   assert_success_file_sort init/from-url-with-flat-structure
 }
+
+@test "branchout init getvalue" {
+  example init-getvalue
+  run branchout init get BRANCHOUT_GIT_BASEURL
+  assert_success "file://${BUILD_DIRECTORY}/repositories"
+}
+
+@test "branchout init setvalue with no default" {
+  example init-setvalue-nodefault
+  run branchout init set BRANCHOUT_VALUE <<< "SAMESAME"
+  assert_success "Enter BRANCHOUT_VALUE []: "
+  run branchout init get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
+}
+
+@test "branchout init setvalue with default" {
+  example init-setvalue-with-default
+  run branchout init set BRANCHOUT_VALUE Example <<< ""
+  assert_success "Enter BRANCHOUT_VALUE [Example]: "
+  run branchout init get BRANCHOUT_VALUE
+  assert_success "Example"
+}
+
+@test "branchout init setvalue twice with no default" {
+  example init-setvalue-twice
+  run branchout init set BRANCHOUT_VALUE <<< "SAMESAME"
+  assert_success "Enter BRANCHOUT_VALUE []: "
+  run branchout init get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
+  run branchout init set BRANCHOUT_VALUE2 <<< "SAMESAME2"
+  assert_success "Enter BRANCHOUT_VALUE2 []: "
+  run branchout init get BRANCHOUT_VALUE2
+  assert_success "SAMESAME2"
+}
