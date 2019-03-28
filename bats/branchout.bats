@@ -104,3 +104,37 @@ gitty"
   assert_success_file_sort clone/clone-two
 }
 
+@test "branchout getvalue" {
+  example init-getvalue
+  run branchout get BRANCHOUT_GIT_BASEURL
+  assert_success "file://${BUILD_DIRECTORY}/repositories"
+}
+
+@test "branchout setvalue with no default" {
+  example init-setvalue-nodefault
+  run branchout set BRANCHOUT_VALUE <<< "SAMESAME"
+  assert_success "Enter BRANCHOUT_VALUE []: "
+  run branchout get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
+}
+
+@test "branchout setvalue with default" {
+  example init-setvalue-with-default
+  run branchout set BRANCHOUT_VALUE Example <<< ""
+  assert_success "Enter BRANCHOUT_VALUE [Example]: "
+  run branchout get BRANCHOUT_VALUE
+  assert_success "Example"
+}
+
+@test "branchout setvalue twice with no default" {
+  example init-setvalue-twice
+  run branchout set BRANCHOUT_VALUE <<< "SAMESAME"
+  assert_success "Enter BRANCHOUT_VALUE []: "
+  run branchout get BRANCHOUT_VALUE
+  assert_success "SAMESAME"
+  run branchout set BRANCHOUT_VALUE2 <<< "SAMESAME2"
+  assert_success "Enter BRANCHOUT_VALUE2 []: "
+  run branchout get BRANCHOUT_VALUE2
+  assert_success "SAMESAME2"
+}
+

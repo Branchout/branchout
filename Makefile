@@ -1,4 +1,4 @@
-export PATH := $(PWD):$(PATH)
+export PATH := $(PWD)/bats/bin:$(PWD):$(PATH)
 
 target/output:
 	./output/escape-text

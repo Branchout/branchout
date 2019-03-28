@@ -32,23 +32,11 @@ function branchoutDirectory() {
 
 function usage() {
   test -n "${1}" && echo "${1}" && echo
-  echo "branchout-environment: a tool for managing multi-repo projects
-    
-    status: show the list of known projects and their current state
-    
-    pull: pull all the projects and display their status
-    
-    add: add a project to the list
-    
-    init: Intialise the current git repository as a branchout root project
-    
-    project: see branchout project help
-    
-    group: see branchout group help
-
-    "
+  echo "branchout-environment: load the environment
+"
   exit 1
 }
+
 
 test -n "${BRANCHOUT_LOADED}" && return 0
 
