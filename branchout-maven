@@ -32,21 +32,34 @@ function runMaven() {
       commands[$each]="${mavenAliases[${commands[$each]}]}"
     fi
   done
-
-  test -f reactor.xml && exec mvn -f reactor.xml -s "${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
-  exec mvn -s "${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
+  
+  POM_FILE=""
+  test -f reactor.xml && POM_FILE="-f reactor.xml "
+  
+  echo "mvn ${POM_FILE}-s ${BRANCHOUT_HOME}/maven/settings.xml ${commands[*]}"
+  exec mvn "${POM_FILE}-s ${BRANCHOUT_HOME}/maven/settings.xml" "${commands[*]}"
 }
 
 function readValue() {
-  printf "Please provide %s:", "${1}"
+  printf "Please provide %s: " "${1}"
   read -r VALUE
   test -z "${VALUE}" && usage "You must supply $1"
   export "${2}=${VALUE}"
 }
 
+function readSecret() {
+  printf "Please provide %s: " "${1}"
+  read -s -r VALUE
+  echo
+  test -z "${VALUE}" && usage "You must supply $1"
+  export "${2}=${VALUE}"
+}
+
+
 function mavenSettings() {
   if test -z "${BRANCHOUT_MAVEN_REPOSITORY}"; then
     readValue "your maven repository" "BRANCHOUT_MAVEN_REPOSITORY"
+    [[ ${BRANCHOUT_MAVEN_REPOSITORY} =~ ^https:// ]] || BRANCHOUT_MAVEN_REPOSITORY="https://${BRANCHOUT_MAVEN_REPOSITORY}"
     branchout set "BRANCHOUT_MAVEN_REPOSITORY" "${BRANCHOUT_MAVEN_REPOSITORY}"
   fi
   if test -z "${BRANCHOUT_DOCKER_REGISTRY}"; then
@@ -54,7 +67,7 @@ function mavenSettings() {
     branchout set "BRANCHOUT_DOCKER_REGISTRY" "${BRANCHOUT_DOCKER_REGISTRY}"
   fi
   readValue "your artifact repository username" "REPOSITORY_USER"
-  readValue "your artifact repository secret" "REPOSITORY_API_KEY"
+  readSecret "your artifact repository secret" "REPOSITORY_API_KEY"
   
   mkdir -p "${BRANCHOUT_HOME}/maven/"
   echo "writing ${BRANCHOUT_HOME}/maven/settings.xml"

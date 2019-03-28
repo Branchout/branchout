@@ -1,1 +1,1 @@
--s ..//branchout/maven-commands/maven/settings.xml clean verify
+mvn -s ..//branchout/maven-commands/maven/settings.xml clean verify

@@ -22,6 +22,18 @@ sshsupersecret
   assert_success_file maven/settings
 }
 
+@test "branchout maven - ask for settings always https" {
+  example maven-settings-https
+  run branchout maven clean <<< "maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/settings-https
+}
+
 @test "branchout maven - expand commands" {
   example maven-commands
   run branchout maven clean <<< "https://maven.example.org/maven/branchout
