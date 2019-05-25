@@ -28,12 +28,14 @@ function branchout_pull() {
 }
 
 function branchout_add() {
+  test -n "${1}" || usage "Specify the repository to add, try branchout add <project-name>"
   sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function branchout_clone() {
+  test -n "${1}" || usage "Specify the repository to clone, try branchout clone <project-name>"
   sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
@@ -49,15 +51,19 @@ function usage() {
 
     status: show the list of known projects and their current state
 
-    pull: pull all the projects and display their status
+    pull <glob match>: pull all the matching projects and display their status, defaults to all
 
-    add: add a project to the list
+    clone <repository name>: add the repository to Branchoutprojects and clone it
+
+    add: add a project to Branchoutprojects
 
     init: Intialise the current git repository as a branchout root project
 
     project: see branchout project help
 
     group: see branchout group help
+
+    maven: see branchout maven help
 
     "
   exit 1
