@@ -5,17 +5,17 @@ makeBase() {
   mkdir ${1}
   pushd ${1}
   git init
-  git config user.email "someone@example.com"; 
-  git config user.name "hopefully_not_real"; 
+  git config user.email "someone@example.com";
+  git config user.name "hopefully_not_real";
 
-  echo "# ${each}" > README.md; 
+  echo "# ${each}" > README.md;
   echo "frog-aleph
 frog-gemel
 toad-aleph" > Branchoutprojects
   echo "BRANCHOUT_NAME=${1}" > Branchoutfile
   git add README.md Branchoutprojects Branchoutfile;
-  git commit -a -m"Initial commit"; 
-  
+  git commit -a -m"Initial commit";
+
   popd
 }
 
@@ -24,17 +24,17 @@ makeLegacyBase() {
   mkdir ${1}
   pushd ${1}
   git init
-  git config user.email "someone@example.com"; 
-  git config user.name "hopefully_not_real"; 
+  git config user.email "someone@example.com";
+  git config user.name "hopefully_not_real";
 
-  echo "# ${each}" > README.md; 
+  echo "# ${each}" > README.md;
   echo "frog-aleph
 frog-gemel
 toad-aleph" > .projects
   echo "BRANCHOUT_NAME=${1}" > .branchout
   git add README.md .projects .branchout;
-  git commit -a -m"Initial commit"; 
-  
+  git commit -a -m"Initial commit";
+
   popd
 }
 
@@ -43,62 +43,67 @@ makeGroup() {
   mkdir ${1}
   pushd ${1}
   git init
-  git config user.email "someone@example.com"; 
-  git config user.name "hopefully_not_real"; 
+  git config user.email "someone@example.com";
+  git config user.name "hopefully_not_real";
 
-  echo "# ${each}" >> README.md; 
-  git add README.md; 
-  git  commit -a -m"Initial commit"; 
-  
+  echo "# ${each}" >> README.md;
+  git add README.md;
+  git  commit -a -m"Initial commit";
+
   popd
 }
 
 makeProject() {
     rm -rf ${each}-${counter}
-    mkdir ${each}-${counter}; 
-    pushd ${each}-${counter}; 
+    mkdir ${each}-${counter};
+    pushd ${each}-${counter};
 
-    git init; 
-    git config user.email "someone@example.com"; 
-    git config user.name "hopefully_not_real"; 
+    git init;
+    git config user.email "someone@example.com";
+    git config user.name "hopefully_not_real";
 
-    echo "# ${each}-${counter}" >> README.md; 
-    git add README.md; 
-    git  commit -a -m"Initial commit"; 
+    echo "# ${each}-${counter}" >> README.md;
+    git add README.md;
+    git  commit -a -m"Initial commit";
 
-    echo "# ${each}-${counter}" >> README.md; 
+    echo "# ${each}-${counter}" >> README.md;
     git commit -a -m"step 2";
     git tag -a step-2 -m "step 2"
 
-    echo "# ${each}-${counter}" >> README.md; 
+    echo "# ${each}-${counter}" >> README.md;
     git  commit -a -m"step 3";
- 
-    git checkout -b feature-${counter}; 
-    echo "* feature ${counter}" >> README.md; 
+
+    git checkout -b feature-${counter};
+    echo "* feature ${counter}" >> README.md;
     git commit -a -m "Adding feature ${counter}";
     git checkout master
-    popd; 
+    popd;
 }
 
 mkdir -p target/repositories
 cd target/repositories
 
-for each in frog toad; do 
+# These are bare repositories
+git init bear
+git init bear-aleph
+
+# Standard projects with a bunch of commits
+for each in frog toad; do
   makeGroup ${each}
-  for counter in aleph bet gemel; do 
+  for counter in aleph bet gemel; do
     makeProject
-  done; 
+  done;
 done
-for each in snake fox; do 
-  for counter in aleph bet gemel; do 
+for each in snake fox; do
+  for counter in aleph bet gemel; do
     makeProject
-  done; 
+  done;
 done
-for animal in goat sheep; do 
-  for counter in aleph bet gemel; do 
+for animal in goat sheep; do
+  for counter in aleph bet gemel; do
     each=prefix-${animal}
     makeProject
-  done; 
+  done;
 done
 
 # Projects with no group project in a repository
@@ -116,5 +121,3 @@ makeLegacyBase legacy
 
 # For validating that base and group produce a flat structure
 makeBase frog
-
-
