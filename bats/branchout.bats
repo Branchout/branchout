@@ -13,7 +13,7 @@ load helper
 @test "no Branchoutfile is error" {
   cd /tmp
   run branchout status
-  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
+  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init"
 }
 
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
@@ -21,44 +21,44 @@ load helper
   cd target/missing-name
   touch Branchoutfile
   run branchout status
-  assert_error "Branchout name not defined in Branchoutfile, run branchout init" 
+  assert_error "Branchout name not defined in Branchoutfile, run branchout init"
 }
 
 @test "branchout configuration missing BRANCHOUT_GIT_BASEURL fails" {
-  mkdir -p target/missing-giturl target/branchout/missing-giturl 
+  mkdir -p target/missing-giturl target/branchout/missing-giturl
   cd target/missing-giturl
-  echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile 
+  echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile
   run branchout status
-  assert_error "Git base url is not defined in Branchoutfile, run branchout init" 
+  assert_error "Git base url is not defined in Branchoutfile, run branchout init"
 }
 
 @test "branchout home is missing fails" {
-  mkdir -p target/missing-branchout-home 
+  mkdir -p target/missing-branchout-home
   HOME=..
   cd target/missing-branchout-home
-  echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile 
-  echo 'BRANCHOUT_GIT_BASEURL="missing-branchout-home"' >> Branchoutfile 
+  echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile
+  echo 'BRANCHOUT_GIT_BASEURL="missing-branchout-home"' >> Branchoutfile
   run branchout status
-  assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init" 
+  assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init"
 }
 
 @test "branchout missing projects prompts" {
-  mkdir -p target/no-projects target/branchout/no-projects 
+  mkdir -p target/no-projects target/branchout/no-projects
   cd target/no-projects
   HOME=..
-  echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile 
-  echo 'BRANCHOUT_GIT_BASEURL="no-projects"' >> Branchoutfile 
+  echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile
+  echo 'BRANCHOUT_GIT_BASEURL="no-projects"' >> Branchoutfile
   run branchout status
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
 
 @test "branchout prefix is removed" {
-  mkdir -p target/prefix target/branchout/prefix 
+  mkdir -p target/prefix target/branchout/prefix
   cd target/prefix
   HOME=..
-  echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile 
-  echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> Branchoutfile 
-  echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile 
+  echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile
+  echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> Branchoutfile
+  echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile
   echo 'prefix-frog-aleph' > Branchoutprojects
   run branchout status
   assert_success_file status/no-clone-prefix
@@ -69,7 +69,7 @@ load helper
   run branchout project status frog-aleph
   assert_success_file all/frog-aleph-before-pull
   run branchout pull
-  assert_success 
+  assert_success
   run branchout project status frog-aleph
   assert_success_file all/frog-aleph
 }
@@ -92,6 +92,12 @@ gitty"
   assert_success_file_sort status/two-no-clone
 }
 
+@test "branchout add no params should error" {
+  example add-no-parameters
+  run branchout add
+  assert_error "Specify the repository to add, try branchout add <project-name>"
+}
+
 @test "branchout clone" {
   example clone
   run branchout status rabbit-aleph
@@ -102,6 +108,12 @@ gitty"
   assert_success_file status/clone-one
   run branchout clone frog-aleph
   assert_success_file_sort clone/clone-two
+}
+
+@test "branchout clone no params should error" {
+  example clone-no-parameters
+  run branchout clone
+  assert_error "Specify the repository to clone, try branchout clone <project-name>"
 }
 
 @test "branchout getvalue" {
@@ -121,7 +133,7 @@ gitty"
 @test "branchout setvalue twice" {
   example init-setvalue-twice
   run branchout set BRANCHOUT_VALUE "SAMESAME"
-  assert_success 
+  assert_success
   run branchout get BRANCHOUT_VALUE
   assert_success "SAMESAME"
   run branchout set BRANCHOUT_VALUE "SAMESAME2"
@@ -133,7 +145,7 @@ gitty"
 @test "branchout setvalue many values" {
   example init-setvalue-many
   run branchout set BRANCHOUT_VALUE "SAMESAME"
-  assert_success 
+  assert_success
   run branchout get BRANCHOUT_VALUE
   assert_success "SAMESAME"
   run branchout set BRANCHOUT_VALUE2 "SAMESAME2"
@@ -143,4 +155,3 @@ gitty"
   run branchout get BRANCHOUT_VALUE
   assert_success "SAMESAME"
 }
-
