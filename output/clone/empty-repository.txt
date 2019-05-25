@@ -1,0 +1,4 @@
+\033[0mCloning \033[92mbear\033[0m
+\033[0mPulled  bear\033[70D\033[70C\033[38;5;202m<empty>\033[0m
+\033[0mCloning \033[92mbear/bear-aleph\033[0m
+\033[0mPulled  bear/bear-aleph\033[70D\033[70C\033[38;5;202m<empty>\033[0m
