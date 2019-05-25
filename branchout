@@ -28,12 +28,14 @@ function branchout_pull() {
 }
 
 function branchout_add() {
+  test -n "${1}" || usage "Specify the repository to add, try branchout add <project-name>"
   sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function branchout_clone() {
+  test -n "${1}" || usage "Specify the repository to clone, try branchout clone <project-name>"
   sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
@@ -46,18 +48,22 @@ function branchout_version() {
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
-    
+
     status: show the list of known projects and their current state
-    
-    pull: pull all the projects and display their status
-    
-    add: add a project to the list
-    
+
+    pull <glob match>: pull all the matching projects and display their status, defaults to all
+
+    clone <repository name>: add the repository to Branchoutprojects and clone it
+
+    add: add a project to Branchoutprojects
+
     init: Intialise the current git repository as a branchout root project
-    
+
     project: see branchout project help
-    
+
     group: see branchout group help
+
+    maven: see branchout maven help
 
     "
   exit 1
@@ -65,12 +71,12 @@ function usage() {
 
 function main() {
   test $# -gt 0 || usage
-  
+
   BRANCHOUT_PATH="$(dirname "$0")"
-  
+
   # shellcheck source=branchout-configuration
   . "${BRANCHOUT_PATH}/branchout-configuration"
-  
+
   case "${1}" in
     help)
       usage
@@ -89,10 +95,10 @@ function main() {
       shift
       if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
          eval branchout_"${branchoutModule}" "${@}"
-        
+
       elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
         exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
-        
+
       else
         eval branchout_pull "${branchoutModule}" "${@}"
 
