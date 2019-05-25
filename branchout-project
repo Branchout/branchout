@@ -17,14 +17,17 @@ function projectListWithGroups() {
 function projectContextStatus() {
    if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
      cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
-     
-     projectBranch=$(git rev-parse --abbrev-ref HEAD)
-     if test "${projectBranch}" = "master"; then
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C${projectBranch}\\033[0m"
-     elif test "${projectBranch}" = "HEAD"; then
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+
+     if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
+       if test "${projectBranch}" = "master"; then
+         echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C${projectBranch}\\033[0m"
+       elif test "${projectBranch}" = "HEAD"; then
+         echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+       else
+         echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
+       fi
      else
-       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[32m${projectBranch}\\033[0m"
+       echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
      fi
    else
      echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
@@ -32,11 +35,14 @@ function projectContextStatus() {
 }
 
 function projectUpdateError() {
-  projectBranch=$(git rev-parse --abbrev-ref HEAD)
-  if test "${projectBranch}" = "HEAD"; then
-    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+  if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
+    if test "${projectBranch}" = "HEAD"; then
+      echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+    else
+      echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m"
+    fi
   else
-    echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m" 
+    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
   fi
 }
 
@@ -63,7 +69,7 @@ function projectClone() {
 function projectContext() {
   projectName=$("${BRANCHOUT_PATH}/branchout-group" deriveProject "${1}")
   projectGroup=$("${BRANCHOUT_PATH}/branchout-group" derive "${1}")
-  
+
   if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
     projectContext="${projectName}"
   else
@@ -78,47 +84,47 @@ function projectStatus() {
 
 function projectPull() {
   projectContext "${1}"
-  
+
   gitProject="${1}"
   if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}/.git"; then
-    projectUpdate 
+    projectUpdate
   else
-    projectClone 
+    projectClone
   fi
 }
 
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout-project list|status|pull [project]
-  
+
   status project-name
-      
+
       Return the status of the given project, Not cloned, branch, rebasing
-  
+
   pull project-name
-  
+
       Attempt to pull the project, show the branch or error
-  
+
   list [prefix]
-  
+
       List all the projects with the given prefix
-  
+
   "
-  
+
   exit 1
 }
 
 function main() {
   test $# -gt 0 || usage
-  
+
   BRANCHOUT_PATH="$(dirname "$0")"
-  
+
   # shellcheck source=branchout-configuration
   . "${BRANCHOUT_PATH}/branchout-configuration"
   # shellcheck source=branchout-environment
   . "${BRANCHOUT_PATH}/branchout-environment"
 
-        
+
   case "${1}" in
     list)
       if test "${2}" = "--grouped"; then

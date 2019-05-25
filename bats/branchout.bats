@@ -116,6 +116,12 @@ gitty"
   assert_error "Specify the repository to clone, try branchout clone <project-name>"
 }
 
+@test "branchout clone a bare repository" {
+  example clone-bare-repository
+  run branchout clone bear-aleph
+  assert_success_file clone/bare-repository
+}
+
 @test "branchout getvalue" {
   example init-getvalue
   run branchout get BRANCHOUT_GIT_BASEURL
