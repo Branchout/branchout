@@ -9,13 +9,13 @@ function branchoutFiles() {
     BRANCHOUT_PROJECTS=Branchoutprojects
     return 0
   fi
-  
+
   if test -f "${1}/.branchout"; then
     BRANCHOUT_FILE=.branchout
     BRANCHOUT_PROJECTS=.projects
     return 0
   fi
-  
+
   return 1
 }
 
@@ -34,7 +34,7 @@ function branchout_init_baseurl()  {
     read -r BRANCHOUT_GIT_BASEURL || true
     test -z "${BRANCHOUT_GIT_BASEURL}" && usage "git baseurl is not defined"
   fi
-  
+
   return 0
 }
 
@@ -46,7 +46,7 @@ function branchoutInitFromUrl() {
   test -d "${BRANCHOUT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${BRANCHOUT_NAME} is already initialised"
   git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
   cd "${BRANCHOUT_NAME}"
-  
+
   branchoutInit
 }
 
@@ -68,44 +68,44 @@ function branchoutInit() {
   fi
 
   # shellcheck source=examples/Branchoutfile
-  source "${BRANCHOUT_FILE}"  
-  
+  source "${BRANCHOUT_FILE}"
+
   if test -z "${BRANCHOUT_NAME}"; then
     branchout_init_name
     echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a ${BRANCHOUT_FILE}
   fi
-  
+
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
 
   if test -z "${BRANCHOUT_GIT_BASEURL}"; then
     branchout_init_baseurl
     echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a ${BRANCHOUT_FILE}
   fi
-  
+
 }
 
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout-init [git-url] [relocation]
-  
+
   "
-  
+
   exit 1
 }
 
 function main() {
   BRANCHOUT_PATH="$(dirname "$0")"
-  
+
   # shellcheck source=branchout-configuration
   . "${BRANCHOUT_PATH}/branchout-configuration"
-  
+
   if test -n "${1}"; then
     branchoutInitFromUrl "${1}" "${2}"
-    
+
   else
     branchoutInitLocal
   fi
-  
+
   export BRANCHOUT_PROJECTS
   export BRANCHOUT_FILE
 }

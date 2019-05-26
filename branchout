@@ -46,17 +46,17 @@ function branchout_version() {
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
-    
+
     status: show the list of known projects and their current state
-    
+
     pull: pull all the projects and display their status
-    
+
     add: add a project to the list
-    
+
     init: Intialise the current git repository as a branchout root project
-    
+
     project: see branchout project help
-    
+
     group: see branchout group help
 
     "
@@ -65,12 +65,12 @@ function usage() {
 
 function main() {
   test $# -gt 0 || usage
-  
+
   BRANCHOUT_PATH="$(dirname "$0")"
-  
+
   # shellcheck source=branchout-configuration
   . "${BRANCHOUT_PATH}/branchout-configuration"
-  
+
   case "${1}" in
     help)
       usage
@@ -89,10 +89,10 @@ function main() {
       shift
       if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
          eval branchout_"${branchoutModule}" "${@}"
-        
+
       elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
         exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
-        
+
       else
         eval branchout_pull "${branchoutModule}" "${@}"
 

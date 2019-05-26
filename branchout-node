@@ -22,4 +22,3 @@ echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as  $GIT_
 test -f reactor.xml && MAVEN_OPTS="-f reactor.xml $MAVEN_OPTS"
 
 exec mvn $MAVEN_OPTS $*
-

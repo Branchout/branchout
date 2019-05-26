@@ -6,4 +6,3 @@ BRANCHOUT_PROJECTS_DIRECTORY=projects
 # shellcheck source=examples/branchoutrc
 test -f ~/.config/branchoutrc && source ~/.config/branchoutrc
 export BRANCHOUT_PROJECTS_DIRECTORY
-

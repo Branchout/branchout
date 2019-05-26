@@ -9,13 +9,13 @@ function branchoutFiles() {
     BRANCHOUT_PROJECTS=Branchoutprojects
     return 0
   fi
-  
+
   if test -f "${1}/.branchout"; then
     BRANCHOUT_FILE=.branchout
     BRANCHOUT_PROJECTS=.projects
     return 0
   fi
-  
+
   return 1
 }
 
@@ -27,7 +27,7 @@ function branchoutDirectory() {
     fi
     BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
   done
-  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init" 
+  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init"
 }
 
 function usage() {
