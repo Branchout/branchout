@@ -9,12 +9,12 @@
       <username>stickycode</username>
       <password>XXXXX</password>
       <id>branchout-maven</id>
-    </server>   
+    </server>
     <server>
       <username>stickycode</username>
       <password>XXXXX</password>
       <id>docker.example.org</id>
-    </server>   
+    </server>
   </servers>
 
   <mirrors>
