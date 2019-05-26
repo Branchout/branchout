@@ -19,7 +19,7 @@ stickycode
 sshsupersecret
 "
   assert_success
-  run branchout maven show 
+  run branchout maven show
   assert_success_file maven/settings
 }
 
@@ -31,7 +31,7 @@ stickycode
 sshsupersecret
 "
   assert_success
-  run branchout maven show 
+  run branchout maven show
   assert_success_file maven/settings-https
 }
 
@@ -67,4 +67,19 @@ sshsupersecret
 "
   run branchout maven hth
   assert_success_file maven/hth
+}
+
+@test "branchout maven - maven init from child project" {
+  example maven-init-from-child-project
+  run branchout pull toad-aleph
+  assert_success
+  cd toad/toad-aleph
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  assert_success
+  run branchout maven cv
+  assert_success_file maven/cv
 }
