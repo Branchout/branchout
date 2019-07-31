@@ -2,19 +2,28 @@
 
 set -e
 
+function branchout_get-config() {
+  if test -f "${BRANCHOUT_HOME}/branchoutrc"; then
+    grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
+  fi
+}
+
+function branchout_set-config() {
+  grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
+  echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
+  sort "${BRANCHOUT_HOME}/branchoutrc.tmp" > "${BRANCHOUT_HOME}/branchoutrc"
+  rm "${BRANCHOUT_HOME}/branchoutrc.tmp"
+}
+
 function branchout_get() {
-  # shellcheck source=branchout-environment
-  . "${BRANCHOUT_PATH}/branchout-environment"
   grep "^${1}=" "${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
 }
 
 function branchout_set() {
-  # shellcheck source=branchout-environment
-  . "${BRANCHOUT_PATH}/branchout-environment"
   grep -v "^${1}=" "${BRANCHOUT_FILE}" > "${BRANCHOUT_FILE}".tmp && true
-  echo "${1}=\"${2}\"" >> ${BRANCHOUT_FILE}.tmp
-  sort ${BRANCHOUT_FILE}.tmp > ${BRANCHOUT_FILE}
-  rm ${BRANCHOUT_FILE}.tmp
+  echo "${1}=\"${2}\"" >> "${BRANCHOUT_FILE}.tmp"
+  sort "${BRANCHOUT_FILE}.tmp" > "${BRANCHOUT_FILE}"
+  rm "${BRANCHOUT_FILE}.tmp"
 }
 
 function branchout_status() {
