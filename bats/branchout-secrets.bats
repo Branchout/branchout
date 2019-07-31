@@ -1,57 +1,66 @@
 load helper
 
-@test "shellcheck compliant with no exceptions" {
+@test "secret - shellcheck compliant with no exceptions" {
   run shellcheck -x branchout-secrets
   assert_success
 }
 
-@test "invoking branchout secret usage" {
+@test "secret - invoking branchout secret usage" {
   run branchout-secrets
   assert_error "branchout secrets: a tool for managing kubebernetes secrets"
 }
 
-@test "settings creates key from nothing" {
-  example settings-newkey
-  run branchout-secrets settings
-  assert_error "branchout secrets: a tool for managing kubebernetes secrets"
+@test "secret - setup my key" {
+  example secrets-setup
+  run branchout-secrets setup
+  assert_success_file secrets/setup
 }
 
-@test "create secret when it doesnt exist" {
+@test "secret - setup my key fails when key exists" {
+  example secrets-already-setup
+  run branchout-secrets setup
+  assert_error "branchout secrets setup: you have already setup your key"
+}
+
+@test "secret - create secret when it doesnt exist" {
+  example secrets-create
   run branchout-secrets create some-secret
   assert_success_file secrets/create
 }
 
-@test "fail to create secret when it exists" {
+@test "secret - fail to create secret when it exists" {
+  example secrets-create-already-exists
   run branchout-secrets create existing
   assert_error "oops"
 }
 
-@test "fail to add key to secret when don't have permission" {
+@test "secret - fail to add key to secret when don't have permission" {
   run branchout-secrets add-key keyid
   assert_error "oops"
 }
 
-@test "add new key to secret" {
+@test "secret - add new key to secret" {
   run branchout-secrets add-key keyid some-secret
   assert_success_file secrets/add-key
 }
 
-@test "add new key to all secrets" {
+@test "secret - add new key to all secrets" {
   run branchout-secrets add-key keyid
-  assert_success_file secrets/add-key
+  assert_success_file secrets/add-key-to-all
 }
 
-@test "remove key from secret" {
+@test "secret - remove key from secret" {
   run branchout-secrets remove-key keyid some-secret
   assert_success_file secrets/remove-key
 }
 
-@test "edit a secret" {
+@test "secret - edit a secret" {
+  EDITOR="cat"
   run branchout-secrets edit some-secret
   assert_success_file secrets/edit
 }
 
-@test "patch a secret value" {
-  run branchout-secrets patch some-secret key
+@test "secret - patch a secret value" {
+  run branchout-secrets patch some-secret key <<< 'newvalue'
   assert_success_file secrets/patch
 }
