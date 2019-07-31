@@ -2,6 +2,28 @@
 
 set -e
 
+function readValue() {
+  printf "Please provide %s: " "${1}"
+  read -r VALUE
+  test -z "${VALUE}" && usage "You must supply $1"
+  export "${2}=${VALUE}"
+}
+
+function readSecret() {
+  printf "Please provide %s: " "${1}"
+  read -s -r VALUE
+  echo
+  test -z "${VALUE}" && usage "You must supply $1"
+  export "${2}=${VALUE}"
+}
+
+ensureConfigValue() {
+  if test -v "${2}"; then
+    readValue "${1}" "${2}"
+    "${BRANCHOUT_PATH}/branchout" set-config "${2}" "${!2}"
+  fi
+}
+
 # Check if the give directory contains the branchout files
 function branchoutFiles() {
   if test -f "${1}/Branchoutfile"; then
@@ -60,6 +82,9 @@ export BRANCHOUT_PREFIX
 
 test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
 test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
+
+# shellcheck source=examples/branchoutrc
+test -f "${BRANCHOUT_HOME}/branchoutrc" && source "${BRANCHOUT_HOME}/branchoutrc"
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY
