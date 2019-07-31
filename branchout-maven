@@ -39,22 +39,6 @@ function runMaven() {
   exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_HOME}/maven/settings.xml" "${expandedCommands[@]}"
 }
 
-function readValue() {
-  printf "Please provide %s: " "${1}"
-  read -r VALUE
-  test -z "${VALUE}" && usage "You must supply $1"
-  export "${2}=${VALUE}"
-}
-
-function readSecret() {
-  printf "Please provide %s: " "${1}"
-  read -s -r VALUE
-  echo
-  test -z "${VALUE}" && usage "You must supply $1"
-  export "${2}=${VALUE}"
-}
-
-
 function mavenSettings() {
   if test -z "${BRANCHOUT_MAVEN_REPOSITORY}"; then
     readValue "your maven repository" "BRANCHOUT_MAVEN_REPOSITORY"
