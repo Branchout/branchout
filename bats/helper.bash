@@ -59,9 +59,9 @@ assert_failure() {
 
 assert_output_start() {
   local expected
-  if [ $# -eq 0 ]; then 
+  if [ $# -eq 0 ]; then
     expected="$(cat -)"
-  else 
+  else
     expected="$1"
   fi
   assert_equal "$(echo "$expected" | head -n1)" "$(echo "$output" | head -n1)"
@@ -69,9 +69,9 @@ assert_output_start() {
 
 assert_output_sort() {
   local expected
-  if [ $# -eq 0 ]; then 
+  if [ $# -eq 0 ]; then
     expected="$(cat -)"
-  else 
+  else
     expected="$1"
   fi
   assert_equal "$(echo "$expected" | sort)" "$(echo "$output" | sort)"
@@ -79,9 +79,9 @@ assert_output_sort() {
 
 assert_output() {
   local expected
-  if [ $# -eq 0 ]; then 
+  if [ $# -eq 0 ]; then
     expected="$(cat -)"
-  else 
+  else
     expected="$1"
   fi
   assert_equal "$expected" "$output"
@@ -98,13 +98,38 @@ assert_equal() {
 }
 
 example() {
-  test -z "$1" && bail "exmaples need a name"
+  test -z "$1" && bail "examples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}" 
+  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
   cd "target/tests/${1}"
   export HOME=..
-  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile 
+  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
+  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
+  echo "frog-aleph
+frog-gemel
+frog-bet
+lion-aleph
+rabbit-aleph
+toad-aleph
+toad-gemel
+toad-bet
+snake-aleph
+snake-bet
+snake-gemel
+fox-aleph
+fox-bet
+fox-gemel" > Branchoutprojects
+}
+
+secretExample() {
+  test -z "$1" && bail "examples need a name"
+  test -d "target/tests/${1}" && bail "example already exists: ${1}"
+  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
+  cp -r examples/gnupg "target/tests/branchout/${1}/.gnupg"
+  cd "target/tests/${1}"
+  export HOME=..
+  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
+  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
 frog-gemel
 frog-bet
@@ -124,10 +149,10 @@ fox-gemel" > Branchoutprojects
 legacyExample() {
   test -z "$1" && bail "exmaples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}" 
+  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
   cd "target/tests/${1}"
   export HOME=../
-  echo "BRANCHOUT_NAME=\"${1}\"" > .branchout 
+  echo "BRANCHOUT_NAME=\"${1}\"" > .branchout
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> .branchout
   echo "frog-aleph
 frog-gemel
@@ -148,10 +173,10 @@ fox-gemel" > .projects
 prefixExample() {
   test -z "$1" && bail "exmaples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}" 
+  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
   cd "target/tests/${1}"
   export HOME=../
-  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile 
+  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "BRANCHOUT_PREFIX=\"prefix\"" >> Branchoutfile
   echo "toad-aleph
