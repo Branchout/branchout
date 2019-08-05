@@ -18,9 +18,10 @@ function readSecret() {
 }
 
 ensureConfigValue() {
-  if test -v "${2}"; then
-    readValue "${1}" "${2}"
-    "${BRANCHOUT_PATH}/branchout" set-config "${2}" "${!2}"
+  configName="BRANCHOUT_CONFIG_${2}"
+  if test -z "${!configName}"; then
+    readValue "${1}" "${configName}"
+    "${BRANCHOUT_PATH}/branchout" set-config "${2}" "${!configName}"
   fi
 }
 
@@ -83,8 +84,11 @@ export BRANCHOUT_PREFIX
 test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
 test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
+BRANCHOUT_CONFIG_GPG_KEYRING=standard.keyring
 # shellcheck source=examples/branchoutrc
 test -f "${BRANCHOUT_HOME}/branchoutrc" && source "${BRANCHOUT_HOME}/branchoutrc"
+export BRANCHOUT_CONFIG_GPG_KEYRING
+export BRANCHOUT_CONFIG_GPG_KEY
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY
