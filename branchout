@@ -10,7 +10,7 @@ function branchout_get-config() {
 
 function branchout_set-config() {
   test -z "${2}" && usage "You must supply a value to set"
-  grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
+  test -f "${BRANCHOUT_HOME}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
   echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
   sort "${BRANCHOUT_HOME}/branchoutrc.tmp" > "${BRANCHOUT_HOME}/branchoutrc"
   rm "${BRANCHOUT_HOME}/branchoutrc.tmp"
@@ -102,17 +102,19 @@ function main() {
       branchout_version
       ;;
     *)
-       # shellcheck source=branchout-environment
-      . "${BRANCHOUT_PATH}/branchout-environment"
       branchoutModule="${1}"
       shift
       if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
-         eval branchout_"${branchoutModule}" "${@}"
+        # shellcheck source=branchout-environment
+        . "${BRANCHOUT_PATH}/branchout-environment"
+        eval branchout_"${branchoutModule}" "${@}"
 
       elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
         exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
 
       else
+        # shellcheck source=branchout-environment
+        . "${BRANCHOUT_PATH}/branchout-environment"
         eval branchout_pull "${branchoutModule}" "${@}"
 
       fi
