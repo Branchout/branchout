@@ -19,6 +19,16 @@ assert_success() {
   fi
 }
 
+assert_success_firstline() {
+  if [ "$status" -ne 0 ]; then
+    { echo "command failed with exit status $status"
+      echo "output: $output"
+    } | bail
+  elif [ "$#" -gt 0 ]; then
+    assert_output_start "$1"
+  fi
+}
+
 assert_success_file() {
   if [ "$status" -ne 0 ]; then
     { echo "command failed with exit status $status"
@@ -124,10 +134,10 @@ fox-gemel" > Branchoutprojects
 secretExample() {
   test -z "$1" && bail "examples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cp -r examples/gnupg "target/tests/branchout/${1}/.gnupg"
+  mkdir -p "target/tests/${1}" "target/tests/${1}/home/branchout/${1}"
+  cp -r examples/gnupg "target/tests/${1}/home/branchout/${1}/.gnupg"
   cd "target/tests/${1}"
-  export HOME=..
+  export HOME=home
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
