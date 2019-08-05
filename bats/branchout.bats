@@ -170,34 +170,40 @@ gitty"
 
 @test "branchout set config" {
   example init-set-config
-  run branchout set EMAIL "john@example.com"
+  run branchout set-config EMAIL "john@example.com"
   assert_success
-  run branchout get EMAIL
+  run branchout get-config EMAIL
   assert_success "john@example.com"
+}
+
+@test "branchout set config to nothing fails" {
+  example init-set-config-to-nothing
+  run branchout set-config EMAIL ""
+  assert_error "You must supply a value to set"
 }
 
 @test "branchout set config twice" {
   example init-set-config-twice
-  run branchout set VALUE "SAMESAME"
+  run branchout set-config VALUE "SAMESAME"
   assert_success
-  run branchout get VALUE
+  run branchout get-config VALUE
   assert_success "SAMESAME"
-  run branchout set VALUE "SAMESAME2"
+  run branchout set-config VALUE "SAMESAME2"
   assert_success
-  run branchout get VALUE
+  run branchout get-config VALUE
   assert_success "SAMESAME2"
 }
 
 @test "branchout set config many values" {
   example init-set-config-many
-  run branchout set VALUE "SAMESAME"
+  run branchout set-config VALUE "SAMESAME"
   assert_success
-  run branchout get VALUE
+  run branchout get-config VALUE
   assert_success "SAMESAME"
-  run branchout set VALUE2 "SAMESAME2"
+  run branchout set-config VALUE2 "SAMESAME2"
   assert_success
-  run branchout get VALUE2
+  run branchout get-config VALUE2
   assert_success "SAMESAME2"
-  run branchout get VALUE
+  run branchout get-config VALUE
   assert_success "SAMESAME"
 }
