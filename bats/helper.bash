@@ -1,5 +1,6 @@
 BASEDIR="${PWD}"
 BUILD_DIRECTORY="${BASEDIR}/target"
+EXAMPLES="${BASEDIR}/examples"
 
 bail() {
   { if [ "$#" -eq 0 ]; then cat -
@@ -36,7 +37,7 @@ assert_success_file() {
     } | bail
   elif [ "$#" -gt 0 ]; then
     test -f "${BUILD_DIRECTORY}/output/${1}.output" || bail "Could not find example output ${BUILD_DIRECTORY}/output/${1}.output"
-    cat "${BUILD_DIRECTORY}/output/${1}.output" | assert_output
+    assert_output < "${BUILD_DIRECTORY}/output/${1}.output"
   fi
 }
 
@@ -47,7 +48,7 @@ assert_success_file_sort() {
     } | bail
   elif [ "$#" -gt 0 ]; then
     test -f "${BUILD_DIRECTORY}/output/${1}.output" || bail "Could not find example output ${BUILD_DIRECTORY}/output/${1}.output"
-    cat "${BUILD_DIRECTORY}/output/${1}.output" | assert_output_sort
+    assert_output_sort < "${BUILD_DIRECTORY}/output/${1}.output"
   fi
 }
 
@@ -82,7 +83,7 @@ assert_output_sort() {
   if [ $# -eq 0 ]; then
     expected="$(cat -)"
   else
-    expected="$1"
+    bail "sort expects a stream"
   fi
   assert_equal "$(echo "$expected" | sort)" "$(echo "$output" | sort)"
 }
@@ -111,7 +112,7 @@ example() {
   test -z "$1" && bail "examples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}"
+  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
   export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
@@ -136,7 +137,7 @@ secretExample() {
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/${1}/home/branchout/${1}"
   cp -r examples/gnupg "target/tests/${1}/home/branchout/${1}/.gnupg"
-  cd "target/tests/${1}"
+  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
   export HOME=home
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
@@ -160,7 +161,7 @@ legacyExample() {
   test -z "$1" && bail "exmaples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}"
+  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > .branchout
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> .branchout
@@ -184,7 +185,7 @@ prefixExample() {
   test -z "$1" && bail "exmaples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}"
+  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
