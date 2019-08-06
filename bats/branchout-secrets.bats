@@ -38,6 +38,21 @@ load helper
   assert_success_file secrets/show
 }
 
+@test "secret - status fails before a build" {
+  secretExample secrets-status-needs-build
+  run branchout-secrets status --no-pinentry
+  assert_error "You need to build to get the templates"
+}
+
+@test "secret - status shows templates and secrets" {
+  secretExample secrets-status
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r ${EXAMPLES}/secret-templates/* target/resources/kubernetes
+  cp -r ${EXAMPLES}/secrets/* src/main/secrets
+  run branchout-secrets status --no-pinentry
+  assert_success_file secrets/status
+}
+
 @test "secret - create secret fails when template doesnt exist" {
   secretExample secrets-create-no-template
   run branchout set-config "EMAIL" "branchout@example.com"
@@ -50,7 +65,7 @@ load helper
   secretExample secrets-create
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "Not implemented"
+  skip "not implemented"
   run branchout-secrets create example-application/secret --no-pinentry
   assert_success_file secrets/create
 }
