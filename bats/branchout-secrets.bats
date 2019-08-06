@@ -43,7 +43,7 @@ load helper
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
   run branchout-secrets create example-application/secret --no-pinentry
-  assert_error "Template example-application/secret.template not found"
+  assert_error "Secret template not found for example-application/secret"
 }
 
 @test "secret - create secret when it doesnt exist" {
