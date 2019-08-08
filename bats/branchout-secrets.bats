@@ -63,10 +63,12 @@ load helper
 
 @test "secret - create secret when it doesnt exist" {
   secretExample secrets-create
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r ${EXAMPLES}/secret-templates/* target/resources/kubernetes
+  cp -r ${EXAMPLES}/secrets/* src/main/secrets
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "not implemented"
-  run branchout-secrets create example-application/secret --no-pinentry
+  run branchout-secrets create missing-application/secret --no-pinentry
   assert_success_file secrets/create
 }
 
