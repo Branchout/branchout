@@ -30,6 +30,17 @@ assert_success_firstline() {
   fi
 }
 
+assert_error_file() {
+  if [ "$status" -eq 0 ]; then
+    { echo "command should have failed"
+      echo "output: $output"
+    } | bail
+  elif [ "$#" -gt 0 ]; then
+    test -f "${BUILD_DIRECTORY}/output/${1}.output" || bail "Could not find example output ${BUILD_DIRECTORY}/output/${1}.output"
+    assert_output < "${BUILD_DIRECTORY}/output/${1}.output"
+  fi
+}
+
 assert_success_file() {
   if [ "$status" -ne 0 ]; then
     { echo "command failed with exit status $status"

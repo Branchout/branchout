@@ -78,9 +78,8 @@ load helper
   secretExample secrets-verify-fails
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "Not implemented"
-  run branchout-secrets verify example-application/secret --passphrase=test
-  assert_error_file secrets/secret-key-mismatch
+  run branchout-secrets verify mismatch-application/secret --passphrase=test
+  assert_error_file secrets/mismatched-keys
 }
 
 @test "secret - verify secrets fails when keys mismatch" {
