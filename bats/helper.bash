@@ -132,7 +132,7 @@ fox-bet
 fox-gemel" > Branchoutprojects
 }
 
-secretExample() {
+secretSetup() {
   test -z "$1" && bail "examples need a name"
   test -d "target/tests/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/tests/${1}" "target/tests/${1}/home/branchout/${1}"
@@ -156,6 +156,14 @@ fox-aleph
 fox-bet
 fox-gemel" > Branchoutprojects
 }
+
+secretExample() {
+  secretSetup "${@}"
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/* target/resources/kubernetes
+  cp -r "${EXAMPLES}"/secrets/* src/main/secrets
+}
+
 
 legacyExample() {
   test -z "$1" && bail "exmaples need a name"
