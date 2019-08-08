@@ -12,43 +12,40 @@ load helper
 }
 
 @test "secret - setup my key" {
-  secretExample secrets-setup
+  secretSetup secrets-setup
   run branchout set-config "EMAIL" "branchout-test@example.com"
   run branchout-secrets setup --passphrase=test <<< ""
   assert_success_firstline "Generating key for branchout-test@example.com"
 }
 
 @test "secret - setup my key prompting for email" {
-  secretExample secrets-setup-with-prompt
+  secretSetup secrets-setup-with-prompt
   run branchout-secrets setup --passphrase=test <<< "branchout-test@example.com"
   assert_success_firstline "Please provide your email address: Generating key for branchout-test@example.com"
 }
 
 @test "secret - setup my key fails when key exists" {
-  secretExample secrets-already-setup
+  secretSetup secrets-already-setup
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout-secrets setup --passphrase=test <<< ""
   assert_error "Key already exists for branchout@example.com"
 }
 
 @test "secret - show my keys" {
-  secretExample secrets-show-keys
+  secretSetup secrets-show-keys
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout-secrets show --passphrase=test
   assert_success_file secrets/show
 }
 
 @test "secret - status fails before a build" {
-  secretExample secrets-status-needs-build
+  secretSetup secrets-status-needs-build
   run branchout-secrets status --passphrase=test
   assert_error "You need to build to get the templates"
 }
 
 @test "secret - status shows templates and secrets" {
   secretExample secrets-status
-  mkdir -p target/resources/kubernetes src/main/secrets/
-  cp -r ${EXAMPLES}/secret-templates/* target/resources/kubernetes
-  cp -r ${EXAMPLES}/secrets/* src/main/secrets
   run branchout-secrets status --passphrase=test
   assert_success_file secrets/status
 }
@@ -57,15 +54,12 @@ load helper
   secretExample secrets-create-no-template
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  run branchout-secrets create example-application/secret --passphrase=test
-  assert_error "Secret template not found for example-application/secret"
+  run branchout-secrets create no-template-application/secret --passphrase=test
+  assert_error "Secret template not found for no-template-application/secret"
 }
 
 @test "secret - create secret when it doesnt exist" {
   secretExample secrets-create
-  mkdir -p target/resources/kubernetes src/main/secrets/
-  cp -r ${EXAMPLES}/secret-templates/* target/resources/kubernetes
-  cp -r ${EXAMPLES}/secrets/* src/main/secrets
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
   run branchout-secrets create missing-application/secret --passphrase=test
@@ -77,7 +71,7 @@ load helper
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
   run branchout-secrets create example-application/secret --passphrase=test
-  assert_error "Secret already exists for example-application"
+  assert_error "Secret already exists for example-application/secret"
 }
 
 @test "secret - verify secret fails when keys mismatch" {
