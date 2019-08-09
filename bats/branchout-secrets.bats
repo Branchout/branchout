@@ -91,20 +91,37 @@ load helper
 }
 
 @test "secret - verify secrets succeeds for all secrets" {
-  secretExample secrets-verify-all-succeeds
+  secretSetup secrets-verify-all-succeeds
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "Not implemented"
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app3
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-1
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-2
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app3
   run branchout-secrets verify --passphrase=test
-  assert_success_file secrets/verify-all
+  assert_success_file secrets/verify-all-success
+}
+
+@test "secret - verify secrets succeeds for one secrets" {
+  secretSetup secrets-verify-one-succeeds
+  run branchout set-config "EMAIL" "branchout@example.com"
+  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-2
+  run branchout-secrets verify --passphrase=test
+  assert_success_file secrets/verify-one-success
 }
 
 @test "secret - verify secrets succeeds for one secret" {
   secretExample secrets-verify-success
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "Not implemented"
   run branchout-secrets verify example-application/secret --passphrase=test
+  assert_success_file secrets/verify-success
 }
 
 @test "secret - fail to add key to secret when don't have permission" {
