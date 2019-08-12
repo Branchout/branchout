@@ -24,18 +24,18 @@ load helper
   assert_success_firstline "Please provide your email address: Generating key for branchout-test@example.com"
 }
 
-@test "secret - setup my key fails when key exists" {
+@test "secret - setup shows my key when key exists" {
   secretSetup secrets-already-setup
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout-secrets setup --passphrase=test <<< ""
-  assert_error "Key already exists for branchout@example.com"
+  assert_success_file secrets/show-keys
 }
 
-@test "secret - show my keys" {
+@test "secret - show my keys when setup" {
   secretSetup secrets-show-keys
   run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout-secrets show --passphrase=test
-  assert_success_file secrets/show
+  run branchout-secrets view-setup --passphrase=test <<< ""
+  assert_success_file secrets/show-keys
 }
 
 @test "secret - status fails before a build" {
@@ -48,6 +48,13 @@ load helper
   secretExample secrets-status
   run branchout-secrets status --passphrase=test
   assert_success_file secrets/status
+}
+
+@test "secret - show secret contents" {
+  secretExample secrets-show
+  run branchout-secrets show example-application --passphrase=test
+  skip "Not Implemented"
+  assert_success_file secrets/show-secret
 }
 
 @test "secret - create secret fails when template doesnt exist" {
@@ -72,6 +79,18 @@ load helper
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
   run branchout-secrets create example-application/secret --passphrase=test
   assert_error "Secret already exists for example-application/secret"
+}
+
+@test "secret - create secret with extra project keys" {
+  secretExample secrets-create-with-extra-keys
+  run branchout set-config "EMAIL" "branchout@example.com"
+  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  skip "Not Implemented"
+  run branchout-secrets create missing-application/secret --passphrase=test
+  assert_success_file secrets/create-with-project-keys
+  run branchout set-config "EMAIL" "branchout2@example.com"
+  run branchout set-config "GPG_KEY" "DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  run branchout-secrets show missing-application/secret
 }
 
 @test "secret - verify secret fails when keys mismatch" {
