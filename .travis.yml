@@ -1,3 +1,5 @@
+dist: bionic
+
 os:
 - linux
 - osx
@@ -5,7 +7,7 @@ os:
 language: minimal
 
 before_install:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck  ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck gpg2 yq; fi
 
 script: 
 - make travis
