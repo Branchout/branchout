@@ -51,9 +51,8 @@ load helper
 }
 
 @test "secret - show secret contents" {
-  secretExample secrets-show
-  run branchout-secrets show example-application --passphrase=test
-  skip "Not Implemented"
+  secretExample secrets-view
+  run branchout-secrets view example-application/secret --passphrase=test
   assert_success_file secrets/show-secret
 }
 
