@@ -149,11 +149,11 @@ secretSetup() {
   mkdir -p "target/tests/${1}" "target/tests/${1}/home/branchout/${1}"
   cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
   export HOME=home/branchout/${1}
-  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import ${EXAMPLES}/gnupg/branchout.asc
-  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import ${EXAMPLES}/gnupg/branchout2.asc
-  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import ${EXAMPLES}/gnupg/branchout3.pub
-  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import ${EXAMPLES}/gnupg/branchout.pub
-  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import ${EXAMPLES}/gnupg/branchout3.asc
+  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout.asc"
+  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout2.asc"
+  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
+  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
+  gpg2 -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout3.asc"
   export HOME=home
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile

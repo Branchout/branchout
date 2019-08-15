@@ -106,9 +106,9 @@ load helper
   assert_success_file secrets/external-key
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys 
-  run branchout set-config "EMAIL" "branchout2@example.com"
-  run branchout set-config "GPG_KEY" "DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
-  run branchout-secrets view missing-application/secret
+  run branchout set-config "EMAIL" "branchout3@example.com"
+  run branchout-secrets use-key "branchout3@example.com"
+  run branchout-secrets view missing-application/secret --keyring=decryption.keyring
   assert_success_file secrets/show-secret 
 }
 
