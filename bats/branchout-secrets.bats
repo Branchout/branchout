@@ -80,16 +80,36 @@ load helper
   assert_error "Secret already exists for example-application/secret"
 }
 
+@test "secret - key" {
+  secretExample secrets-key
+  run branchout set-config "EMAIL" "branchout@example.com"
+  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout-secrets show-keys
+  assert_success_file secrets/main-key
+}
+
+@test "secret - add key" {
+  secretExample secrets-add-key
+  run branchout set-config "EMAIL" "branchout@example.com"
+  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets add-key "pgp:4459A441306219F88CD7581E1A5669F6742AE4E2"
+  assert_success_file secrets/two-keys
+  run branchout-secrets show-keys
+  assert_success_file secrets/two-keys
+}
+
 @test "secret - create secret with extra project keys" {
   secretExample secrets-create-with-extra-keys
   run branchout set-config "EMAIL" "branchout@example.com"
   run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
-  skip "Not Implemented"
+  run branchout secrets add-key "pgp:BBCBD423E6536F1A1EDABF95AAA99B3A301F5178" 
+  assert_success_file secrets/external-key
   run branchout-secrets create missing-application/secret --passphrase=test
-  assert_success_file secrets/create-with-project-keys
+  assert_success_file secrets/create-with-project-keys 
   run branchout set-config "EMAIL" "branchout2@example.com"
   run branchout set-config "GPG_KEY" "DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
-  run branchout-secrets show missing-application/secret
+  run branchout-secrets view missing-application/secret
+  assert_success_file secrets/show-secret 
 }
 
 @test "secret - verify secret fails when keys mismatch" {
