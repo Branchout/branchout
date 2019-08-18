@@ -82,16 +82,14 @@ load helper
 
 @test "secret - key" {
   secretExample secrets-key
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
   run branchout-secrets show-keys
   assert_success_file secrets/main-key
 }
 
 @test "secret - add key" {
   secretExample secrets-add-key
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
   run branchout secrets add-key "pgp:4459A441306219F88CD7581E1A5669F6742AE4E2"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
@@ -100,13 +98,11 @@ load helper
 
 @test "secret - create secret with extra project keys" {
   secretExample secrets-create-with-extra-keys
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
   run branchout secrets add-key "pgp:BBCBD423E6536F1A1EDABF95AAA99B3A301F5178" 
   assert_success_file secrets/external-key
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys 
-  run branchout set-config "EMAIL" "branchout3@example.com"
   run branchout-secrets use-key "branchout3@example.com"
   run branchout-secrets view missing-application/secret --keyring=decryption.keyring
   assert_success_file secrets/show-secret 
@@ -114,24 +110,24 @@ load helper
 
 @test "secret - verify secret fails when keys mismatch" {
   secretExample secrets-verify-fails
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   run branchout-secrets verify mismatch-application/secret --passphrase=test
   assert_error_file secrets/mismatched-keys
 }
 
 @test "secret - verify secrets fails when keys mismatch" {
   secretExample secrets-verify-all-fails
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   run branchout-secrets verify --passphrase=test
   assert_success_file secrets/verify-all-fails
 }
 
 @test "secret - verify secrets succeeds for all secrets" {
   secretSetup secrets-verify-all-succeeds
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   mkdir -p target/resources/kubernetes src/main/secrets/
   cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
   cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
@@ -145,8 +141,8 @@ load helper
 
 @test "secret - verify secrets succeeds for one secrets" {
   secretSetup secrets-verify-one-succeeds
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   mkdir -p target/resources/kubernetes src/main/secrets/
   cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
   cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-2
@@ -156,15 +152,22 @@ load helper
 
 @test "secret - verify secrets succeeds for one secret" {
   secretExample secrets-verify-success
-  run branchout set-config "EMAIL" "branchout@example.com"
-  run branchout set-config "GPG_KEY" "520D39C127DA4C77B1CA7BD04B59A79F662253BA"
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   run branchout-secrets verify example-application/secret --passphrase=test
   assert_success_file secrets/verify-success
 }
 
 @test "secret - fail to add key to secret when don't have permission" {
-  skip "Not implemented"
-  run branchout-secrets add-key keyid --passphrase=test
+  secretExample secrets-are-safe-from-outsiders
+  run branchout secrets use-key "branchout2@example.com"
+  assert_success_file secrets/use-branchout2
+  run branchout-secrets create missing-application/secret --passphrase=test
+  assert_success_file secrets/create-with-project-keys
+  run branchout-secrets use-key "branchout3@example.com"
+  assert_success_file secrets/use-branchout3 
+  run branchout-secrets update missing-application/secret --keyring=decryption.keyring --passphrase=test
+  assert_error_file secrets/safe-from-outsiders
 }
 
 @test "secret - add new key to secret" {
