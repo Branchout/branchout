@@ -123,9 +123,9 @@ assert_equal() {
 
 example() {
   test -z "$1" && bail "examples need a name"
-  test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
+  test -d "target/${1}" && bail "example already exists: ${1}"
+  mkdir -p "target/${1}" "target/branchout/${1}"
+  cd "target/${1}" || bail "Failed to enter target/${1}"
   export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
@@ -147,17 +147,19 @@ fox-gemel" > Branchoutprojects
 
 secretSetup() {
   test -z "$1" && bail "examples need a name"
-  test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/${1}/home/branchout/${1}"
-  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
-  export HOME=home/branchout/${1}
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout.asc"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout2.asc"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout3.asc"
-  export HOME=home
-  echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
+  HASH=$(echo "${1}" | cksum | tr ' ' '_')
+  test -d "target/${HASH}" && bail "example already exists: ${HASH}"
+  mkdir -p "target/${HASH}" "target/${HASH}/h/branchout/${HASH}"
+  cd "target/${HASH}" || bail "Failed to enter target/${HASH}"
+  ln -s "target/${HASH}" "target/${1}"
+  export HOME=h/branchout/${HASH}
+  "${GPG_COMMAND}" -q --batch --pinentry-mode loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout.asc"
+  "${GPG_COMMAND}" -q --batch --pinentry-mode loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout2.asc"
+  "${GPG_COMMAND}" -q --batch --pinentry-mode loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
+  "${GPG_COMMAND}" -q --batch --pinentry-mode loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
+  "${GPG_COMMAND}" -q --batch --pinentry-mode loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout3.asc"
+  export HOME=h
+  echo "BRANCHOUT_NAME=\"${HASH}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
 frog-gemel
@@ -185,9 +187,9 @@ secretExample() {
 
 legacyExample() {
   test -z "$1" && bail "exmaples need a name"
-  test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
+  test -d "target/${1}" && bail "example already exists: ${1}"
+  mkdir -p "target/${1}" "target/branchout/${1}"
+  cd "target/${1}" || bail "Failed to enter target/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > .branchout
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> .branchout
@@ -209,9 +211,9 @@ fox-gemel" > .projects
 
 prefixExample() {
   test -z "$1" && bail "exmaples need a name"
-  test -d "target/tests/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/tests/${1}" "target/tests/branchout/${1}"
-  cd "target/tests/${1}" || bail "Failed to enter target/tests/${1}"
+  test -d "target/${1}" && bail "example already exists: ${1}"
+  mkdir -p "target/${1}" "target/branchout/${1}"
+  cd "target/${1}" || bail "Failed to enter target/${1}"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
