@@ -83,6 +83,7 @@ load helper
 @test "secret - key" {
   secretExample secrets-key
   run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   run branchout-secrets show-keys
   assert_success_file secrets/main-key
 }
@@ -90,10 +91,41 @@ load helper
 @test "secret - register key" {
   secretExample secrets-add-key
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets register-key "pgp:4459A441306219F88CD7581E1A5669F6742AE4E2"
+  run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
   assert_success_file secrets/two-keys
+}
+
+@test "secret - register key by id" {
+  secretExample secrets-add-key-by-id
+  run branchout secrets use-key "branchout@example.com"
+  run branchout secrets register-key "branchout2@example.com"
+  assert_success_file secrets/two-keys
+  run branchout-secrets show-keys
+  assert_success_file secrets/two-keys
+}
+
+@test "secret - deregister key" {
+  secretExample secrets-remove-key
+  run branchout secrets use-key "branchout@example.com"
+  run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  assert_success_file secrets/two-keys
+  run branchout-secrets show-keys
+  assert_success_file secrets/two-keys
+  run branchout secrets deregister-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  assert_success_file secrets/main-key
+}
+
+@test "secret - deregister key by id" {
+  secretExample secrets-remove-key-by-id
+  run branchout secrets use-key "branchout@example.com"
+  run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  assert_success_file secrets/two-keys
+  run branchout-secrets show-keys
+  assert_success_file secrets/two-keys
+  run branchout secrets deregister-key "branchout2@example.com"
+  assert_success_file secrets/main-key
 }
 
 @test "secret - create secret with extra project keys" {
@@ -169,9 +201,8 @@ load helper
   run branchout-secrets update missing-application/secret --keyring=decryption.keyring --passphrase=test
   assert_error_file secrets/safe-from-outsiders
 }
-
 @test "secret - add new key to all secrets fails on mismatch" {
-  secretExample secrets-add-people-failes-on-mismatch
+  secretExample secrets-add-people-fails-on-mismatch
   run branchout secrets use-key "branchout2@example.com"
   assert_success_file secrets/use-branchout2
   run branchout-secrets create missing-application/secret --passphrase=test
@@ -186,11 +217,7 @@ load helper
   assert_success_file secrets/use-branchout2
   mkdir -p target/resources/kubernetes src/main/secrets/
   cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
-  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
-  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app3
   cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-1
-  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-2
-  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app3
   run branchout-secrets add-key branchout3@example.com --passphrase=test
   assert_success_file secrets/add-people
   run branchout-secrets view app-1/secret --passphrase=test
@@ -202,9 +229,25 @@ load helper
 }
 
 @test "secret - remove key from secret" {
-  skip "Not implemented"
-  run branchout-secrets remove-key keyid some-secret --passphrase=test
-  assert_success_file secrets/remove-key
+  secretSetup secrets-remove-people
+  run branchout secrets use-key "branchout2@example.com"
+  assert_success_file secrets/use-branchout2
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/missing-application target/resources/kubernetes/app-1
+  run branchout-secrets create app-1/secret --passphrase=test
+  assert_success_file secrets/create-app-1
+  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
+  run branchout-secrets add-key branchout3@example.com --passphrase=test
+  assert_success_file secrets/add-key-branchout3
+  run branchout-secrets view app-1/secret --passphrase=test
+  assert_success_file secrets/view-app-1
+  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  assert_success_file secrets/view-app-1
+  run branchout-secrets remove-key "branchout3@example.com" --passphrase=test
+  assert_success_file secrets/remove-branchout3
+  run branchout-secrets view app-1/secret --passphrase=test --keyring=decryption.keyring
+  assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
 }
 
 @test "secret - edit a secret" {
@@ -216,6 +259,7 @@ load helper
 
 @test "secret - patch a secret value" {
   skip "Not implemented"
-  run branchout-secrets patch some-secret key --passphrase=test <<< 'newvalue'
+  secretExample secrets-are-safe-from-outsiders
+  run branchout-secrets patch example-application/secret key --passphrase=test <<< 'newvalue'
   assert_success_file secrets/patch
 }

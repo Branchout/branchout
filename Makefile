@@ -30,5 +30,8 @@ test-group: clean canned repositories
 test-secrets: clean canned repositories
 	bats --pretty bats/branchout-secrets.bats
 
+test-current: clean canned repositories
+	bats --pretty bats/current.bats
+
 travis: clean canned repositories
 	bats --tap bats
