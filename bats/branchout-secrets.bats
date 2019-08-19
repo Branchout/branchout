@@ -136,7 +136,7 @@ load helper
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys 
   run branchout-secrets use-key "branchout3@example.com"
-  run branchout-secrets view missing-application/secret --keyring=decryption.keyring
+  run branchout-secrets view missing-application/secret --keyring=decryption --passphrase=test
   assert_success_file secrets/show-secret
 }
 
@@ -196,9 +196,9 @@ load helper
   assert_success_file secrets/use-branchout2
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys
-  run branchout-secrets use-key "branchout3@example.com"
+  run branchout-secrets use-key "branchout3@example.com" --keyring=decryption
   assert_success_file secrets/use-branchout3 
-  run branchout-secrets update missing-application/secret --keyring=decryption.keyring --passphrase=test
+  run branchout-secrets update missing-application/secret --keyring=decryption --passphrase=test
   assert_error_file secrets/safe-from-outsiders
 }
 @test "secret - add new key to all secrets fails on mismatch" {
@@ -213,8 +213,8 @@ load helper
 
 @test "secret - add new key to all secrets " {
   secretSetup secrets-add-people
-  run branchout secrets use-key "branchout2@example.com"
-  assert_success_file secrets/use-branchout2
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   mkdir -p target/resources/kubernetes src/main/secrets/
   cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
   cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-1
@@ -222,31 +222,31 @@ load helper
   assert_success_file secrets/add-people
   run branchout-secrets view app-1/secret --passphrase=test
   assert_success_file secrets/view-app-1
-   run branchout secrets use-key "branchout3@example.com"
+   run branchout secrets use-key "branchout3@example.com" --keyring=decryption
   assert_success_file secrets/use-branchout3
-  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
   assert_success_file secrets/view-app-1
 }
 
 @test "secret - remove key from secret" {
   secretSetup secrets-remove-people
-  run branchout secrets use-key "branchout2@example.com"
-  assert_success_file secrets/use-branchout2
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
   mkdir -p target/resources/kubernetes src/main/secrets/
   cp -r "${EXAMPLES}"/secret-templates/missing-application target/resources/kubernetes/app-1
   run branchout-secrets create app-1/secret --passphrase=test
   assert_success_file secrets/create-app-1
-  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
   assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
   run branchout-secrets add-key branchout3@example.com --passphrase=test
   assert_success_file secrets/add-key-branchout3
   run branchout-secrets view app-1/secret --passphrase=test
   assert_success_file secrets/view-app-1
-  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
   assert_success_file secrets/view-app-1
   run branchout-secrets remove-key "branchout3@example.com" --passphrase=test
   assert_success_file secrets/remove-branchout3
-  run branchout-secrets view app-1/secret --passphrase=test --keyring=decryption.keyring
+  run branchout-secrets view app-1/secret --passphrase=test --keyring=decryption
   assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
 }
 
