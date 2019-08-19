@@ -2,12 +2,12 @@
 
 set -e
 
-export BO_THEME_RESET="\033[0m"
-export BO_THEME_OK="\033[0m"
-export BO_THEME_NOTICE="\033[35m"
-export BO_THEME_ERROR="\033[31m"
-export BO_THEME_WARNING="\033[38;5;202m"
-export BO_THEME_HIGHLIGHT="\033[38;5;11m"
+export BO_THEME_RESET="\\033[0m"
+export BO_THEME_OK="\\033[0m"
+export BO_THEME_NOTICE="\\033[35m"
+export BO_THEME_ERROR="\\033[31m"
+export BO_THEME_WARNING="\\033[38;5;202m"
+export BO_THEME_HIGHLIGHT="\\033[38;5;11m"
 
 BRANCHOUT_PROJECTS_DIRECTORY=projects
 # shellcheck source=examples/branchoutrc
