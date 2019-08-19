@@ -7,7 +7,7 @@ os:
 language: minimal
 
 before_install:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck yq stickycode/kubesec/kubesec; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install gpg gpg-agent bats shellcheck yq stickycode/kubesec/kubesec; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install yq; sudo wget https://github.com/stickycode/kubesec/releases/download/0.9.2.1/kubesec-0.9.2.1-linux-amd64 -O /usr/local/bin/kubesec; sudo chmod ugo+rx /usr/local/bin/kubesec; fi
 
 script: 
