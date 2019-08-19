@@ -7,8 +7,8 @@ os:
 language: minimal
 
 before_install:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck gpg2 yq; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install yq; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck gpg2 yq stickycode/kubesec/kubesec; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install yq; brew install stickycode/kubesec/kubesec; fi
 
 script: 
 - make travis
