@@ -87,10 +87,10 @@ load helper
   assert_success_file secrets/main-key
 }
 
-@test "secret - add key" {
+@test "secret - register key" {
   secretExample secrets-add-key
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets add-key "pgp:4459A441306219F88CD7581E1A5669F6742AE4E2"
+  run branchout secrets register-key "pgp:4459A441306219F88CD7581E1A5669F6742AE4E2"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
   assert_success_file secrets/two-keys
@@ -99,13 +99,13 @@ load helper
 @test "secret - create secret with extra project keys" {
   secretExample secrets-create-with-extra-keys
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets add-key "pgp:BBCBD423E6536F1A1EDABF95AAA99B3A301F5178" 
+  run branchout secrets register-key "pgp:BBCBD423E6536F1A1EDABF95AAA99B3A301F5178" 
   assert_success_file secrets/external-key
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys 
   run branchout-secrets use-key "branchout3@example.com"
   run branchout-secrets view missing-application/secret --keyring=decryption.keyring
-  assert_success_file secrets/show-secret 
+  assert_success_file secrets/show-secret
 }
 
 @test "secret - verify secret fails when keys mismatch" {
@@ -170,16 +170,35 @@ load helper
   assert_error_file secrets/safe-from-outsiders
 }
 
-@test "secret - add new key to secret" {
-  skip "Not implemented"
-  run branchout-secrets add-key keyid some-secret --passphrase=test
-  assert_success_file secrets/add-key
+@test "secret - add new key to all secrets fails on mismatch" {
+  secretExample secrets-add-people-failes-on-mismatch
+  run branchout secrets use-key "branchout2@example.com"
+  assert_success_file secrets/use-branchout2
+  run branchout-secrets create missing-application/secret --passphrase=test
+  assert_success_file secrets/create-with-project-keys
+  run branchout-secrets add-key branchout3@example.com --passphrase=test
+  assert_error_file secrets/add-key-fails-with-mismatch
 }
 
-@test "secret - add new key to all secrets" {
-  skip "Not implemented"
-  run branchout-secrets add-key keyid --passphrase=test
-  assert_success_file secrets/add-key-to-all
+@test "secret - add new key to all secrets " {
+  secretSetup secrets-add-people
+  run branchout secrets use-key "branchout2@example.com"
+  assert_success_file secrets/use-branchout2
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-2
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app3
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-1
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-2
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app3
+  run branchout-secrets add-key branchout3@example.com --passphrase=test
+  assert_success_file secrets/add-people
+  run branchout-secrets view app-1/secret --passphrase=test
+  assert_success_file secrets/view-app-1
+   run branchout secrets use-key "branchout3@example.com"
+  assert_success_file secrets/use-branchout3
+  run branchout-secrets view app-1/secret --keyring=decryption.keyring --passphrase=test
+  assert_success_file secrets/view-app-1
 }
 
 @test "secret - remove key from secret" {
