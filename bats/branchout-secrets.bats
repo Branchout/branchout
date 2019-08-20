@@ -1,8 +1,9 @@
 load helper
 
 teardown() {
-  test -d "h/branchout/${HASH}/.gpg.s" && GNUPGHOME="h/branchout/${HASH}/.gpg.s" gpgconf --kill gpg-agent || true
-  test -d "h/branchout/${HASH}/.gpg.d" && GNUPGHOME="h/branchout/${HASH}/.gpg.d" gpgconf --kill gpg-agent || true
+  test -d "${GNUPGHOME_TEMP}/.gpg.s" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.s" gpgconf --kill gpg-agent || true
+  test -d "${GNUPGHOME_TEMP}/.gpg.d" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.d" gpgconf --kill gpg-agent || true
+  test -d "${GNUPGHOME_TEMP}" && rm -rf "/tmp/$(basename ${GNUPGHOME_TEMP})" || true
 }
 
 @test "secret - shellcheck compliant with no exceptions" {
@@ -17,8 +18,10 @@ teardown() {
 }
 
 @test "secret - raw setup my key" {
+  GNUPGHOME_TEMP=$(mktemp -d)
   example secrets-setup
   run branchout set-config "EMAIL" "branchout-test@example.com"
+  run branchout set-config "GPG_HOME" "${GNUPGHOME_TEMP}"
   run branchout-secrets setup --passphrase=test <<< ""
   assert_success_firstline "Generating key for branchout-test@example.com"
 }
