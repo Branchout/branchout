@@ -1,5 +1,10 @@
 load helper
 
+teardown() {
+  test -d "h/branchout/${HASH}/.gpg.s" && GNUPGHOME="h/branchout/${HASH}/.gpg.s" gpgconf --kill gpg-agent || true
+  test -d "h/branchout/${HASH}/.gpg.d" && GNUPGHOME="h/branchout/${HASH}/.gpg.d" gpgconf --kill gpg-agent || true
+}
+
 @test "secret - shellcheck compliant with no exceptions" {
   run shellcheck -x branchout-secrets
   assert_success
@@ -11,8 +16,15 @@ load helper
   assert_error "branchout secrets: a tool for managing kubebernetes secrets"
 }
 
+@test "secret - raw setup my key" {
+  example secrets-setup
+  run branchout set-config "EMAIL" "branchout-test@example.com"
+  run branchout-secrets setup --passphrase=test <<< ""
+  assert_success_firstline "Generating key for branchout-test@example.com"
+}
+
 @test "secret - setup my key" {
-  secretSetup secrets-setup
+  secretSetup secrets-setup-with-keyring
   run branchout set-config "EMAIL" "branchout-test@example.com"
   run branchout-secrets setup --passphrase=test <<< ""
   assert_success_firstline "Generating key for branchout-test@example.com"
@@ -136,7 +148,7 @@ load helper
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys 
   run branchout-secrets use-key "branchout3@example.com"
-  run branchout-secrets view missing-application/secret --keyring=decryption --passphrase=test
+  run branchout-secrets view missing-application/secret --keyring=d --passphrase=test
   assert_success_file secrets/show-secret
 }
 
@@ -196,9 +208,9 @@ load helper
   assert_success_file secrets/use-branchout2
   run branchout-secrets create missing-application/secret --passphrase=test
   assert_success_file secrets/create-with-project-keys
-  run branchout-secrets use-key "branchout3@example.com" --keyring=decryption
+  run branchout-secrets use-key "branchout3@example.com" --keyring=d
   assert_success_file secrets/use-branchout3 
-  run branchout-secrets update missing-application/secret --keyring=decryption --passphrase=test
+  run branchout-secrets update missing-application/secret --keyring=d --passphrase=test
   assert_error_file secrets/safe-from-outsiders
 }
 @test "secret - add new key to all secrets fails on mismatch" {
@@ -222,9 +234,9 @@ load helper
   assert_success_file secrets/add-people
   run branchout-secrets view app-1/secret --passphrase=test
   assert_success_file secrets/view-app-1
-   run branchout secrets use-key "branchout3@example.com" --keyring=decryption
+   run branchout secrets use-key "branchout3@example.com" --keyring=d
   assert_success_file secrets/use-branchout3
-  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=d --passphrase=test
   assert_success_file secrets/view-app-1
 }
 
@@ -236,17 +248,17 @@ load helper
   cp -r "${EXAMPLES}"/secret-templates/missing-application target/resources/kubernetes/app-1
   run branchout-secrets create app-1/secret --passphrase=test
   assert_success_file secrets/create-app-1
-  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=d --passphrase=test
   assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
   run branchout-secrets add-key branchout3@example.com --passphrase=test
   assert_success_file secrets/add-key-branchout3
   run branchout-secrets view app-1/secret --passphrase=test
   assert_success_file secrets/view-app-1
-  run branchout-secrets view app-1/secret --keyring=decryption --passphrase=test
+  run branchout-secrets view app-1/secret --keyring=d --passphrase=test
   assert_success_file secrets/view-app-1
   run branchout-secrets remove-key "branchout3@example.com" --passphrase=test
   assert_success_file secrets/remove-branchout3
-  run branchout-secrets view app-1/secret --passphrase=test --keyring=decryption
+  run branchout-secrets view app-1/secret --passphrase=test --keyring=d
   assert_error "Unable to decrypt Data Encryption Key (DEK) (re-run with --debug flag to get more details) "
 }
 

@@ -1,4 +1,5 @@
 export PATH := $(PWD)/bats/bin:$(PWD):$(PATH)
+VERSION := $(shell git describe --tags --abbrev=0)
 
 target/output:
 	./output/escape-text
@@ -35,3 +36,6 @@ test-current: clean canned repositories
 
 travis: clean canned repositories
 	bats --tap bats
+
+deploy-to-homebrew:
+	VERSION=${VERSION} bash .deploy-to-homebrew

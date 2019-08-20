@@ -84,7 +84,7 @@ export BRANCHOUT_PREFIX
 test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
 test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
-BRANCHOUT_CONFIG_GPG_KEYRING=standard
+BRANCHOUT_CONFIG_GPG_KEYRING="standard"
 # shellcheck source=examples/branchoutrc
 test -f "${BRANCHOUT_HOME}/branchoutrc" && source "${BRANCHOUT_HOME}/branchoutrc"
 export BRANCHOUT_CONFIG_GPG_KEYRING

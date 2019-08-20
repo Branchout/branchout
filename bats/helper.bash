@@ -149,20 +149,21 @@ secretSetup() {
   test -z "$1" && bail "examples need a name"
   HASH=$(echo "${1}" | cksum | tr ' ' '_')
   test -d "target/${HASH}" && bail "example already exists: ${HASH}"
-  mkdir -p "target/${HASH}" "target/${HASH}/h/branchout/${HASH}/.gnupg.standard" "target/${HASH}/h/branchout/${HASH}/.gnupg.decryption"
+  mkdir -p "target/${HASH}" "target/${HASH}/h/branchout/${HASH}/.gpg.s" "target/${HASH}/h/branchout/${HASH}/.gpg.d"
   chmod -R 0700 "target/${HASH}/h/branchout/${HASH}" 
-  cp -r "${EXAMPLES}/gnupg/private-keys-v1.standard" "target/${HASH}/h/branchout/${HASH}/.gnupg.standard/private-keys-v1.d"
-  cp -r "${EXAMPLES}/gnupg/private-keys-v1.decryption" "target/${HASH}/h/branchout/${HASH}/.gnupg.decryption/private-keys-v1.d"
-  ln -s "target/${HASH}" "target/${1}"
+  cp -r "${EXAMPLES}/gnupg/private-keys-v1.standard" "target/${HASH}/h/branchout/${HASH}/.gpg.s/private-keys-v1.d"
+  cp -r "${EXAMPLES}/gnupg/private-keys-v1.decryption" "target/${HASH}/h/branchout/${HASH}/.gpg.d/private-keys-v1.d"
+  ln -s "${HASH}" "target/${1}"
   cd "target/${HASH}" || bail "Failed to enter target/${HASH}"
-  export GNUPGHOME=h/branchout/${HASH}/.gnupg.standard
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout2.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring standard.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
-  export GNUPGHOME=h/branchout/${HASH}/.gnupg.decryption
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring decryption.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
+  export GNUPGHOME=h/branchout/${HASH}/.gpg.s
+  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
+  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout2.pub"
+  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
+  export GNUPGHOME=h/branchout/${HASH}/.gpg.d
+  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring d.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
+  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring d.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
   export HOME=h
+  echo "BRANCHOUT_CONFIG_GPG_KEYRING=s" >> "h/branchout/${HASH}/branchoutrc"
   echo "BRANCHOUT_NAME=\"${HASH}\"" > Branchoutfile
   echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
