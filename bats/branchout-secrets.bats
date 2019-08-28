@@ -112,6 +112,26 @@ teardown() {
   assert_success_file secrets/two-keys
 }
 
+@test "secret - register unknown key" {
+  secretExample secrets-add-unknown-key
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
+  run branchout secrets register-key "pgp:EEEEEC480F6AE9341C8790965916E6EA295DF6B"
+  assert_error "Key EEEEEC480F6AE9341C8790965916E6EA295DF6B not found"
+}
+
+@test "secret - register key with import" {
+  secretExample secrets-add-key-with-import
+  mkdir .keys
+  cp "${EXAMPLES}/gnupg/extra.pub" .keys/AB754D3EBB9F49880CB7BD2E68684CA661E85551.pub
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
+  run branchout secrets register-key "pgp:AB754D3EBB9F49880CB7BD2E68684CA661E85551"
+  assert_success_file secrets/keys-import
+  run branchout-secrets show-keys
+  assert_success_file secrets/keys-import
+}
+
 @test "secret - register key by id" {
   secretExample secrets-add-key-by-id
   run branchout secrets use-key "branchout@example.com"
