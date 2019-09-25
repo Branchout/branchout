@@ -71,12 +71,14 @@ If you want to clone when you add
 Installing the required tools
 
 ```
-brew install git bats shellcheck
+brew install git bats-core shellcheck
 ```
 
 ### Running the tests
 
-The tests are written in bats https://github.com/sstephenson/bats
+The tests are written in bats https://github.com/bats-core/bats-core
+
+Note, the ```sstephenson/bats``` repository is unmaintained, bats-core is what you want.
 
 ```
 make test
