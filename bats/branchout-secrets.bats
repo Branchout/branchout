@@ -3,7 +3,7 @@ load helper
 teardown() {
   test -d "${GNUPGHOME_TEMP}/.gpg.s" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.s" gpgconf --kill gpg-agent || true
   test -d "${GNUPGHOME_TEMP}/.gpg.d" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.d" gpgconf --kill gpg-agent || true
-  test -d "${GNUPGHOME_TEMP}" && rm -rf "/tmp/$(basename ${GNUPGHOME_TEMP})" || true
+  test -d "${GNUPGHOME_TEMP}" && rm -rf "/tmp/$(basename "${GNUPGHOME_TEMP}")" || true
 }
 
 @test "secret - shellcheck compliant with no exceptions" {
