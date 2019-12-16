@@ -37,12 +37,12 @@ function projectContextStatus() {
 function projectUpdateError() {
   if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
     if test "${projectBranch}" = "HEAD"; then
-      echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+      echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
     else
-      echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m"
+      echo -e "\\033[0m${2}\\033[31m${projectContext}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m"
     fi
   else
-    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
+    echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
   fi
 }
 
@@ -56,8 +56,8 @@ function projectUpdate() {
 }
 
 function projectClone() {
-  test -d "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || "${BRANCHOUT_PATH}/branchout-group" pull "${projectGroup}"
-  cd "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || usage "Project group ${projectGroup} directory not found"
+  test -d "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || "${BRANCHOUT_PATH}/branchout-group" pull "${projectName}"
+  cd "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || usage "Project group $("${BRANCHOUT_PATH}/branchout-group derive ${projectName}") directory not found"
   echo -e "\\033[0mCloning \\033[92m${projectContext}\\033[0m"
   if git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" >/dev/null 2>&1; then
     projectContextStatus "${projectName}" "Pulled  "
@@ -67,14 +67,8 @@ function projectClone() {
 }
 
 function projectContext() {
-  projectName=$("${BRANCHOUT_PATH}/branchout-group" deriveProject "${1}")
-  projectGroup=$("${BRANCHOUT_PATH}/branchout-group" derive "${1}")
-
-  if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
-    projectContext="${projectName}"
-  else
-    projectContext="${projectGroup}/${projectName}"
-  fi
+  projectName="${1}"
+  projectContext=$("${BRANCHOUT_PATH}/branchout-group" deriveProjectContext "${1}")
 }
 
 function projectStatus() {

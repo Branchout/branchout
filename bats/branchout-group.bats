@@ -97,12 +97,20 @@ toad"
   assert_success_file pull/rabbit-update
 }
 
-@test "group pull for non repository group then update" {
-  example branchout-a-non-repository-group-then-update
-  run branchout lion
+@test "group default pull for non repository group then update" {
+  example branchout-pull-a-non-repository-group-then-update
+  run branchout lion 
   assert_success_file pull/lion-clone
   run branchout lion
   assert_success_file pull/lion-update
+}
+
+@test "group pull for non repository group then update" {
+  example branchout-group-pull-a-non-repository-group-then-update
+  run branchout-group pull lion 
+  assert_success_file group/lion-clone
+  run branchout-group pull lion
+  assert_success_file group/lion-update
 }
 
 @test "group pull group from another group directory then update" {
@@ -134,3 +142,5 @@ toad"
   run branchout sheep
   assert_success_file_sort pull/sheep-clone 
 }
+
+

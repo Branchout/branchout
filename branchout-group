@@ -10,7 +10,7 @@ function branchoutGroupDeriveStdin() {
 }
 
 function branchoutGroupPull() {
-  projectGroup="${1}"
+  projectGroup "${1}"
   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
     branchoutGroupUpdate
   else
@@ -57,18 +57,22 @@ function branchoutGroups() {
   "${BRANCHOUT_PATH}/branchout-project" list "${1}" | "${BRANCHOUT_PATH}/branchout-group" derive --stdin | sort | uniq
 }
 
-function branchoutGroupDerive() {
+function projectGroup() {
   if test "${1#*-}" = "maven-plugin"; then
-    echo "plugins"
+    projectGroup="plugins"
 
   elif test -z "${BRANCHOUT_PREFIX}"; then
-    echo "${1%%-*}"
+    projectGroup="${1%%-*}"
 
   else
     noPrefix="${1#${BRANCHOUT_PREFIX}-}"
-    echo "${noPrefix%%-*}"
+    projectGroup="${noPrefix%%-*}"
   fi
+}
 
+function branchoutGroupDerive() {
+  projectGroup "${1}"
+  echo "${projectGroup}"
 }
 
 function groupStatus() {
@@ -96,6 +100,16 @@ function groupStatus() {
 
 function branchoutProjectDerive() {
   echo "${1}"
+}
+
+function branchoutProjectContext() {
+  projectGroup=$("${BRANCHOUT_PATH}/branchout-group" derive "${1}")
+
+  if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
+    echo "${1}"
+  else
+    echo "${projectGroup}/${1}"
+  fi
 }
 
 function usage() {
@@ -139,6 +153,9 @@ function main() {
       ;;
     deriveProject)
       branchoutProjectDerive "${2}"
+      ;;
+    deriveProjectContext)
+      branchoutProjectContext "${2}"
       ;;
     pull)
       test -n "${2}" || usage "Must provide group"
