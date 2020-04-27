@@ -1,0 +1,108 @@
+#!/bin/bash
+
+set -e
+
+if [ "$GITHUB_TOKEN" = "" ]; then echo "\$GITHUB_TOKEN isn't set"; exit 1; fi
+if [ "$VERSION" = "" ]; then echo "\$VERSION isn't set"; exit 1; fi
+
+ARCHIVE=$(mktemp /tmp/branchout.XXXXXX)
+CHECKOUT_DIR=$(mktemp -d /tmp/homebrew-branchout.XXXXXX)
+cleanup() {
+  rm -r "${ARCHIVE}"
+  rm -r "${CHECKOUT_DIR}"
+}
+# trap cleanup EXIT
+
+curl -sSL https://github.com/Branchout/branchout/archive/$VERSION.tar.gz -o "$ARCHIVE"
+if ! tar xOf "$ARCHIVE" > /dev/null 2>/dev/null; then echo "$ARCHIVE isn't a valid archive"; exit 1; fi
+
+HASH=$(shasum -a 256 "$ARCHIVE" | cut -d\  -f1)
+
+git clone https://${GITHUB_TOKEN}@github.com/Branchout/homebrew-branchout.git "$CHECKOUT_DIR"
+echo "class Branchout < Formula
+
+  desc \"Command-line git repository layout manage\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"branchout/branchout/branchout-core\"
+  depends_on \"branchout/branchout/branchout-maven\"
+  depends_on \"branchout/branchout/branchout-secrets\"
+  
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout.rb"
+
+echo "class BranchoutCore < Formula
+
+  desc \"Command-line git repository layout manage\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"git\"
+  depends_on \"bash\"
+  
+  def install
+    bin.install \"branchout\"
+    bin.install \"branchout-project\"
+    bin.install \"branchout-group\"
+    bin.install \"branchout-init\"
+    bin.install \"branchout-environment\"
+    bin.install \"branchout-configuration\"
+  end
+  
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout-core.rb"
+
+echo "class BranchoutMaven < Formula
+
+  desc \"Command-line git repository layout manager\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"branchout/branchout/core\"
+  depends_on \"maven\"
+  
+  def install
+    bin.install \"branchout-maven\"
+  end
+  
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout-maven.rb"
+
+echo "class BranchoutSecrets < Formula
+
+  desc \"Command-line git repository layout manager\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"stickycode/kubesec/kubesec\"
+  depends_on \"gpg\"
+  
+  def install
+    bin.install \"branchout-secrets\"
+  end
+  
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout-secrets.rb"
+
+#(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)

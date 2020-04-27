@@ -1,9 +1,17 @@
+#!/bin/bash
+
 load helper
 
 teardown() {
-  test -d "${GNUPGHOME_TEMP}/.gpg.s" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.s" gpgconf --kill gpg-agent || true
-  test -d "${GNUPGHOME_TEMP}/.gpg.d" && GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.d" gpgconf --kill gpg-agent || true
-  test -d "${GNUPGHOME_TEMP}" && rm -rf "/tmp/$(basename ${GNUPGHOME_TEMP})" || true
+  if test -d "${GNUPGHOME_TEMP}/.gpg.s"; then
+    GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.s" gpgconf --kill gpg-agent || true
+  fi
+  if test -d "${GNUPGHOME_TEMP}/.gpg.d"; then
+    GNUPGHOME="${GNUPGHOME_TEMP}/.gpg.d" gpgconf --kill gpg-agent || true
+  fi
+  if test -d "${GNUPGHOME_TEMP}"; then
+    rm -rf "/tmp/$(basename "${GNUPGHOME_TEMP}")" || true
+  fi
 }
 
 @test "secret - shellcheck compliant with no exceptions" {
@@ -14,7 +22,7 @@ teardown() {
 @test "secret - invoking branchout secret usage" {
   secretExample secrets-usage
   run branchout-secrets --passphrase=test
-  assert_error "branchout secrets: a tool for managing kubebernetes secrets"
+  assert_error "branchout secrets: a tool for managing kubernetes secrets"
 }
 
 @test "secret - raw setup my key" {
@@ -87,6 +95,12 @@ teardown() {
   assert_success_file secrets/create
 }
 
+@test "secret - create secret when it there is no key" {
+  secretExample secrets-create-with-no-key
+  run branchout-secrets create missing-application/secret --passphrase=test <<< ""
+  assert_error "You need to run 'branchout secrets setup' to configure a key for signing"
+}
+
 @test "secret - fail to create secret when it exists" {
   secretExample secrets-create-already-exists
   run branchout set-config "EMAIL" "branchout@example.com"
@@ -95,7 +109,7 @@ teardown() {
   assert_error "Secret already exists for example-application/secret"
 }
 
-@test "secret - key" {
+@test "secret - use key" {
   secretExample secrets-key
   run branchout secrets use-key "branchout@example.com"
   assert_success_file secrets/use-branchout
@@ -103,7 +117,21 @@ teardown() {
   assert_success_file secrets/main-key
 }
 
-@test "secret - register key" {
+@test "secret - create secret when there is no setup" {
+  example secrets-no-setup
+  run branchout-secrets create missing-application/secret --passphrase=test <<< ""
+  assert_error "You need to run 'branchout secrets setup' to configure a key for signing"
+}
+
+@test "secret - create secret when there is no setup for all" {
+  example secrets-no-setup-for-all
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
+  run branchout-secrets create <<< ""
+  assert_error "You need to run 'branchout secrets setup' to configure a key for signing"
+}
+
+@test "secret - register public key" {
   secretExample secrets-add-key
   run branchout secrets use-key "branchout@example.com"
   run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
@@ -112,34 +140,54 @@ teardown() {
   assert_success_file secrets/two-keys
 }
 
-@test "secret - register key by id" {
+@test "secret - register unknown public key fails" {
+  secretExample secrets-add-unknown-key
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
+  run branchout secrets register-key "pgp:EEEEEC480F6AE9341C8790965916E6EA295DF6B"
+  assert_error "Key EEEEEC480F6AE9341C8790965916E6EA295DF6B not found"
+}
+
+@test "secret - register add encryption key with import" {
+  secretExample secrets-add-key-with-import
+  mkdir .keys
+  cp "${EXAMPLES}/gnupg/extra.pub" .keys/AB754D3EBB9F49880CB7BD2E68684CA661E85551.pub
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
+  run branchout secrets add-key "pgp:AB754D3EBB9F49880CB7BD2E68684CA661E85551"
+  assert_success_file secrets/keys-import
+  run branchout-secrets show-keys
+  assert_success_file secrets/keys-import
+}
+
+@test "secret - add encryption key by id" {
   secretExample secrets-add-key-by-id
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets register-key "branchout2@example.com"
+  run branchout secrets add-key "branchout2@example.com"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
   assert_success_file secrets/two-keys
 }
 
-@test "secret - deregister key" {
+@test "secret - remove encryption key by id" {
   secretExample secrets-remove-key
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  run branchout secrets add-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
   assert_success_file secrets/two-keys
-  run branchout secrets deregister-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  run branchout secrets remove-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
   assert_success_file secrets/main-key
 }
 
-@test "secret - deregister key by id" {
+@test "secret - remove encryption key by email" {
   secretExample secrets-remove-key-by-id
   run branchout secrets use-key "branchout@example.com"
-  run branchout secrets register-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
+  run branchout secrets remove-key "pgp:DD4AC5C480F6AE9341C8790965916E6EA295DF6B"
   assert_success_file secrets/two-keys
   run branchout-secrets show-keys
   assert_success_file secrets/two-keys
-  run branchout secrets deregister-key "branchout2@example.com"
+  run branchout secrets remove-key "branchout2@example.com"
   assert_success_file secrets/main-key
 }
 
@@ -216,6 +264,7 @@ teardown() {
   run branchout-secrets update missing-application/secret --keyring=d --passphrase=test
   assert_error_file secrets/safe-from-outsiders
 }
+
 @test "secret - add new key to all secrets fails on mismatch" {
   secretExample secrets-add-people-fails-on-mismatch
   run branchout secrets use-key "branchout2@example.com"
@@ -243,6 +292,21 @@ teardown() {
   assert_success_file secrets/view-app-1
 }
 
+@test "secret - add new key to all secrets with import " {
+  secretSetup secrets-add-people-with-import
+  run branchout secrets use-key "branchout@example.com"
+  assert_success_file secrets/use-branchout
+  mkdir -p target/resources/kubernetes src/main/secrets/
+  cp -r "${EXAMPLES}"/secret-templates/example-application target/resources/kubernetes/app-1
+  cp -r "${EXAMPLES}"/secrets/example-application src/main/secrets/app-1
+  mkdir .keys
+  cp "${EXAMPLES}/gnupg/extra.pub" .keys/AB754D3EBB9F49880CB7BD2E68684CA661E85551.pub
+  run branchout-secrets add-key pgp:AB754D3EBB9F49880CB7BD2E68684CA661E85551 --passphrase=test
+  assert_success_file secrets/add-people-with-import
+  run branchout-secrets view app-1/secret --passphrase=test
+  assert_success_file secrets/view-app-1
+}
+
 @test "secret - remove key from secret" {
   secretSetup secrets-remove-people
   run branchout secrets use-key "branchout@example.com"
@@ -267,7 +331,7 @@ teardown() {
 
 @test "secret - edit a secret" {
   skip "Not implemented"
-  EDITOR="cat"
+  export EDITOR="cat"
   run branchout-secrets edit some-secret --passphrase=test
   assert_success_file secrets/edit
 }
