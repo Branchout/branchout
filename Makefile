@@ -28,9 +28,6 @@ test-branchout-init: clean canned repositories
 test-group: clean canned repositories
 	bats --pretty bats/branchout-group.bats
 
-test-secrets: clean canned repositories
-	bats --pretty bats/branchout-secrets.bats
-
 test-current: clean canned repositories
 	bats --pretty bats/current.bats
 
