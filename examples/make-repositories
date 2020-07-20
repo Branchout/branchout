@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 makeBase() {
   rm -rf ${1}
   mkdir ${1}
@@ -14,7 +16,7 @@ frog-gemel
 toad-aleph" > Branchoutprojects
   echo "BRANCHOUT_NAME=${1}" > Branchoutfile
   git add README.md Branchoutprojects Branchoutfile;
-  git commit -a -m"Initial commit";
+  git commit --no-gpg-sign -a -m"Initial commit";
 
   popd
 }
@@ -33,7 +35,7 @@ frog-gemel
 toad-aleph" > .projects
   echo "BRANCHOUT_NAME=${1}" > .branchout
   git add README.md .projects .branchout;
-  git commit -a -m"Initial commit";
+  git commit --no-gpg-sign -a -m"Initial commit";
 
   popd
 }
@@ -48,7 +50,7 @@ makeGroup() {
 
   echo "# ${each}" >> README.md;
   git add README.md;
-  git  commit -a -m"Initial commit";
+  git commit --no-gpg-sign -a -m"Initial commit";
 
   popd
 }
@@ -64,18 +66,18 @@ makeProject() {
 
     echo "# ${each}-${counter}" >> README.md;
     git add README.md;
-    git  commit -a -m"Initial commit";
+    git commit --no-gpg-sign -a -m"Initial commit";
 
     echo "# ${each}-${counter}" >> README.md;
-    git commit -a -m"step 2";
+    git commit --no-gpg-sign -a -m"step 2";
     git tag -a step-2 -m "step 2"
 
     echo "# ${each}-${counter}" >> README.md;
-    git  commit -a -m"step 3";
+    git commit --no-gpg-sign -a -m"step 3";
 
     git checkout -b feature-${counter};
     echo "* feature ${counter}" >> README.md;
-    git commit -a -m "Adding feature ${counter}";
+    git commit --no-gpg-sign -a -m "Adding feature ${counter}";
     git checkout master
     popd;
 }
