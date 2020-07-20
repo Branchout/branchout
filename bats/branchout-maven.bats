@@ -17,6 +17,22 @@ load helper
 docker.example.org
 stickycode
 sshsupersecret
+uploaduser
+uploadsecret
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/settings
+}
+
+@test "branchout maven - ask for settings default upload" {
+  example maven-settings
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+
+
 "
   assert_success
   run branchout maven show 

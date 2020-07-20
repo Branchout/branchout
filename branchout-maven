@@ -70,9 +70,19 @@ function mavenSettings() {
       <id>branchout-maven</id>
     </server>
     <server>
+      <username>${REPOSITORY_UPLOAD_USER}</username>
+      <password>${REPOSITORY_UPLOAD_API_KEY}</password>
+      <id>branchout-maven-upload</id>
+    </server>
+    <server>
       <username>${REPOSITORY_USER}</username>
       <password>${REPOSITORY_API_KEY}</password>
       <id>${BRANCHOUT_DOCKER_REGISTRY}</id>
+    </server>
+    <server>
+      <username>${REPOSITORY_UPLOAD_USER}</username>
+      <password>${REPOSITORY_UPLOAD_API_KEY}</password>
+      <id>${BRANCHOUT_DOCKER_REGISTRY_UPLOAD}</id>
     </server>
   </servers>
 
