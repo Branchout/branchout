@@ -1,3 +1,5 @@
+#!/bin/bash
+
 load helper
 
 @test "branchout configuration is shellcheck compliant with no exceptions" {

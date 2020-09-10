@@ -11,8 +11,25 @@ load helper
   assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
 }
 
-@test "branchout maven - ask for settings" {
-  example maven-settings
+@test "branchout maven - no settings - show" {
+  example maven-no-settings-show
+  run branchout maven show 
+  assert_error "Maven settings '../branchout/maven-no-settings-show/maven/settings.xml' not found. Run 'branchout maven settings'"
+}
+
+@test "branchout maven - no settings - no docker" {
+  example maven-no-settings-no-docker
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+stickycode
+sshsupersecret
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/no-settings-no-docker
+}
+
+@test "branchout maven - no settings - with docker" {
+  example maven-no-settings-with-docker
   run branchout maven clean <<< "https://maven.example.org/maven/branchout
 docker.example.org
 stickycode
@@ -20,7 +37,37 @@ sshsupersecret
 "
   assert_success
   run branchout maven show 
-  assert_success_file maven/settings
+  assert_success_file maven/no-settings-with-docker
+}
+
+@test "branchout maven - no settings - with upload" {
+  example maven-no-settings-with-upload
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+https://maven.example.org/maven/branchout-upload
+stickycode
+sshsupersecret
+
+
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/no-settings-with-upload
+}
+
+@test "branchout maven - no settings - with upload and docker" {
+  example maven-no-settings-with-upload-with-docker
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+https://maven.example.org/maven/branchout-upload
+docker.example.org
+docker-upload.example.org
+stickycode
+sshsupersecret
+
+
+"
+  assert_success
+  run branchout maven show 
+  assert_success_file maven/no-settings-with-upload-with-docker
 }
 
 @test "branchout maven - ask for settings always https" {

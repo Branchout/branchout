@@ -45,7 +45,7 @@ function mavenSettings() {
     [[ ${BRANCHOUT_MAVEN_REPOSITORY} =~ ^https:// ]] || BRANCHOUT_MAVEN_REPOSITORY="https://${BRANCHOUT_MAVEN_REPOSITORY}"
     "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_MAVEN_REPOSITORY" "${BRANCHOUT_MAVEN_REPOSITORY}"
   fi
-  if test -z "${BRANCHOUT_DOCKER_REGISTRY}"; then
+  if test "${BRANCHOUT_USE_DOCKER}" -eq "yes" -a -z "${BRANCHOUT_DOCKER_REGISTRY}"; then
     readValue "your docker registry" "BRANCHOUT_DOCKER_REGISTRY"
     "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_DOCKER_REGISTRY" "${BRANCHOUT_DOCKER_REGISTRY}"
   fi
@@ -70,10 +70,28 @@ function mavenSettings() {
       <id>branchout-maven</id>
     </server>
     <server>
+      <username>${REPOSITORY_UPLOAD_USER}</username>
+      <password>${REPOSITORY_UPLOAD_API_KEY}</password>
+      <id>branchout-maven-upload</id>
+    </server>
+" > "${BRANCHOUT_HOME}/maven/settings.xml"
+
+    if test "${BRANCHOUT_USE_DOCKER}" -eq "yes"; then
+      echo "
+    <server>
       <username>${REPOSITORY_USER}</username>
       <password>${REPOSITORY_API_KEY}</password>
       <id>${BRANCHOUT_DOCKER_REGISTRY}</id>
     </server>
+    <server>
+      <username>${REPOSITORY_UPLOAD_USER}</username>
+      <password>${REPOSITORY_UPLOAD_API_KEY}</password>
+      <id>${BRANCHOUT_DOCKER_REGISTRY_UPLOAD}</id>
+    </server>
+" >> "${BRANCHOUT_HOME}/maven/settings.xml"
+    fi
+
+    echo "
   </servers>
 
   <mirrors>
@@ -89,7 +107,7 @@ function mavenSettings() {
   </pluginGroups>
 
 </settings>
-" > "${BRANCHOUT_HOME}/maven/settings.xml"
+" >> "${BRANCHOUT_HOME}/maven/settings.xml"
   fi
 }
 
@@ -98,7 +116,6 @@ function mavenReactor() {
 }
 
 function usage() {
-  test -n "${1}" && echo "${1}" && echo
   echo "branchout-maven settings|reactor|<alias>|<maven command>
 
   settings
@@ -154,7 +171,12 @@ function main() {
       mavenSettings "${*}"
       ;;
     show)
-      sed -e 's,<password>.*</password>,<password>XXXXX</password>,g' "${BRANCHOUT_HOME}/maven/settings.xml"
+      if test -f "${BRANCHOUT_HOME}/maven/settings.xml"; then
+        sed -e 's,<password>.*</password>,<password>XXXXX</password>,g' "${BRANCHOUT_HOME}/maven/settings.xml"
+      else
+        echo "Maven settings '${BRANCHOUT_HOME}/maven/settings.xml' not found. Run 'branchout maven settings'" 1>&2
+        exit 77
+      fi
       ;;
     *)
       test -f "${BRANCHOUT_HOME}/maven/settings.xml" || mavenSettings

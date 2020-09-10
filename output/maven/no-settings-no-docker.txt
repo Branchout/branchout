@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <localRepository>../branchout/maven-settings/maven/repository</localRepository>
+
+  <servers>
+    <server>
+      <username>stickycode</username>
+      <password>XXXXX</password>
+      <id>branchout-maven</id>
+    </server>
+  </servers>
+
+  <mirrors>
+    <mirror>
+      <mirrorOf>*</mirrorOf>
+      <url>https://maven.example.org/maven/branchout</url>
+      <id>branchout-maven</id>
+    </mirror>
+  </mirrors>
+
+  <pluginGroups>
+    <pluginGroup>net.stickycode.plugins</pluginGroup>
+  </pluginGroups>
+
+</settings>
