@@ -1,0 +1,89 @@
+#!/bin/bash
+set -e 
+test -n "${DEBUG}" || set -x 
+
+function runYarn() {
+    commands=("${@}")
+    HOME=${BRANCHOUT_HOME}/node 
+    YARN_CACHE_FOLDER=${BRANCHOUT_HOME}/node/cache yarn --use-yarnrc ${BRANCHOUT_HOME}/node/yarnrc ${@}
+}
+
+function yarnSettings() {
+    if test -z "${BRANCHOUT_NPM_REPOSITORY}"; then
+    readValue "your maven repository" "BRANCHOUT_NPM_REPOSITORY"
+    [[ ${BRANCHOUT_NPM_REPOSITORY} =~ ^https:// ]] || BRANCHOUT_NPM_REPOSITORY="https://${BRANCHOUT_NPM_REPOSITORY}"
+    "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_NPM_REPOSITORY" "${BRANCHOUT_NPM_REPOSITORY}"
+    fi
+    
+    readValue "npm repository username" "NPM_USER"
+    readSecret "npm repository secret" "NPM_PASS"
+    readValue "npm repository email (used for identification):" "NPM_EMAIL"
+
+    # Create the directory
+    mkdir -p "${BRANCHOUT_HOME}/node/"
+    
+    # Output yarn rc settings 
+    echo "writing ${BRANCHOUT_HOME}/node/yarnrc"
+    if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"; then
+        echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
+    else
+        echo "registry "${BRANCHOUT_NPM_REPOSITORY}"
+always-auth true
+user ${NPM_USER}
+email ${NPM_EMAIL}
+disable-self-update-check true
+" > "${BRANCHOUT_HOME}/node/yarnrc"
+    fi
+
+    # Output npmrc settings
+    BASE_64_AUTH=$(echo -n "${NPM_USER}:${NPM_PASS}" | base64)
+    echo "writing ${BRANCHOUT_HOME}/node/.npmrc"
+    if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc"; then
+        echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
+    else
+        echo "_auth=${BASE_64_AUTH}
+always-auth=true" > "${BRANCHOUT_HOME}/node/.npmrc"
+    fi
+}
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-yarn <yarn command>
+
+  settings
+
+      Generate .npmrc and yarnc for private repository access
+
+  yarn command
+
+      install
+
+      <package.json scripts>
+  "
+
+  exit 1
+}
+
+function main() {
+  test $# -gt 0 || usage
+
+  BRANCHOUT_PATH="$(dirname "$0")"
+
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+
+  case "${1}" in
+    settings)
+      yarnSettings "${*}"
+      ;;
+    *)
+      test -f "${BRANCHOUT_HOME}/node/.npmrc" || yarnSettings
+      test -f "${BRANCHOUT_HOME}/node/yarnrc" || yarnSettings
+      runYarn ${@}
+  esac
+}
+
+main "${@}"
+
