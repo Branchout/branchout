@@ -101,7 +101,7 @@ function mavenReactor() {
   MODULE_XML=""
   NEWLINE=$'\n'
   TAB=$'\t'
-  readValue "a maven group id (io.mycompany)" "GROUP_NAME"
+  ensureValue "the Maven group" "GROUP"
 
   for module in $MODULES
   do
@@ -112,7 +112,7 @@ function mavenReactor() {
 <settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
 
-  <groupId>${GROUP_NAME}</groupId>
+  <groupId>${GROUP}</groupId>
   <artifactId>${PWD##*/}</artifactId>
   <version>0</version>
   <packaging>pom</packaging>
@@ -127,7 +127,6 @@ function mavenReactor() {
 }
 
 function usage() {
-  test -n "${1}" && echo "${1}" && echo
   echo "branchout-maven settings|reactor|<alias>|<maven command>
 
   settings

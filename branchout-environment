@@ -6,7 +6,7 @@ set -e
 function readValue() {
   printf "Please provide %s: " "${1}"
   read -r VALUE
-  test -z "${VALUE}" && usage "You must supply $1"
+  test -z "${VALUE}" && usage "Error: You must supply a value for $1"
   export "${2}=${VALUE}"
 }
 
@@ -14,7 +14,7 @@ function readSecret() {
   printf "Please provide %s: " "${1}"
   read -s -r VALUE
   echo
-  test -z "${VALUE}" && usage "You must supply $1"
+  test -z "${VALUE}" && usage "Error: You must supply a value for $1"
   export "${2}=${VALUE}"
 }
 
