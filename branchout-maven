@@ -97,7 +97,33 @@ function mavenSettings() {
 }
 
 function mavenReactor() {
-  echo "Maven reactor not implemented"
+  MODULES=$(find . -name "pom.xml" -print | awk -v FS="(/|pom.xml)" '{print $2}')
+  MODULE_XML=""
+  NEWLINE=$'\n'
+  TAB=$'\t'
+  readValue "a maven group id (io.mycompany)" "GROUP_NAME"
+
+  for module in $MODULES
+  do
+    MODULE_XML="${MODULE_XML}${NEWLINE}${TAB}<module>${module}</module>${NEWLINE}"
+  done
+
+  echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"
+    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
+
+  <groupId>${GROUP_NAME}</groupId>
+  <artifactId>${PWD##*/}</artifactId>
+  <version>0</version>
+  <packaging>pom</packaging>
+
+  <name>\${project.artifactId}</name>
+  <modules>
+  $MODULE_XML
+  </modules>
+</project>" > reactor.xml
+
+  echo "Reactor generated"
 }
 
 function usage() {
