@@ -1,5 +1,14 @@
 load helper
 
+makeSettings() {
+  run branchout maven settings <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  assert_success
+}
+
 @test "shellcheck compliant with no exceptions" {
   run shellcheck -x branchout-maven
   assert_success
@@ -13,11 +22,7 @@ load helper
 
 @test "branchout maven - ask for settings" {
   example maven-settings
-  run branchout maven clean <<< "https://maven.example.org/maven/branchout
-docker.example.org
-stickycode
-sshsupersecret
-"
+  makeSettings
   assert_success
   run branchout maven show 
   assert_success_file maven/settings
@@ -67,4 +72,30 @@ sshsupersecret
 "
   run branchout maven hth
   assert_success_file maven/hth
+}
+
+@test "branchout maven - reactor prompt for group" {
+  example maven-reactor-no-group
+  makeSettings
+  run branchout maven reactor <<< "org.example
+"
+  assert_success_file maven/reactor-no-group
+}
+
+@test "branchout maven - reactor fail on empty group at prompt" {
+  example maven-reactor-empty-group
+  makeSettings
+  run branchout maven reactor <<< ""
+
+  assert_error "Please provide the Maven group: Error: You must supply a value for the Maven group"
+}
+
+@test "branchout maven - reactor from group" {
+  example maven-reactor-group
+  makeSettings
+
+  echo 'BRANCHOUT_GROUP="org.example"' >> Branchoutfile
+  run branchout maven reactor <<< ""
+
+  assert_success_file maven/reactor-group
 }
