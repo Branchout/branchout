@@ -15,9 +15,9 @@ function yarnSettings() {
     "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_NPM_REPOSITORY" "${BRANCHOUT_NPM_REPOSITORY}"
     fi
     
-    readValue "npm repository username" "NPM_USER"
+    ensureConfigValue "npm repository username" "NPM_USER"
     readSecret "npm repository secret" "NPM_PASS"
-    readValue "npm repository email (used for identification):" "NPM_EMAIL"
+    ensureConfigValue "npm repository email (git commit author):" "GIT_EMAIL"
 
     # Create the directory
     mkdir -p "${BRANCHOUT_HOME}/node/"
@@ -29,14 +29,14 @@ function yarnSettings() {
     else
         echo "registry "${BRANCHOUT_NPM_REPOSITORY}"
 always-auth true
-user ${NPM_USER}
-email ${NPM_EMAIL}
+user ${BRANCHOUT_CONFIG_NPM_USER}
+email ${BRANCHOUT_CONFIG_GIT_EMAIL}
 disable-self-update-check true
 " > "${BRANCHOUT_HOME}/node/yarnrc"
     fi
 
     # Output npmrc settings
-    BASE_64_AUTH=$(echo -n "${NPM_USER}:${NPM_PASS}" | base64)
+    BASE_64_AUTH=$(echo -n "${BRANCHOUT_CONFIG_NPM_USER}:${NPM_PASS}" | base64)
     echo "writing ${BRANCHOUT_HOME}/node/.npmrc"
     if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc"; then
         echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
