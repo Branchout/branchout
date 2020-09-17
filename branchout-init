@@ -1,5 +1,6 @@
 #!/bin/bash
 
+test -n "${DEBUG}" && set -x
 set -e
 
 # Check if the give directory contains the branchout files

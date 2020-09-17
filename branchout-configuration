@@ -1,5 +1,6 @@
 #!/bin/bash
 
+test -n "${DEBUG}" && set -x
 set -e
 
 export BO_THEME_RESET="\\033[0m"
