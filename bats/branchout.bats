@@ -128,8 +128,54 @@ gitty"
   assert_success "file://${BUILD_DIRECTORY}/repositories"
 }
 
+@test "branchout getvalue in child folder" {
+  example init-getvalue-childfolder
+  mkdir childfolder
+  cd childfolder
+  # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
+  HOME=../../
+  run branchout get BRANCHOUT_GIT_BASEURL
+  assert_success "file://${BUILD_DIRECTORY}/repositories"
+}
+
 @test "branchout setvalue" {
   example init-setvalue
+  run branchout set BRANCHOUT_VALUE Example
+  assert_success
+  run branchout get BRANCHOUT_VALUE
+  assert_success "Example"
+}
+
+@test "branchout ensurevalue set it" {
+  example init-ensure-setit
+  run branchout ensure VALUE <<< "Example"
+  assert_success "Please provide VALUE: "
+  run branchout get BRANCHOUT_VALUE
+  assert_success "Example"
+}
+
+@test "branchout ensurevalue fails with nothing" {
+  example init-ensure-fails-on-nothing
+  run branchout ensure VALUE <<< ""
+  assert_error "Please provide VALUE: You must supply VALUE"
+}
+
+@test "branchout ensurevalue does nothing if set" {
+  example init-ensure-idempotent
+  run branchout set BRANCHOUT_VALUE Example
+  assert_success
+  run branchout ensure VALUE <<< ""
+  assert_success ""
+  run branchout get BRANCHOUT_VALUE
+  assert_success "Example"
+}
+
+@test "branchout setvalue from child folder" {
+  example init-setvalue-childfolder
+  mkdir childfolder
+  cd childfolder
+  # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
+  HOME=../../
   run branchout set BRANCHOUT_VALUE Example
   assert_success
   run branchout get BRANCHOUT_VALUE

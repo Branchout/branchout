@@ -18,6 +18,14 @@ function readSecret() {
   export "${2}=${VALUE}"
 }
 
+ensureValue() {
+  configName="BRANCHOUT_${2}"
+  if test -z "${!configName}"; then
+    readValue "${1}" "${configName}"
+    "${BRANCHOUT_PATH}/branchout" set "${configName}" "${!configName}"
+  fi
+}
+
 ensureConfigValue() {
   configName="BRANCHOUT_CONFIG_${2}"
   if test -z "${!configName}"; then
