@@ -96,7 +96,8 @@ sshsupersecret
   makeSettings
   run branchout maven reactor <<< "org.example
 "
-  assert_success_file maven/reactor-no-group
+  assert_success "Please provide the Maven group: 
+Reactor generated"
 }
 
 @test "branchout mvn - reactor prompt for group" {
@@ -111,7 +112,8 @@ sshsupersecret
   makeSettings
   run branchout maven reactor <<< ""
 
-  assert_error "Please provide the Maven group: Error: You must supply a value for the Maven group"
+  assert_error "Please provide the Maven group: 
+Error: You must supply a value for the Maven group"
 }
 
 @test "branchout maven - reactor from group" {
@@ -121,6 +123,6 @@ sshsupersecret
   echo 'BRANCHOUT_GROUP="org.example"' >> Branchoutfile
   run branchout maven reactor <<< ""
 
-  assert_success_file maven/reactor-group
+  assert_success "Reactor generated"
 }
 

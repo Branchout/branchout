@@ -157,7 +157,8 @@ gitty"
 @test "branchout ensurevalue fails with nothing" {
   example init-ensure-fails-on-nothing
   run branchout ensure VALUE <<< ""
-  assert_error "Please provide VALUE: Error: You must supply a value for VALUE"
+  assert_error "Please provide VALUE: 
+Error: You must supply a value for VALUE"
 }
 
 @test "branchout ensurevalue does nothing if set" {
