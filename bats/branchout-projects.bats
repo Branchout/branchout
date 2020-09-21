@@ -99,15 +99,15 @@ frog-gemel"
 
 @test "branchout a non repository project group then update" {
   example branchout-a-non-repository-project-group-then-update
-  run branchout lion-aleph
+  run branchout pull lion-aleph
   assert_success_file pull/lion-clone
-  run branchout lion-aleph
+  run branchout pull lion-aleph
   assert_success_file pull/lion-update
 }
 
 @test "branchout imaginary project does nothing" {
   example branchout-imaginary-project-does-nothing
-  run branchout elephant
+  run branchout pull elephant
   assert_success ""
 }
 

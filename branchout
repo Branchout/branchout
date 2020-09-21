@@ -78,12 +78,6 @@ function usage() {
 
     init: Intialise the current git repository as a branchout root project
 
-    project: see branchout project help
-
-    group: see branchout group help
-
-    maven: see branchout maven help
-
     get <PROPERTY_NAME>: get a branchout property
 
     set <PROPERTY_NAME> <value>: set a branchout property
@@ -94,8 +88,32 @@ function usage() {
 
     get_config <CONFIG_NAME>: get a branchout configuration value
 
+    Modules:
+
+      project: see branchout project help
+
+      group: see branchout group help
+
+      maven: see branchout maven help
+
+      yarn: set branchout yarn help
     "
   exit 1
+}
+
+function execute() {
+  if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
+    # shellcheck source=branchout-environment
+    . "${BRANCHOUT_PATH}/branchout-environment"
+    eval branchout_"${branchoutModule}" "${@}"
+
+  elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
+    exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
+
+  else
+    usage "branchout-${branchoutModule} is not installed (or doesn't exist)"
+
+  fi
 }
 
 function main() {
@@ -123,20 +141,7 @@ function main() {
     *)
       branchoutModule="${1}"
       shift
-      if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
-        # shellcheck source=branchout-environment
-        . "${BRANCHOUT_PATH}/branchout-environment"
-        eval branchout_"${branchoutModule}" "${@}"
-
-      elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
-        exec "${BRANCHOUT_PATH}/branchout-${branchoutModule}" "${@}"
-
-      else
-        # shellcheck source=branchout-environment
-        . "${BRANCHOUT_PATH}/branchout-environment"
-        eval branchout_pull "${branchoutModule}" "${@}"
-
-      fi
+      execute "${@}"
       ;;
   esac
 

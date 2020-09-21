@@ -71,14 +71,14 @@ toad"
 
 @test "group pull" {
   example branchout-a-group
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-clone 
 }
 
 @test "group project pull where plain directory exists" {
   example branchout-a-group-that-exists
   mkdir lion
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-already-exists
 }
 
@@ -91,46 +91,46 @@ toad"
 
 @test "group pull then update" {
   example branchout-a-group-then-update
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-clone
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-update
 }
 
 @test "group pull for non repository group then update" {
   example branchout-a-non-repository-group-then-update
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-clone
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-update
 }
 
 @test "group pull group from another group directory then update" {
   example branchout-a-group-not-from-basedir
   HOME=$(dirname ${PWD})
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-clone
   cd lion
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-clone
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-update
 }
 
 @test "group pull of a non repository group not from basedir then update" {
   example branchout-a-non-repository-group-then-update-not-from-basedir
   HOME=$(dirname ${PWD})
-  run branchout rabbit
+  run branchout pull rabbit
   assert_success_file pull/rabbit-clone
   cd rabbit
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-clone
-  run branchout lion
+  run branchout pull lion
   assert_success_file pull/lion-update
 }
 
 @test "group with prefix pull" {
   prefixExample branchout-a-prefix-group
-  run branchout sheep
+  run branchout pull sheep
   assert_success_file_sort pull/sheep-clone 
 }
