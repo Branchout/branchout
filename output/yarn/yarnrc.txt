@@ -1,0 +1,4 @@
+registry https://yarn.example.org/repository/npm-example
+user npmuser
+email stickycode@example.org
+disable-self-update-check true

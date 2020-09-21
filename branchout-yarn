@@ -1,33 +1,35 @@
 #!/bin/bash
+
+test -n "${DEBUG}" && set -x
 set -e 
-test -n "${DEBUG}" || set -x 
 
 function runYarn() {
-    commands=("${@}")
     HOME=${BRANCHOUT_HOME}/node 
-    YARN_CACHE_FOLDER=${BRANCHOUT_HOME}/node/cache yarn --use-yarnrc ${BRANCHOUT_HOME}/node/yarnrc ${@}
+    YARN_CACHE_FOLDER=${BRANCHOUT_HOME}/node/cache yarn --use-yarnrc "${BRANCHOUT_HOME}/node/yarnrc" "${@}"
 }
 
 function yarnSettings() {
-    if test -z "${BRANCHOUT_NPM_REPOSITORY}"; then
-    readValue "your maven repository" "BRANCHOUT_NPM_REPOSITORY"
-    [[ ${BRANCHOUT_NPM_REPOSITORY} =~ ^https:// ]] || BRANCHOUT_NPM_REPOSITORY="https://${BRANCHOUT_NPM_REPOSITORY}"
-    "${BRANCHOUT_PATH}/branchout" set "BRANCHOUT_NPM_REPOSITORY" "${BRANCHOUT_NPM_REPOSITORY}"
+    ensureValue "your npm registry" "NPM_REGISTRY"
+    if [[ ${BRANCHOUT_NPM_REGISTRY} =~ ^http:// ]]; then
+      export BRANCHOUT_NPM_REGISTRY="https:${BRANCHOUT_NPM_REGISTRY#*:}"
+      "${BRANCHOUT_PATH}/branchout" set "NPM_REGISTRY" "https${BRANCHOUT_NPM_REGISTRY}"
     fi
     
-    ensureConfigValue "npm repository username" "NPM_USER"
-    readSecret "npm repository secret" "NPM_PASS"
-    ensureConfigValue "npm repository email (git commit author):" "GIT_EMAIL"
+    ensureConfigValue "npm registry username" "NPM_USER"
+    readSecret "npm registry secret" "NPM_PASS"
+    ensureConfigValue "npm registry email (git commit author)" "GIT_EMAIL"
 
-    # Create the directory
-    mkdir -p "${BRANCHOUT_HOME}/node/"
+    if test ! -d "${BRANCHOUT_HOME}/node/"; then
+      echo "create the branchout directory for node ${BRANCHOUT_HOME}/node/"
+      mkdir -p "${BRANCHOUT_HOME}/node/"
+    fi
     
-    # Output yarn rc settings 
-    echo "writing ${BRANCHOUT_HOME}/node/yarnrc"
+    echo "writing yarn config to ${BRANCHOUT_HOME}/node/yarnrc"
     if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"; then
+        echo "using yarnrc template ${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"
         echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
     else
-        echo "registry "${BRANCHOUT_NPM_REPOSITORY}"
+        echo "registry ${BRANCHOUT_NPM_REGISTRY}
 always-auth true
 user ${BRANCHOUT_CONFIG_NPM_USER}
 email ${BRANCHOUT_CONFIG_GIT_EMAIL}
@@ -35,10 +37,10 @@ disable-self-update-check true
 " > "${BRANCHOUT_HOME}/node/yarnrc"
     fi
 
-    # Output npmrc settings
+    echo "writing npm config to ${BRANCHOUT_HOME}/node/.npmrc"
     BASE_64_AUTH=$(echo -n "${BRANCHOUT_CONFIG_NPM_USER}:${NPM_PASS}" | base64)
-    echo "writing ${BRANCHOUT_HOME}/node/.npmrc"
     if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc"; then
+        echo "using npmrc template ${BRANCHOUT_DIRECTORY}/branchout-templates/npmrc"
         echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
     else
         echo "_auth=${BASE_64_AUTH}
@@ -47,18 +49,19 @@ always-auth=true" > "${BRANCHOUT_HOME}/node/.npmrc"
 }
 
 function usage() {
-  test -n "${1}" && echo "${1}" && echo
-  echo "branchout-yarn <yarn command>
+  echo "branchout-yarn settings|show|install|<package.json command>
 
   settings
 
       Generate .npmrc and yarnc for private repository access
 
-  yarn command
+  install
 
-      install
+      Install the node modules declared in the package.json
 
-      <package.json scripts>
+  <package.json scripts>
+
+      Run a script defined in the package.json e.g. clean, test, serve
   "
 
   exit 1
@@ -78,10 +81,13 @@ function main() {
     settings)
       yarnSettings "${*}"
       ;;
+    show)
+      grep -v auth "${BRANCHOUT_HOME}/node/yarnrc"
+      ;;
     *)
       test -f "${BRANCHOUT_HOME}/node/.npmrc" || yarnSettings
       test -f "${BRANCHOUT_HOME}/node/yarnrc" || yarnSettings
-      runYarn ${@}
+      runYarn "${@}"
   esac
 }
 
