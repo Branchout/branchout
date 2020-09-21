@@ -83,4 +83,25 @@ echo "class BranchoutMaven < Formula
 end
 " > "$CHECKOUT_DIR/branchout-maven.rb"
 
+echo "class BranchoutYarn < Formula
+
+  desc \"Command-line git repository layout manager\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"branchout/branchout/core\"
+  depends_on \"yarn\"
+  
+  def install
+    bin.install \"branchout-yarn\"
+  end
+  
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout-yarn.rb"
+
 #(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
