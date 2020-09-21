@@ -24,8 +24,10 @@ function branchout_init_name() {
   DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
   printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
   read -r BRANCHOUT_NAME
-  test -z "${BRANCHOUT_NAME}" && BRANCHOUT_NAME="$(basename "${PWD}")" && echo
-  echo "BRANCHOUT_HOME=\"${HOME}/branchout/${BRANCHOUT_NAME}\"" >> ${BRANCHOUT_FILE}
+  if test -z "${BRANCHOUT_NAME}"; then
+     BRANCHOUT_NAME="${DEFAULT_BRANCHOUT_NAME}"
+     echo
+  fi
 }
 
 function branchout_init_baseurl()  {

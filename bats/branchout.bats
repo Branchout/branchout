@@ -74,7 +74,7 @@ load helper
   assert_success_file all/frog-aleph
 }
 
-@test "branchout add" {
+@test "branchout init add to new branchout" {
   mkdir -p target/tests/add
   cd target/tests/add
   HOME=${BUILD_DIRECTORY}
@@ -90,6 +90,20 @@ gitty"
   assert_success_file status/no-clone
   run branchout add frog-beta
   assert_success_file_sort status/two-no-clone
+}
+
+@test "branchout init only sets url and name" {
+  mkdir -p target/tests/init-branchoutfile
+  cd target/tests/init-branchoutfile
+  HOME=${BUILD_DIRECTORY}
+  git init
+  run branchout-init <<< "brname
+gitty"
+  assert_success
+  run branchout status
+  assert_error "No projects to show, try branchout add <project-name>"
+  assert_equal "BRANCHOUT_NAME=brname
+BRANCHOUT_GIT_BASEURL=gitty" "$(cat Branchoutfile)"
 }
 
 @test "branchout add no params should error" {
