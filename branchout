@@ -138,6 +138,11 @@ function main() {
     version)
       branchout_version
       ;;
+    mvn)
+      branchoutModule="maven"
+      shift
+      execute "${@}"
+      ;;
     *)
       branchoutModule="${1}"
       shift

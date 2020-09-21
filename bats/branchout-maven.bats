@@ -14,9 +14,15 @@ sshsupersecret
   assert_success
 }
 
-@test "branchout-maven prints usage" {
+@test "branchout maven - prints usage" {
   example maven-usage
   run branchout maven
+  assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
+}
+
+@test "branchout mvn - prints usage" {
+  example mvn-alias
+  run branchout mvn
   assert_error "branchout-maven settings|reactor|<alias>|<maven command>"
 }
 
@@ -60,7 +66,7 @@ stickycode
 sshsupersecret
 "
   run branchout maven cv cvi pom tree par plu
-  assert_success_file maven/all-expansions
+  assert_success "mvn -f pom.xml -s ../branchout/maven-commands-many/maven/settings.xml clean verify -Pwebapp-interactive clean verify help:effective-pom dependency:tree versions:update-parent versions:display-plugin-updates"
 }
 
 @test "branchout maven - expand commands head to head" {
@@ -71,7 +77,18 @@ stickycode
 sshsupersecret
 "
   run branchout maven hth
-  assert_success_file maven/hth
+  assert_success "mvn -f head-to-head.xml -s ../branchout/maven-commands-hth/maven/settings.xml clean verify"
+}
+
+@test "branchout mvn - expand commands head to head" {
+  example mvn-commands-hth
+  run branchout maven clean <<< "https://maven.example.org/maven/branchout
+docker.example.org
+stickycode
+sshsupersecret
+"
+  run branchout maven hth
+  assert_success "mvn -f head-to-head.xml -s ../branchout/mvn-commands-hth/maven/settings.xml clean verify"
 }
 
 @test "branchout maven - reactor prompt for group" {
@@ -82,6 +99,13 @@ sshsupersecret
   assert_success_file maven/reactor-no-group
 }
 
+@test "branchout mvn - reactor prompt for group" {
+  example mvn-reactor-no-group
+  makeSettings
+  run branchout mvn reactor <<< "org.example
+"
+  assert_success_file maven/reactor-no-group
+}
 @test "branchout maven - reactor fail on empty group at prompt" {
   example maven-reactor-empty-group
   makeSettings
@@ -99,3 +123,4 @@ sshsupersecret
 
   assert_success_file maven/reactor-group
 }
+
