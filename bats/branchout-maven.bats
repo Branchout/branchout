@@ -105,8 +105,10 @@ Reactor generated"
   makeSettings
   run branchout mvn reactor <<< "org.example
 "
-  assert_success_file maven/reactor-no-group
+  assert_success "Please provide the Maven group: 
+Reactor generated"
 }
+
 @test "branchout maven - reactor fail on empty group at prompt" {
   example maven-reactor-empty-group
   makeSettings
