@@ -70,7 +70,7 @@ echo "class BranchoutMaven < Formula
   sha256 \"${HASH}\"
   version \"${VERSION:1}\"
 
-  depends_on \"branchout/branchout/core\"
+  depends_on \"branchout/branchout/branchout-core\"
   depends_on \"maven\"
   
   def install
@@ -91,7 +91,7 @@ echo "class BranchoutYarn < Formula
   sha256 \"${HASH}\"
   version \"${VERSION:1}\"
 
-  depends_on \"branchout/branchout/core\"
+  depends_on \"branchout/branchout/branchout-core\"
   depends_on \"yarn\"
   
   def install
