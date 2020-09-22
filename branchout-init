@@ -20,78 +20,98 @@ function branchoutFiles() {
   return 1
 }
 
-function branchout_init_name() {
-  DEFAULT_BRANCHOUT_NAME="$(basename "${PWD}")"
-  printf "Enter branchout name [%s]: " "${DEFAULT_BRANCHOUT_NAME}"
-  read -r BRANCHOUT_NAME
-  if test -z "${BRANCHOUT_NAME}"; then
-     BRANCHOUT_NAME="${DEFAULT_BRANCHOUT_NAME}"
-     echo
+function ensureBranchoutFiles() {
+  if ! branchoutFiles "${PWD}"; then
+    BRANCHOUT_FILE=Branchoutfile
+    BRANCHOUT_PROJECTS=Branchoutprojects
+    touch Branchoutfile
+    test -f Branchoutprojects || touch Branchoutprojects
   fi
-}
-
-function branchout_init_baseurl()  {
-  BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null| sed -e 's,/[^/]*$,,')"  || true
-  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
-    printf "Enter git baseurl: "
-    read -r BRANCHOUT_GIT_BASEURL || true
-    test -z "${BRANCHOUT_GIT_BASEURL}" && usage "git baseurl is not defined"
-  fi
-
-  return 0
-}
+ }
 
 function branchoutInitFromUrl() {
-  test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}" || mkdir -p "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
-  cd "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"
-  BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
-  test -n "${2}" && BRANCHOUT_NAME="${2}"
-  test -d "${BRANCHOUT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${BRANCHOUT_NAME} is already initialised"
-  git clone "${1}" "${BRANCHOUT_NAME}" || usage "Failed to clone ${1}"
-  cd "${BRANCHOUT_NAME}"
+  DEFAULT_BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
+  PROJECT_NAME="${2:-${DEFAULT_BRANCHOUT_NAME}}"
+  export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
+  test -d "${PROJECTION_DIRECTORY}" && usage "Branchout projection already exists at ${PROJECTION_DIRECTORY}"
+  git clone "${1}" "${PROJECTION_DIRECTORY}" >/dev/null 2>&1 || usage "Failed to branchout projection ${1} into ${PROJECTION_DIRECTORY}" "$(git clone "${1}" "${PROJECTION_DIRECTORY}")"
+  echo "Branchout projected '${1}' into ${PROJECTION_DIRECTORY}"
+  cd "${PROJECTION_DIRECTORY}" || usage "Failed to enter projection directory ${PROJECTION_DIRECTORY}"
+
+  branchoutInit
+}
+
+function branchoutExistingProjection() {
+  PROJECT_NAME="$(basename "$(pwd)")"
+  export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
+  if ! test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}/.git"; then
+    git init > /dev/null 2>&1
+    echo "Branchout projection created in $(pwd)"
+  fi
+  if git remote get-url origin >/dev/null 2>&1; then
+    DEFAULT_BRANCHOUT_NAME="$(basename "$(git remote get-url origin)" | sed -e 's,.git$,,')"
+  else
+    readValue "projection url" PROJECTION_URL
+    DEFAULT_BRANCHOUT_NAME="$(basename "${PROJECTION_URL}" | sed -e 's,.git$,,')"
+    git remote add origin "${PROJECTION_URL}"
+  fi
 
   branchoutInit
 }
 
 function branchoutInitLocal() {
-  test -d .git || usage "$(pwd) is not a git repository, try git init first"
+  readValue "projection url" PROJECTION_URL
+  DEFAULT_BRANCHOUT_NAME="$(basename "${PROJECTION_URL}" | sed -e 's,.git$,,')"
+  readValue "local project name" "PROJECT_NAME" "${DEFAULT_BRANCHOUT_NAME}"
+
+  export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
+  test -d "${PROJECTION_DIRECTORY}" && usage "Branchout projection already exists at ${PROJECTION_DIRECTORY}"
+  git init "${PROJECTION_DIRECTORY}" >/dev/null 2>&1
+  cd "${PROJECTION_DIRECTORY}" || usage "Cannot enter project directory ${PROJECTION_DIRECTORY}"
+  echo "Branchout projection for '${PROJECTION_URL}' created in ${PROJECTION_DIRECTORY}"
+  git remote add origin "${PROJECTION_URL}"
+
   branchoutInit
 }
 
-function branchoutDefaultFiles() {
-   BRANCHOUT_FILE=Branchoutfile
-   BRANCHOUT_PROJECTS=Branchoutprojects
-   touch Branchoutfile
-   test -f Branchoutprojects || touch Branchoutprojects
- }
-
 function branchoutInit() {
-  if ! branchoutFiles "${PWD}"; then
-    branchoutDefaultFiles
-  fi
+  ensureBranchoutFiles
 
   # shellcheck source=examples/Branchoutfile
   source "${BRANCHOUT_FILE}"
 
-  if test -z "${BRANCHOUT_NAME}"; then
-    branchout_init_name
-    echo "BRANCHOUT_NAME=${BRANCHOUT_NAME}" | tee -a ${BRANCHOUT_FILE}
-  fi
-
+  ensureValue "branchout name" "NAME" "${DEFAULT_BRANCHOUT_NAME}"
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
+  export BRANCHOUT_STATE="${HOME}/branchout/${BRANCHOUT_NAME}"
+  echo "Branchout state will be stored in ${HOME}/branchout/${BRANCHOUT_NAME}"
+  # shellcheck source=examples/branchoutrc
+  test -f "${BRANCHOUT_STATE}/branchoutrc" && source "${BRANCHOUT_STATE}/branchoutrc"
 
-  if test -z "${BRANCHOUT_GIT_BASEURL}"; then
-    branchout_init_baseurl
-    echo "BRANCHOUT_GIT_BASEURL=${BRANCHOUT_GIT_BASEURL}" | tee -a ${BRANCHOUT_FILE}
+  if git config user.email; then 
+    echo "Git author is set to $(git config user.email)"
+  else
+    ensureConfigValue "your git author email" "GIT_EMAIL"
+    git config user.email "${BRANCHOUT_CONFIG_GIT_EMAIL}"
+    echo "Set the git author to ${BRANCHOUT_CONFIG_GIT_EMAIL}"
   fi
-
 }
 
 function usage() {
-  test -n "${1}" && echo "${1}" && echo
+  test $# -gt 0  && echo "${@}" && echo
   echo "branchout-init [git-url] [relocation]
 
-  "
+  To branchout from GitHub and use the repository name for the projection
+
+    branchout init https://github.com/branchout/branchout-project
+
+  To branchout from GitHub and use a different name for the projection
+
+    branchout init https://github.com/branchout/branchout-project branchout
+
+  To interactively initialise a projection locally
+
+    branchout init
+"
 
   exit 1
 }
@@ -105,8 +125,12 @@ function main() {
   if test -n "${1}"; then
     branchoutInitFromUrl "${1}" "${2}"
 
+  elif test "$(dirname "$(pwd)")" = "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}"; then
+    branchoutExistingProjection
+  
   else
     branchoutInitLocal
+
   fi
 
   export BRANCHOUT_PROJECTS

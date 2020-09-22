@@ -123,10 +123,12 @@ example() {
   test -z "$1" && bail "examples need a name"
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
+  echo "BRANCHOUT_CONFIG_GIT_EMAIL=\"${1}@example.com\"" > "target/branchout/${1}/branchoutrc"
   cd "target/${1}" || bail "Failed to enter target/${1}"
+  git init 2>/dev/null 1>&2 || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2 || bail "failed to set the origin which is needed to derive base url"
   export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
 frog-gemel
 frog-bet
@@ -169,13 +171,14 @@ fox-gemel" > .projects
 }
 
 prefixExample() {
-  test -z "$1" && bail "exmaples need a name"
+  test -z "$1" && bail "examples need a name"
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
   cd "target/${1}" || bail "Failed to enter target/${1}"
-  export HOME=../
+  git init 2>/dev/null 1>&2 || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2 || bail "failed to set the origin which is needed to derive base url"
+  export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "BRANCHOUT_PREFIX=\"prefix\"" >> Branchoutfile
   echo "toad-aleph
 toad-gemel

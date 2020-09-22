@@ -106,6 +106,7 @@ function execute() {
     . "${BRANCHOUT_PATH}/branchout-configuration"
     # shellcheck source=branchout-environment
     . "${BRANCHOUT_PATH}/branchout-environment"
+
     eval branchout_"${branchoutModule}" "${@}"
 
   elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
