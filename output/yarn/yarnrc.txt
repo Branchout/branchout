@@ -1,4 +1,5 @@
-registry https://yarn.example.org/repository/npm-example
-user npmuser
-email stickycode@example.org
+registry "https://yarn.example.org/repository/npm-example"
+user "npmuser"
+email "stickycode@example.org"
+always-auth true
 disable-self-update-check true

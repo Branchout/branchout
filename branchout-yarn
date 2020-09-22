@@ -29,10 +29,10 @@ function yarnSettings() {
         echo "using yarnrc template ${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"
         echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
     else
-        echo "registry ${BRANCHOUT_NPM_REGISTRY}
+        echo "registry \"${BRANCHOUT_NPM_REGISTRY}\"
+user \"${BRANCHOUT_CONFIG_NPM_USER}\"
+email \"${BRANCHOUT_CONFIG_GIT_EMAIL}\"
 always-auth true
-user ${BRANCHOUT_CONFIG_NPM_USER}
-email ${BRANCHOUT_CONFIG_GIT_EMAIL}
 disable-self-update-check true
 " > "${BRANCHOUT_HOME}/node/yarnrc"
     fi
@@ -82,7 +82,7 @@ function main() {
       yarnSettings "${*}"
       ;;
     show)
-      grep -v auth "${BRANCHOUT_HOME}/node/yarnrc"
+      grep -v '^auth ' "${BRANCHOUT_HOME}/node/yarnrc"
       ;;
     *)
       test -f "${BRANCHOUT_HOME}/node/.npmrc" || yarnSettings
