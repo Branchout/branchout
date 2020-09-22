@@ -2,6 +2,20 @@
 
 set -e
 
+makeEmpty() {
+  rm -rf ${1}
+  mkdir ${1}
+  pushd ${1}
+  git init
+  git config user.email "someone@example.com";
+  git config user.name "hopefully_not_real";
+
+  echo "# ${each}" > README.md;
+  git add README.md
+  git commit --no-gpg-sign -a -m"Initial commit";
+  popd
+}
+
 makeBase() {
   rm -rf ${1}
   mkdir ${1}
@@ -117,6 +131,7 @@ each=lion counter=aleph makeProject
 # Setup base projects for init testing
 makeBase base
 makeBase ghbase.git
+makeEmpty empty
 
 # Legacy files .branchout and .projects are supported
 makeLegacyBase legacy

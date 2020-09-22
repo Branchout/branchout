@@ -1,80 +1,83 @@
 load helper
 
-@test "branchout init is shellcheck compliant with no exceptions" {
+@test "branchout init - is shellcheck compliant with no exceptions" {
   run shellcheck -x branchout-init
   assert_success
 }
 
-@test "branchout init from url" {
+@test "branchout init - from url" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/base
-  assert_success "Cloning into 'base'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
-  cd target/projects/base
+  assert_success "Building projection 'base' in ${BUILD_DIRECTORY}/projects/base"
+  cd "${BUILD_DIRECTORY}/projects/base"
   run branchout status
   assert_success_file_sort init/from-url
 }
 
-@test "branchout init from url.git" {
+@test "branchout init - from url.git" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git
-  assert_success "Cloning into 'ghbase'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
-  cd target/projects/ghbase
+  assert_success "Building projection 'ghbase' in ${BUILD_DIRECTORY}/projects/ghbase"
+  cd "${BUILD_DIRECTORY}/projects/ghbase"
   run branchout status
   assert_success_file_sort init/from-url
   run branchout add toad-gemel
   assert_success_file_sort init/with-toad
 }
 
-@test "branchout init from url.git with local name" {
+@test "branchout init - from url.git with local name" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname
-  assert_success "Cloning into 'localname'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
-  cd target/projects/localname
+  assert_success "Building projection 'ghbase' in ${BUILD_DIRECTORY}/projects/localname"
+  cd "${BUILD_DIRECTORY}/projects/localname"
   run branchout status
   assert_success_file_sort init/from-url
   run branchout add toad-gemel
   assert_success_file_sort init/with-toad
 }
 
-@test "branchout init not in git repository" {
+@test "branchout init - not in git repository, require name to init" {
+  mkdir -p target/tests/init-notgit-needname
+  cd target/tests/init-notgit-needname
+  HOME=${BUILD_DIRECTORY}
+  run branchout init <<< ''
+  assert_failure "Enter branchout name [init-ingit]: 
+Error: You must provide a branchout name"
+ }
+
+@test "branchout init - init git as needed" {
   mkdir -p target/tests/init-notgit
   cd target/tests/init-notgit
   HOME=${BUILD_DIRECTORY}
   run branchout init <<< 'init'
-  assert_error "${BUILD_DIRECTORY}/tests/init-notgit is not a git repository, try git init first"
-}
-
-@test "branchout init in git repository, no branchout" {
-  mkdir -p target/tests/init-ingit
-  cd target/tests/init-ingit
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout init <<< ''
-  assert_error "Enter branchout name [init-ingit]: "
-}
-
-@test "branchout init in git repository, interactive" {
-  mkdir -p target/tests/init-interactive
-  cd target/tests/init-interactive
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout init <<< "brname
-gitty"
-  assert_success
+  assert_success "Building projection 'init' in ${BUILD_DIRECTORY}/projects/init"
   run branchout status
-  assert_error "No projects to show, try branchout add <project-name>"
+  assert_success ""
+ }
+
+function inEmptyRepository() {
+  git clone file://${BUILD_DIRECTORY}/repositories/empty "${BUILD_DIRECTORY}/projects/${1}"
+  cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
+  HOME=${BUILD_DIRECTORY}
 }
 
-@test "branchout init in git repository, add projects" {
-  mkdir -p target/tests/init-git 
-  cd target/tests/init-git
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout init <<< "brname
-gitty"
+@test "branchout init - in git repository, no branchout requires name" {
+  inEmptyRepository "init-in-git-require-name"
+  run branchout init <<< ''
+  assert_failure "Enter branchout name [init-ingit]: "
+}
+
+@test "branchout init - in git repository, interactive" {
+  inEmptyRepository "init-interactive"
+  run branchout init <<< "brname"
+  assert_success ""
+  run branchout status
+  assert_error "No projects to show, try branchout clone <project-name>"
+}
+
+@test "branchout init - in git repository, add projects" {
+  inEmptyRepository "init-git-suggestion"
+  run branchout init <<< "brname"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -82,53 +85,59 @@ gitty"
   assert_success_file status/no-clone
 }
 
-@test "branchout init from url then clone projects" {
-  HOME=${BUILD_DIRECTORY}
-  
-  run branchout init file://${BUILD_DIRECTORY}/repositories/base clone
-  assert_success "Cloning into 'clone'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+@test "branchout init - in git repository, clone projects" {
+  inEmptyRepository "init-git-suggestion"
+  run branchout init <<< "brname"
+  assert_success
+  run branchout status
+  assert_error "No projects to show, try branchout add <project-name>"
+  run branchout clone frog-aleph
+  assert_success_file status/clone
+}
 
-  cd target/projects/clone
+function inBaseRepository() {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}"
+  assert_success "Building projection 'base' in ${BUILD_DIRECTORY}/projects/${1}"
+  cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
+}
+
+@test "branchout init - from url, then clone projects" {
+  inBaseRepository clone
+
   run branchout status
   assert_success_file_sort init/from-url
   run branchout clone toad-aleph
   assert_success_file clone/clone-one
 }
 
-@test "branchout init from url then clone projects with group folder" {
-  HOME=${BUILD_DIRECTORY}
-  
-  run branchout init file://${BUILD_DIRECTORY}/repositories/base clone-folder
-  assert_success "Cloning into 'clone-folder'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
+@test "branchout init - from url then clone projects with group folder" {
+  inBaseRepository clone-folder
 
-  cd target/projects/clone-folder
   run branchout status
   assert_success_file_sort init/from-url
+
   mkdir toad
   run branchout clone toad-aleph
   assert_success_file status/clone-one-with-group-folder
 }
 
-@test "branchout init from url with flat structure" {
-  HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/frog
-  assert_success "Cloning into 'frog'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
-  cd target/projects/frog
+@test "branchout init - from url with flat structure" {
+  inBaseRepository frog
+
   run branchout pull frog
   assert_success_file_sort init/from-url-with-flat-structure
 }
 
-@test "branchout init with relocated projects folder" {
+@test "branchout init - with relocated projects folder" {
   HOME=${BUILD_DIRECTORY}/relocated
-  mkdir -p ${BUILD_DIRECTORY}/relocated/.config
-  echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > ${BUILD_DIRECTORY}/relocated/.config/branchoutrc
+  mkdir -p "${BUILD_DIRECTORY}/relocated/.config"
+  echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > "${BUILD_DIRECTORY}/relocated/.config/branchoutrc"
+
   run branchout init file://${BUILD_DIRECTORY}/repositories/frog
-  assert_success "Cloning into 'frog'...
-BRANCHOUT_GIT_BASEURL=file://${BUILD_DIRECTORY}/repositories"
-  cd target/relocated/notprojects/frog
+  assert_success "Building projection 'base' in ${BUILD_DIRECTORY}/relocated/${1}"
+
+  cd "${BUILD_DIRECTORY}/relocated/notprojects/frog"
   run branchout pull frog
   assert_success_file_sort init/from-url-with-flat-structure
 }
