@@ -219,7 +219,7 @@ fox-gemel" > .projects
 }
 
 prefixExample() {
-  test -z "$1" && bail "exmaples need a name"
+  test -z "$1" && bail "examples need a name"
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
   cd "target/${1}" || bail "Failed to enter target/${1}"
