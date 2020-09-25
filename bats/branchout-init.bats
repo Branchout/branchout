@@ -9,15 +9,17 @@ load helper
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/base base-noemail<<< ""
   assert_failure "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base-noemail
-Please provide GIT_EMAIL: 
-Error: You must supply a value for GIT_EMAIL"
+Please provide your git author email: 
+Error: You must supply a value for your git author email"
 }
 
 @test "branchout init - from url" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" <<< "stickycode@example.com
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base <<< "stickycode@example.com
 basdfsaf"
-  assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base"
+  assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/base"
   run branchout status
   assert_success_file_sort init/from-url
@@ -26,7 +28,9 @@ basdfsaf"
 @test "branchout init - from url.git" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "stickycode@example.com"
-  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/ghbase"
+  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/ghbase
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/ghbase"
   run branchout status
   assert_success_file_sort init/from-url
@@ -37,7 +41,9 @@ basdfsaf"
 @test "branchout init - from url.git with local name" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname <<< "stickycode@example.com"
-  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/localname"
+  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/localname
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/localname"
   run branchout status
   assert_success_file_sort init/from-url

@@ -73,7 +73,7 @@ function branchoutInit() {
 
   test -d "${HOME}/branchout/${BRANCHOUT_NAME}" || mkdir -p "${HOME}/branchout/${BRANCHOUT_NAME}"
 
-  ensureConfigValue GIT_EMAIL
+  ensureConfigValue "your git author email" "GIT_EMAIL"
   git config user.email "${BRANCHOUT_CONFIG_GIT_EMAIL}"
   echo "Set the git author to ${BRANCHOUT_CONFIG_GIT_EMAIL}"
 }
