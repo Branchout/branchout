@@ -127,8 +127,8 @@ example() {
   mkdir -p "target/${1}" "target/branchout/${1}"
   echo "BRANCHOUT_CONFIG_GIT_EMAIL=\"${1}@example.com\"" > "target/branchout/${1}/branchoutrc"
   cd "target/${1}" || bail "Failed to enter target/${1}"
-  git init || bail "failed to initilise the git repository"
-  git remote add origin file://${BUILD_DIRECTORY}/repositories/base || bail "failed to set the origin which is needed to derive base url"
+  git init 2>/dev/null 1>&2 || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2 || bail "failed to set the origin which is needed to derive base url"
   export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "frog-aleph
@@ -152,8 +152,8 @@ prefixExample() {
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
   cd "target/${1}" || bail "Failed to enter target/${1}"
-  git init || bail "failed to initilise the git repository"
-  git remote add origin file://${BUILD_DIRECTORY}/repositories/base || bail "failed to set the origin which is needed to derive base url"
+  git init 2>/dev/null 1>&2 || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2 || bail "failed to set the origin which is needed to derive base url"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_PREFIX=\"prefix\"" >> Branchoutfile
