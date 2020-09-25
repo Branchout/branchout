@@ -5,9 +5,18 @@ load helper
   assert_success
 }
 
+@test "branchout init - from url, no email errors" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base base-noemail<<< ""
+  assert_failure "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base-noemail
+Please provide GIT_EMAIL: 
+Error: You must supply a value for GIT_EMAIL"
+}
+
 @test "branchout init - from url" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/base
+  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" <<< "stickycode@example.com
+basdfsaf"
   assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base"
   cd "${BUILD_DIRECTORY}/projects/base"
   run branchout status
@@ -16,7 +25,7 @@ load helper
 
 @test "branchout init - from url.git" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git
+  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "stickycode@example.com"
   assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/ghbase"
   cd "${BUILD_DIRECTORY}/projects/ghbase"
   run branchout status
@@ -27,7 +36,7 @@ load helper
 
 @test "branchout init - from url.git with local name" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname
+  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname <<< "stickycode@example.com"
   assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/localname"
   cd "${BUILD_DIRECTORY}/projects/localname"
   run branchout status
@@ -69,7 +78,8 @@ function inEmptyRepository() {
 
 @test "branchout init - in git repository, interactive" {
   inEmptyRepository "init-interactive"
-  run branchout init <<< "brname"
+  run branchout init <<< "stickycode@example.com
+brname"
   assert_success ""
   run branchout status
   assert_error "No projects to show, try branchout clone <project-name>"
@@ -77,7 +87,8 @@ function inEmptyRepository() {
 
 @test "branchout init - in git repository, add projects" {
   inEmptyRepository "init-git-suggestion"
-  run branchout init <<< "brname"
+  run branchout init <<< "stickycode@example.com
+brname"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -87,7 +98,8 @@ function inEmptyRepository() {
 
 @test "branchout init - in git repository, clone projects" {
   inEmptyRepository "init-git-suggestion"
-  run branchout init <<< "brname"
+  run branchout init <<< "stickycode@example.com
+brname"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -97,7 +109,7 @@ function inEmptyRepository() {
 
 function inBaseRepository() {
   HOME=${BUILD_DIRECTORY}
-  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}"
+  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}" <<< "stickycode@example.com"
   assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/${1}"
   cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
 }
@@ -134,7 +146,7 @@ function inBaseRepository() {
   mkdir -p "${BUILD_DIRECTORY}/relocated/.config"
   echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > "${BUILD_DIRECTORY}/relocated/.config/branchoutrc"
 
-  run branchout init file://${BUILD_DIRECTORY}/repositories/frog
+  run branchout init file://${BUILD_DIRECTORY}/repositories/frog <<< "stickycode@example.com"
   assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/relocated/${1}"
 
   cd "${BUILD_DIRECTORY}/relocated/notprojects/frog"
@@ -146,7 +158,8 @@ function inBaseRepository() {
   mkdir -p target/tests/add
   cd target/tests/add
   HOME=${BUILD_DIRECTORY}
-  run branchout-init <<< "brname"
+  run branchout-init <<< "stickycode@example.com
+brname"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -162,7 +175,8 @@ function inBaseRepository() {
   mkdir -p target/tests/init-branchoutfile
   cd target/tests/init-branchoutfile
   HOME=${BUILD_DIRECTORY}
-  run branchout-init <<< "brname"
+  run branchout-init <<< "stickycode@example.com
+brname"
   assert_success ""
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
