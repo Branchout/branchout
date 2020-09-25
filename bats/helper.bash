@@ -125,10 +125,12 @@ example() {
   test -z "$1" && bail "examples need a name"
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
+  echo "BRANCHOUT_CONFIG_GIT_EMAIL=\"${1}@example.com\"" > "target/branchout/${1}/branchoutrc"
   cd "target/${1}" || bail "Failed to enter target/${1}"
+  git init || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base || bail "failed to set the origin which is needed to derive base url"
   export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "frog-aleph
 frog-gemel
 frog-bet
@@ -143,79 +145,6 @@ snake-gemel
 fox-aleph
 fox-bet
 fox-gemel" > Branchoutprojects
-}
-
-secretSetup() {
-  test -z "$1" && bail "examples need a name"
-  HASH=$(echo "${1}" | cksum | tr ' ' '_')
-  test -d "target/${HASH}" && bail "example already exists: ${HASH}"
-  GNUGPHOME_TEMP=$(mktemp -d)
-  export GNUGPHOME_TEMP
-  mkdir -m 0700 -p "target/${HASH}" "target/${HASH}/h/branchout/${HASH}" "${GNUGPHOME_TEMP}/.gpg.d" "${GNUGPHOME_TEMP}/.gpg.s"
-  cp -r "${EXAMPLES}/gnupg/private-keys-v1.standard" "${GNUGPHOME_TEMP}/.gpg.s/private-keys-v1.d"
-  cp -r "${EXAMPLES}/gnupg/private-keys-v1.decryption" "${GNUGPHOME_TEMP}/.gpg.d/private-keys-v1.d"
-  ln -s "${HASH}" "target/${1}"
-  cd "target/${HASH}" || bail "Failed to enter target/${HASH}"
-  export GNUPGHOME=${GNUGPHOME_TEMP}/.gpg.d
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring d.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring d.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
-
-  export GNUPGHOME=${GNUGPHOME_TEMP}/.gpg.s
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout2.pub"
-  "${GPG_COMMAND}" -q --batch --pinentry=loopback --passphrase=test --no-default-keyring --keyring s.keyring --import "${EXAMPLES}/gnupg/branchout3.pub"
-
-  export HOME=h
-  echo "BRANCHOUT_CONFIG_GPG_KEYRING=\"s\"" >> "h/branchout/${HASH}/branchoutrc"
-  echo "BRANCHOUT_CONFIG_GPG_HOME=\"${GNUGPHOME_TEMP}/.gpg\"" >> "h/branchout/${HASH}/branchoutrc"
-  echo "BRANCHOUT_NAME=\"${HASH}\"" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
-  echo "frog-aleph
-frog-gemel
-frog-bet
-lion-aleph
-rabbit-aleph
-toad-aleph
-toad-gemel
-toad-bet
-snake-aleph
-snake-bet
-snake-gemel
-fox-aleph
-fox-bet
-fox-gemel" > Branchoutprojects
-}
-
-secretExample() {
-  secretSetup "${@}"
-  mkdir -p target/resources/kubernetes src/main/secrets/
-  cp -r "${EXAMPLES}"/secret-templates/* target/resources/kubernetes
-  cp -r "${EXAMPLES}"/secrets/* src/main/secrets
-}
-
-
-legacyExample() {
-  test -z "$1" && bail "exmaples need a name"
-  test -d "target/${1}" && bail "example already exists: ${1}"
-  mkdir -p "target/${1}" "target/branchout/${1}"
-  cd "target/${1}" || bail "Failed to enter target/${1}"
-  export HOME=../
-  echo "BRANCHOUT_NAME=\"${1}\"" > .branchout
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> .branchout
-  echo "frog-aleph
-frog-gemel
-frog-bet
-lion-aleph
-rabbit-aleph
-toad-aleph
-toad-gemel
-toad-bet
-snake-aleph
-snake-bet
-snake-gemel
-fox-aleph
-fox-bet
-fox-gemel" > .projects
 }
 
 prefixExample() {
@@ -223,9 +152,10 @@ prefixExample() {
   test -d "target/${1}" && bail "example already exists: ${1}"
   mkdir -p "target/${1}" "target/branchout/${1}"
   cd "target/${1}" || bail "Failed to enter target/${1}"
+  git init || bail "failed to initilise the git repository"
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base || bail "failed to set the origin which is needed to derive base url"
   export HOME=../
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
-  echo "BRANCHOUT_GIT_BASEURL=\"file://${BUILD_DIRECTORY}/repositories\"" >> Branchoutfile
   echo "BRANCHOUT_PREFIX=\"prefix\"" >> Branchoutfile
   echo "toad-aleph
 toad-gemel
