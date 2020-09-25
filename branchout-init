@@ -36,7 +36,7 @@ function branchoutInitFromUrl() {
   BRANCHOUT_NAME="$(basename "${1}" | sed -e 's,.git$,,')"
   PROJECT_NAME="${2:-${BRANCHOUT_NAME}}"
   test -d "${PROJECT_NAME}" && usage "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME} is already initialised"
-  git clone "${1}" "${PROJECT_NAME}" >/dev/null 2>&1 || usage "Failed to branchout projection ${1} into ${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}" "$(git clone "${1}" "${BRANCHOUT_NAME}")"
+  git clone "${1}" "${PROJECT_NAME}" >/dev/null 2>&1 || usage "Failed to branchout projection ${1} into ${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}" "$(git clone "${1}" "${PROJECT_NAME}")"
   echo "Branchout projection '${BRANCHOUT_NAME}' in ${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
   cd "${PROJECT_NAME}" || usage "Failed to enter projection directory ${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
 
@@ -79,7 +79,7 @@ function branchoutInit() {
 }
 
 function usage() {
-  test $# -gt 1  && echo "${@}" && echo
+  test $# -gt 0  && echo "${@}" && echo
   echo "branchout-init [git-url] [relocation]
 
   To branchout from GitHub and use the repository name for the projection
