@@ -17,7 +17,7 @@ function branchout_set-config() {
   rm "${BRANCHOUT_HOME}/branchoutrc.tmp"
 }
 
-function branchout_ensure_config() {
+function branchout_ensure-config() {
   ensureConfigValue "${1}" "${1}"
 }
 
