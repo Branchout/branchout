@@ -95,8 +95,8 @@ load helper
 
 @test "branchout getvalue" {
   example init-getvalue
-  run branchout get BRANCHOUT_GIT_BASEURL
-  assert_success "file://${BUILD_DIRECTORY}/repositories"
+  run branchout get BRANCHOUT_NAME
+  assert_success "init-getvalue"
 }
 
 @test "branchout getvalue in child folder" {
@@ -105,8 +105,8 @@ load helper
   cd childfolder
   # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
   HOME=../../
-  run branchout get BRANCHOUT_GIT_BASEURL
-  assert_success "file://${BUILD_DIRECTORY}/repositories"
+  run branchout get BRANCHOUT_NAME
+  assert_success "init-getvalue-childfolder"
 }
 
 @test "branchout setvalue" {
@@ -224,4 +224,29 @@ Error: You must supply a value for VALUE"
   assert_success "SAMESAME2"
   run branchout get-config VALUE
   assert_success "SAMESAME"
+}
+
+@test "branchout ensure config value - set it" {
+  example init-ensure-config-setit
+  run branchout ensure-config VALUE <<< "Example"
+  assert_success "Please provide VALUE: "
+  run branchout get-config VALUE
+  assert_success "Example"
+}
+
+@test "branchout ensure config value - fails with nothing" {
+  example init-ensure-config-fails-on-nothing
+  run branchout ensure-config VALUE <<< ""
+  assert_error "Please provide VALUE: 
+Error: You must supply a value for VALUE"
+}
+
+@test "branchout ensure config value - does nothing if set" {
+  example init-ensure-config-idempotent
+  run branchout set-config VALUE Example
+  assert_success
+  run branchout ensure-config VALUE <<< ""
+  assert_success ""
+  run branchout get-config VALUE
+  assert_success "Example"
 }
