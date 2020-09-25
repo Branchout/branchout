@@ -13,7 +13,7 @@ load helper
 @test "no Branchoutfile is error" {
   cd /tmp
   run branchout status
-  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init"
+  assert_error "Branchoutfile configuration not found in parent hierarchy, perhaps you need to be in a project directory /home/michael/projects"
 }
 
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
@@ -24,20 +24,11 @@ load helper
   assert_error "Branchout name not defined in Branchoutfile, run branchout init"
 }
 
-@test "branchout configuration missing BRANCHOUT_GIT_BASEURL fails" {
-  mkdir -p target/missing-giturl target/branchout/missing-giturl
-  cd target/missing-giturl
-  echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile
-  run branchout status
-  assert_error "Git base url is not defined in Branchoutfile, run branchout init"
-}
-
 @test "branchout home is missing fails" {
   mkdir -p target/missing-branchout-home
   HOME=..
   cd target/missing-branchout-home
   echo 'BRANCHOUT_NAME="missing-branchout-home"' > Branchoutfile
-  echo 'BRANCHOUT_GIT_BASEURL="missing-branchout-home"' >> Branchoutfile
   run branchout status
   assert_error "Branchout home '../branchout/missing-branchout-home' does not exist, run branchout init"
 }
@@ -47,7 +38,6 @@ load helper
   cd target/no-projects
   HOME=..
   echo 'BRANCHOUT_NAME="no-projects"' > Branchoutfile
-  echo 'BRANCHOUT_GIT_BASEURL="no-projects"' >> Branchoutfile
   run branchout status
   assert_error "Branchoutprojects file missing, try branchout add [repository]"
 }
@@ -57,7 +47,6 @@ load helper
   cd target/prefix
   HOME=..
   echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile
-  echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> Branchoutfile
   echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile
   echo 'prefix-frog-aleph' > Branchoutprojects
   run branchout status
