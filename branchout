@@ -4,36 +4,35 @@ test -n "${DEBUG}" && set -x
 set -e
 
 function branchout_get-config() {
-  if test -f "${BRANCHOUT_HOME}/branchoutrc"; then
-    grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
-  fi
+  getConfig "${1}"
 }
 
 function branchout_set-config() {
-  test -z "${2}" && usage "You must supply a value to set"
-  test -f "${BRANCHOUT_HOME}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
-  echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
-  sort "${BRANCHOUT_HOME}/branchoutrc.tmp" > "${BRANCHOUT_HOME}/branchoutrc"
-  rm "${BRANCHOUT_HOME}/branchoutrc.tmp"
+  setConfig "${1}" "${2}"
 }
 
 function branchout_ensure-config() {
-  ensureConfigValue "${1}" "${1}"
+  if test $# -eq 2; then
+    ensureConfigValue "${1}" "${1}" "${2}"
+  else
+    ensureConfigValue "${1}" "${1}"
+  fi
 }
 
 function branchout_ensure() {
-  ensureValue "${1}" "${1}"
+  if test $# -eq 2; then
+    ensureValue "${1}" "${1}" "${2}"
+  else
+    ensureValue "${1}" "${1}"
+  fi
 }
 
 function branchout_get() {
-  grep "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+  getValue "${1}"
 }
 
 function branchout_set() {
-  grep -v "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
-  echo "${1}=\"${2}\"" >> "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
-  rm "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  setValue "${1}" "${2}"
 }
 
 function branchout_status() {
