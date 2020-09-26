@@ -142,6 +142,14 @@ Error: You must supply a value for VALUE"
   assert_success "Example"
 }
 
+@test "branchout - ensurevalue uses default" {
+  example init-ensure-uses-default
+  run branchout ensure VALUE "default" <<< ""
+  assert_success "Please provide VALUE [default]: "
+  run branchout get BRANCHOUT_VALUE
+  assert_success "default"
+}
+
 @test "branchout setvalue from child folder" {
   example init-setvalue-childfolder
   mkdir childfolder
@@ -249,4 +257,12 @@ Error: You must supply a value for VALUE"
   assert_success ""
   run branchout get-config VALUE
   assert_success "Example"
+}
+
+@test "branchout - ensure config value uses default" {
+  example init-ensure-config-uses-default
+  run branchout ensure-config VALUE "default" <<< ""
+  assert_success "Please provide VALUE [default]: "
+  run branchout get-config VALUE
+  assert_success "default"
 }

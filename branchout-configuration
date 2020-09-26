@@ -34,9 +34,14 @@ function setValue() {
 }
 
 function readValue() {
-  printf "Please provide %s: " "${1}"
+  if test -z "${3}"; then
+    printf "Please provide %s: " "${1}"
+  else
+    printf "Please provide %s [%s]: " "${1}" "${3}"
+  fi
   read -r VALUE
   echo
+  test -n "${3}" && VALUE="${3}"
   test -z "${VALUE}" && fail "Error: You must supply a value for $1"
   export "${2}=${VALUE}"
 }
@@ -52,7 +57,7 @@ function readSecret() {
 function ensureValue() {
   configName="BRANCHOUT_${2}"
   if test -z "${!configName}"; then
-    readValue "${1}" "${configName}"
+    readValue "${1}" "${configName}" "${3}"
     setValue "${configName}" "${!configName}"
   fi
 }
@@ -60,7 +65,7 @@ function ensureValue() {
 function ensureConfigValue() {
   configName="BRANCHOUT_CONFIG_${2}"
   if test -z "${!configName}"; then
-    readValue "${1}" "${configName}"
+    readValue "${1}" "${configName}" "${3}"
     setConfigValue "${2}" "${!configName}"
   fi
 }
