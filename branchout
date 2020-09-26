@@ -4,11 +4,11 @@ test -n "${DEBUG}" && set -x
 set -e
 
 function branchout_get-config() {
-  getConfig "${1}"
+  getConfigValue "${1}"
 }
 
 function branchout_set-config() {
-  setConfig "${1}" "${2}"
+  setConfigValue "${1}" "${2}"
 }
 
 function branchout_ensure-config() {

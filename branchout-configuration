@@ -8,13 +8,13 @@ function fail() {
   exit 2
 }
 
-function getConfig() {
+function getConfigValue() {
   if test -f "${BRANCHOUT_HOME}/branchoutrc"; then
     grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
   fi
 }
 
-function setConfig() {
+function setConfigValue() {
   test -z "${2}" && usage "You must supply a value to set"
   test -f "${BRANCHOUT_HOME}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
   echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
@@ -53,7 +53,7 @@ function ensureValue() {
   configName="BRANCHOUT_${2}"
   if test -z "${!configName}"; then
     readValue "${1}" "${configName}"
-    "${BRANCHOUT_PATH}/branchout" set "${configName}" "${!configName}"
+    setValue "${configName}" "${!configName}"
   fi
 }
 
@@ -61,7 +61,7 @@ function ensureConfigValue() {
   configName="BRANCHOUT_CONFIG_${2}"
   if test -z "${!configName}"; then
     readValue "${1}" "${configName}"
-    "${BRANCHOUT_PATH}/branchout" set-config "${2}" "${!configName}"
+    setConfigValue "${2}" "${!configName}"
   fi
 }
 
