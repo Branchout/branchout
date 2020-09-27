@@ -5,19 +5,19 @@ set -e
 
 function projectList() {
   if test $# -eq 0; then
-    sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+    sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   else
-    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
+    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
   fi
 }
 
 function projectListWithGroups() {
-  sort <(cat "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
+  sort <(cat "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
 }
 
 function projectContextStatus() {
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
+   if test -d "${PROJECTION_DIRECTORY}/${projectContext}"; then
+     cd "${PROJECTION_DIRECTORY}/${projectContext}" || usage_branchout_project "Failed to enter project directory"
 
      if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
        if test "${projectBranch}" = "master"; then
@@ -48,7 +48,7 @@ function projectUpdateError() {
 }
 
 function projectUpdate() {
-  cd "${BRANCHOUT_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
+  cd "${PROJECTION_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
   if git pull --rebase origin > /dev/null 2>&1; then
     projectContextStatus "${projectName}" "Pulled  "
   else
@@ -57,8 +57,8 @@ function projectUpdate() {
 }
 
 function projectClone() {
-  test -d "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || "${BRANCHOUT_PATH}/branchout-group" pull "${projectGroup}"
-  cd "$(dirname "${BRANCHOUT_DIRECTORY}/${projectContext}")" || usage "Project group ${projectGroup} directory not found"
+  test -d "$(dirname "${PROJECTION_DIRECTORY}/${projectContext}")" || "${BRANCHOUT_PATH}/branchout-group" pull "${projectGroup}"
+  cd "$(dirname "${PROJECTION_DIRECTORY}/${projectContext}")" || usage "Project group ${projectGroup} directory not found"
   echo -e "\\033[0mCloning \\033[92m${projectContext}\\033[0m"
   if git clone "${BRANCHOUT_GIT_BASEURL}/${gitProject}" >/dev/null 2>&1; then
     projectContextStatus "${projectName}" "Pulled  "
@@ -87,7 +87,7 @@ function projectPull() {
   projectContext "${1}"
 
   gitProject="${1}"
-  if test -d "${BRANCHOUT_DIRECTORY}/${projectContext}/.git"; then
+  if test -d "${PROJECTION_DIRECTORY}/${projectContext}/.git"; then
     projectUpdate
   else
     projectClone

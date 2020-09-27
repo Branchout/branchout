@@ -95,7 +95,7 @@ load helper
 
 @test "branchout getvalue" {
   example init-getvalue
-  run branchout get BRANCHOUT_NAME
+  run branchout get NAME
   assert_success "init-getvalue"
 }
 
@@ -105,15 +105,15 @@ load helper
   cd childfolder
   # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
   HOME=../../
-  run branchout get BRANCHOUT_NAME
+  run branchout get NAME
   assert_success "init-getvalue-childfolder"
 }
 
 @test "branchout setvalue" {
   example init-setvalue
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
@@ -121,7 +121,7 @@ load helper
   example init-ensure-setit
   run branchout ensure VALUE <<< "Example"
   assert_success "Please provide VALUE: "
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
@@ -134,11 +134,11 @@ Error: You must supply a value for VALUE"
 
 @test "branchout ensurevalue does nothing if set" {
   example init-ensure-idempotent
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
   run branchout ensure VALUE <<< ""
   assert_success ""
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
@@ -146,8 +146,16 @@ Error: You must supply a value for VALUE"
   example init-ensure-uses-default
   run branchout ensure VALUE "default" <<< ""
   assert_success "Please provide VALUE [default]: "
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "default"
+}
+
+@test "branchout - ensure value when set overrides default" {
+  example init-ensure-overrides-default
+  run branchout ensure VALUE "default" <<< "notdefault"
+  assert_success "Please provide VALUE [default]: "
+  run branchout get VALUE
+  assert_success "notdefault"
 }
 
 @test "branchout setvalue from child folder" {
@@ -156,35 +164,35 @@ Error: You must supply a value for VALUE"
   cd childfolder
   # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
   HOME=../../
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
 @test "branchout setvalue twice" {
   example init-setvalue-twice
-  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  run branchout set VALUE "SAMESAME"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
-  run branchout set BRANCHOUT_VALUE "SAMESAME2"
+  run branchout set VALUE "SAMESAME2"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME2"
 }
 
 @test "branchout setvalue many values" {
   example init-setvalue-many
-  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  run branchout set VALUE "SAMESAME"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
-  run branchout set BRANCHOUT_VALUE2 "SAMESAME2"
+  run branchout set VALUE2 "SAMESAME2"
   assert_success
-  run branchout get BRANCHOUT_VALUE2
+  run branchout get VALUE2
   assert_success "SAMESAME2"
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
 }
 
@@ -265,4 +273,12 @@ Error: You must supply a value for VALUE"
   assert_success "Please provide VALUE [default]: "
   run branchout get-config VALUE
   assert_success "default"
+}
+
+@test "branchout - ensure config value when set overrides default" {
+  example init-ensure-config-overrides-default
+  run branchout ensure-config VALUE "default" <<< "notdefault"
+  assert_success "Please provide VALUE [default]: "
+  run branchout get-config VALUE
+  assert_success "notdefault"
 }

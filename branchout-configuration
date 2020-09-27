@@ -9,12 +9,14 @@ function fail() {
 }
 
 function getConfigValue() {
+  test -z "${BRANCHOUT_HOME}" && fail "BRANCHOUT_HOME is not defined"
   if test -f "${BRANCHOUT_HOME}/branchoutrc"; then
     grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
   fi
 }
 
 function setConfigValue() {
+  test -z "${BRANCHOUT_HOME}" && fail "BRANCHOUT_HOME is not defined"
   test -z "${2}" && usage "You must supply a value to set"
   test -f "${BRANCHOUT_HOME}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
   echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
@@ -23,14 +25,16 @@ function setConfigValue() {
 }
 
 function getValue() {
-  grep "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+  test -z "${BRANCHOUT_HOME}" && fail "BRANCHOUT_HOME is not defined"
+  grep "^BRANCHOUT_${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
 }
 
 function setValue() {
-  grep -v "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
-  echo "${1}=\"${2}\"" >> "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
-  rm "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  test -z "${PROJECTION_DIRECTORY}" && fail "PROJECTION_DIRECTORY is not defined"
+  grep -v "^BRANCHOUT_${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
+  echo "BRANCHOUT_${1}=\"${2}\"" >> "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
+  rm "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
 }
 
 function readValue() {
@@ -39,9 +43,10 @@ function readValue() {
   else
     printf "Please provide %s [%s]: " "${1}" "${3}"
   fi
-  read -r VALUE
+  # if the user does not enter a value sure to add a newline before the error message if there is no default
+  read -r VALUE || true
   echo
-  test -n "${3}" && VALUE="${3}"
+  test -z "${VALUE}" && VALUE="${3}"
   test -z "${VALUE}" && fail "Error: You must supply a value for $1"
   export "${2}=${VALUE}"
 }
@@ -55,10 +60,10 @@ function readSecret() {
 }
 
 function ensureValue() {
-  configName="BRANCHOUT_${2}"
-  if test -z "${!configName}"; then
-    readValue "${1}" "${configName}" "${3}"
-    setValue "${configName}" "${!configName}"
+  valueName="BRANCHOUT_${2}"
+  if test -z "${!valueName}"; then
+    readValue "${1}" "${valueName}" "${3}"
+    setValue "${2}" "${!valueName}"
   fi
 }
 

@@ -36,7 +36,7 @@ function branchout_set() {
 }
 
 function branchout_status() {
-  test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
+  test -s "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
   exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" status {}
 }
 
@@ -47,15 +47,15 @@ function branchout_pull() {
 
 function branchout_add() {
   test -n "${1}" || usage "Specify the repository to add, try branchout add <project-name>"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function branchout_clone() {
   test -n "${1}" || usage "Specify the repository to clone, try branchout clone <project-name>"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
 }
 
@@ -101,9 +101,13 @@ function usage() {
 }
 
 function execute() {
-  if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
+  if declare -f -F "branchout_${branchoutModule}" >/dev/null; then
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+
     # shellcheck source=branchout-environment
     . "${BRANCHOUT_PATH}/branchout-environment"
+
     eval branchout_"${branchoutModule}" "${@}"
 
   elif test -x "${BRANCHOUT_PATH}/branchout-${branchoutModule}"; then
@@ -122,9 +126,6 @@ function main() {
   fi
 
   BRANCHOUT_PATH="$(dirname "$0")"
-
-  # shellcheck source=branchout-configuration
-  . "${BRANCHOUT_PATH}/branchout-configuration"
 
   case "${1}" in
     help)
