@@ -93,36 +93,82 @@ inEmptyProject() {
   HOME=${BUILD_DIRECTORY}
 }
 
-@test "branchout init - new projection needs a name" {
-  inEmptyDirectory "prompt-for-projection-name"
+@test "branchout init - new projection needs a url" {
+  inEmptyDirectory "prompt-for-projection-url"
   run branchout init <<< ''
-  assert_failure "Enter new projection name: 
-Error: You must provide a new projection name"
- }
+  assert_failure "Please provide projection url: 
+Error: You must supply a value for projection url"
+}
 
-@test "branchout init - new projection defaults branchout name to projection name" {
+@test "branchout init - new projection defaults branchout name to project name" {
   inEmptyDirectory "projection-name-is-default-branchout-name"
-  run branchout init <<< 'init'
-  assert_success "Enter new projection name: 
-Branchout projection 'init' created in ${BUILD_DIRECTORY}/projects/init
-Enter branchout name [init]: 
-Branchout state 'init' will be stored in ${BUILD_DIRECTORY}/branchout/init"
- }
+  run branchout init <<< 'https://github.com/Branchout/example
 
-@test "branchout init - new projection is current directory if its a project" {
-  inEmptyDirectory new-projection
-  run branchout init <<< ''
-  assert_failure "Enter branchout name [new-projection]: 
-Branchout state 'new-projection' will be stored in ${BUILD_DIRECTORY}/branchout/new-projection"
- }
 
- @test "branchout init - new projection errors if name is already used" {
+stickycode@example.com'
+  assert_success "Please provide projection url: 
+Please provide local project name [example]: 
+Branchout projection for 'https://github.com/Branchout/example' created in ${BUILD_DIRECTORY}/projects/example
+Please provide branchout name [example]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/example
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+}
+
+@test "branchout init - new projection errors if name is already used" {
   inEmptyDirectory "init-already-exists"
-  run branchout init <<< 'already-exists'
-  assert_success "Branchout projection 'already-exists' created in ${BUILD_DIRECTORY}/projects/already-exists"
-  run branchout init <<< 'already-exists'
-  assert_error "Branchout projection 'already-exists' already exists in ${BUILD_DIRECTORY}/projects/already-exists"
- }
+  run branchout init <<< 'https://github.com/Branchout/already-exists
+
+
+stickycode@example.com'
+  assert_success "Please provide projection url: 
+Please provide local project name [already-exists]: 
+Branchout projection for 'https://github.com/Branchout/already-exists' created in ${BUILD_DIRECTORY}/projects/already-exists
+Please provide branchout name [already-exists]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/already-exists
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+  run branchout init <<< 'https://github.com/Branchout/already-exists'
+  assert_failure "Please provide projection url: 
+Please provide local project name [already-exists]: 
+Branchout projection already exists at ${BUILD_DIRECTORY}/projects/already-exists
+
+branchout-init [git-url] [relocation]
+
+  To branchout from GitHub and use the repository name for the projection
+
+    branchout init https://github.com/branchout/branchout-project
+
+  To branchout from GitHub and use a different name for the projection
+
+    branchout init https://github.com/branchout/branchout-project branchout
+
+  To interactively initialise a projection locally
+
+    branchout init"
+}
+
+@test "branchout init - new projection requires git url to setup git" {
+  inEmptyProject init-new-requires-url
+  run branchout init <<< ''
+  assert_failure "Please provide projection url: 
+Error: You must supply a value for projection url"
+}
+
+@test "branchout init - new projection url git url to setup git" {
+  inEmptyProject init-new-projection
+  run branchout init <<< 'https://github.com/Branchout/new-projection
+
+stickycode@example.com'
+  assert_success "Please provide projection url: 
+Branchout projection created in /home/michael/projects/branchout-project/branchout/branchout/target/projects/init-new-projection
+Please provide branchout name [new-projection]: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/new-projection
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+  run git remote get-url origin
+  assert_success "https://github.com/Branchout/new-projection"
+}
 
 function inEmptyRepository() {
   git clone "file://${BUILD_DIRECTORY}/repositories/empty" "${BUILD_DIRECTORY}/projects/${1}"

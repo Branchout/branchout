@@ -45,25 +45,29 @@ function branchoutExistingProjection() {
   PROJECT_NAME="$(basename "$(pwd)")"
   export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
   if ! test -d .git; then
+    readValue "projection url" PROJECTION_URL
+    DEFAULT_BRANCHOUT_NAME="$(basename "${PROJECTION_URL}" | sed -e 's,.git$,,')"
     git init > /dev/null 2>&1
-    echo "Branchout projection created in $(PWD)"
+    git remote add origin "${PROJECTION_URL}"
+    echo "Branchout projection created in $(pwd)"
   fi
 
   branchoutInit
 }
 
 function branchoutInitLocal() {
-  readValue "projection" PROJECT_NAME
-  DEFAULT_BRANCHOUT_NAME="${PROJECT_NAME}"
+  readValue "projection url" PROJECTION_URL
+  DEFAULT_BRANCHOUT_NAME="$(basename "${PROJECTION_URL}" | sed -e 's,.git$,,')"
+  readValue "local project name" "PROJECT_NAME" "${DEFAULT_BRANCHOUT_NAME}"
+
   export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
   test -d "${PROJECTION_DIRECTORY}" && usage "Branchout projection already exists at ${PROJECTION_DIRECTORY}"
   git init "${PROJECTION_DIRECTORY}" >/dev/null 2>&1
   cd "${PROJECTION_DIRECTORY}" || usage "Cannot enter project directory ${PROJECTION_DIRECTORY}"
-  echo "Branchout projection '${PROJECT_NAME}' created in ${PROJECTION_DIRECTORY}"
+  echo "Branchout projection for '${PROJECTION_URL}' created in ${PROJECTION_DIRECTORY}"
 
   branchoutInit
 }
-
 
 function branchoutInit() {
   ensureBranchoutFiles
@@ -101,8 +105,8 @@ function usage() {
 
   To interactively initialise a projection locally
 
-    branchout init 
-  "
+    branchout init
+"
 
   exit 1
 }
