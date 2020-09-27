@@ -7,28 +7,58 @@ load helper
 
 @test "branchout init - from url, no email errors" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/base base-noemail<<< ""
-  assert_failure "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base-noemail
+  run branchout init file://${BUILD_DIRECTORY}/repositories/base base-noemail <<< ""
+  assert_failure "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/base' into ${BUILD_DIRECTORY}/projects/base-noemail
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/base
 Please provide your git author email: 
 Error: You must supply a value for your git author email"
 }
 
-@test "branchout init - from url" {
+@test "branchout init - from url using supplied branchout and supplied author email" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/base <<< "stickycode@example.com
-basdfsaf"
-  assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/base
+  run branchout init file://${BUILD_DIRECTORY}/repositories/empty rename-projection <<< "alternate-branchout-name
+stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/empty' into ${BUILD_DIRECTORY}/projects/rename-projection
+Please provide branchout name [empty]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/alternate-branchout-name
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
-  cd "${BUILD_DIRECTORY}/projects/base"
-  run branchout status
-  assert_success_file_sort init/from-url
+}
+
+@test "branchout init - from url using default branchout and supplied author email" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/empty <<< "
+stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/empty' into ${BUILD_DIRECTORY}/projects/empty
+Please provide branchout name [empty]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/empty
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+}
+
+@test "branchout init - from url using supplied branchout and existing author email" {
+  HOME=${BUILD_DIRECTORY}
+  run branchout init file://${BUILD_DIRECTORY}/repositories/empty reuse-branchout <<< "reuse-branchout
+stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/empty' into ${BUILD_DIRECTORY}/projects/reuse-branchout
+Please provide branchout name [empty]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/reuse-branchout
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+
+  run branchout init file://${BUILD_DIRECTORY}/repositories/empty reuse-state <<< "reuse-branchout
+stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/empty' into ${BUILD_DIRECTORY}/projects/reuse-state
+Please provide branchout name [empty]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/reuse-branchout
+Set the git author to stickycode@example.com"
 }
 
 @test "branchout init - from url.git" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "stickycode@example.com"
-  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/ghbase
+  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "
+stickycode@example.com"
+  assert_success "Branchout projected 'ghbase' into ${BUILD_DIRECTORY}/projects/ghbase
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/ghbase"
@@ -38,10 +68,10 @@ Set the git author to stickycode@example.com"
   assert_success_file_sort init/with-toad
 }
 
-@test "branchout init - from url.git with local name" {
+@test "branchout init - from url.git with local rename" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname <<< "stickycode@example.com"
-  assert_success "Branchout projection 'ghbase' in ${BUILD_DIRECTORY}/projects/localname
+  assert_success "Branchout projected 'ghbase' into ${BUILD_DIRECTORY}/projects/localname
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/localname"
@@ -51,27 +81,51 @@ Set the git author to stickycode@example.com"
   assert_success_file_sort init/with-toad
 }
 
-@test "branchout init - not in git repository, require name to init" {
-  mkdir -p target/tests/init-notgit-needname
-  cd target/tests/init-notgit-needname
+inEmptyDirectory() {
+  mkdir -p "${BUILD_DIRECTORY}/tests/${1}"
+  cd "${BUILD_DIRECTORY}/tests/${1}" || exit 77
   HOME=${BUILD_DIRECTORY}
+}
+
+inEmptyProject() {
+  mkdir -p "${BUILD_DIRECTORY}/projects/${1}"
+  cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
+  HOME=${BUILD_DIRECTORY}
+}
+
+@test "branchout init - new projection needs a name" {
+  inEmptyDirectory "prompt-for-projection-name"
   run branchout init <<< ''
-  assert_failure "Enter branchout name [init-ingit]: 
-Error: You must provide a branchout name"
+  assert_failure "Enter new projection name: 
+Error: You must provide a new projection name"
  }
 
-@test "branchout init - init git as needed" {
-  mkdir -p target/tests/init-notgit
-  cd target/tests/init-notgit
-  HOME=${BUILD_DIRECTORY}
+@test "branchout init - new projection defaults branchout name to projection name" {
+  inEmptyDirectory "projection-name-is-default-branchout-name"
   run branchout init <<< 'init'
-  assert_success "Branchout projection 'init' in ${BUILD_DIRECTORY}/projects/init"
-  run branchout status
-  assert_success ""
+  assert_success "Enter new projection name: 
+Branchout projection 'init' created in ${BUILD_DIRECTORY}/projects/init
+Enter branchout name [init]: 
+Branchout state 'init' will be stored in ${BUILD_DIRECTORY}/branchout/init"
+ }
+
+@test "branchout init - new projection is current directory if its a project" {
+  inEmptyDirectory new-projection
+  run branchout init <<< ''
+  assert_failure "Enter branchout name [new-projection]: 
+Branchout state 'new-projection' will be stored in ${BUILD_DIRECTORY}/branchout/new-projection"
+ }
+
+ @test "branchout init - new projection errors if name is already used" {
+  inEmptyDirectory "init-already-exists"
+  run branchout init <<< 'already-exists'
+  assert_success "Branchout projection 'already-exists' created in ${BUILD_DIRECTORY}/projects/already-exists"
+  run branchout init <<< 'already-exists'
+  assert_error "Branchout projection 'already-exists' already exists in ${BUILD_DIRECTORY}/projects/already-exists"
  }
 
 function inEmptyRepository() {
-  git clone file://${BUILD_DIRECTORY}/repositories/empty "${BUILD_DIRECTORY}/projects/${1}"
+  git clone "file://${BUILD_DIRECTORY}/repositories/empty" "${BUILD_DIRECTORY}/projects/${1}"
   cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
   HOME=${BUILD_DIRECTORY}
 }
@@ -115,8 +169,9 @@ brname"
 
 function inBaseRepository() {
   HOME=${BUILD_DIRECTORY}
-  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}" <<< "stickycode@example.com"
-  assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/projects/${1}"
+  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}" <<< "
+stickycode@example.com"
+  assert_success "Branchout projected 'base' into ${BUILD_DIRECTORY}/projects/${1}"
   cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
 }
 
@@ -152,8 +207,9 @@ function inBaseRepository() {
   mkdir -p "${BUILD_DIRECTORY}/relocated/.config"
   echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > "${BUILD_DIRECTORY}/relocated/.config/branchoutrc"
 
-  run branchout init file://${BUILD_DIRECTORY}/repositories/frog <<< "stickycode@example.com"
-  assert_success "Branchout projection 'base' in ${BUILD_DIRECTORY}/relocated/${1}"
+  run branchout init file://${BUILD_DIRECTORY}/repositories/frog <<< "
+stickycode@example.com"
+  assert_success "Branchout projected 'base' into ${BUILD_DIRECTORY}/relocated/${1}"
 
   cd "${BUILD_DIRECTORY}/relocated/notprojects/frog"
   run branchout pull frog
@@ -164,8 +220,8 @@ function inBaseRepository() {
   mkdir -p target/tests/add
   cd target/tests/add
   HOME=${BUILD_DIRECTORY}
-  run branchout-init <<< "stickycode@example.com
-brname"
+  run branchout-init <<< "
+stickycode@example.com"
   assert_success
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -178,12 +234,17 @@ brname"
 }
 
 @test "branchout init - only sets url and name" {
-  mkdir -p target/tests/init-branchoutfile
-  cd target/tests/init-branchoutfile
   HOME=${BUILD_DIRECTORY}
-  run branchout-init <<< "stickycode@example.com
-brname"
-  assert_success ""
+  run branchout-init <<< "init-branchoutfile
+
+stickycode@example.com"
+  assert_success "Please provide projection name: 
+Branchout projection 'init-branchoutfile' created in ${BUILD_DIRECTORY}/projects/init-branchoutfile
+Please provide branchout name [init-branchoutfile]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/init-branchoutfile
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+  cd target/projects/init-branchoutfile
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
   assert_equal "BRANCHOUT_NAME=brname" "$(cat Branchoutfile)"
