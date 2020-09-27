@@ -161,9 +161,9 @@ Error: You must supply a value for projection url"
 
 stickycode@example.com'
   assert_success "Please provide projection url: 
-Branchout projection created in /home/michael/projects/branchout-project/branchout/branchout/target/projects/init-new-projection
+Branchout projection created in ${BUILD_DIRECTORY}/projects/init-new-projection
 Please provide branchout name [new-projection]: 
-Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/new-projection
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/new-projection
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
   run git remote get-url origin
@@ -179,23 +179,30 @@ function inEmptyRepository() {
 @test "branchout init - in git repository, no branchout requires name" {
   inEmptyRepository "init-in-git-require-name"
   run branchout init <<< ''
-  assert_failure "Enter branchout name [init-ingit]: "
+  assert_failure "Please provide branchout name: 
+Error: You must supply a value for branchout name"
 }
 
 @test "branchout init - in git repository, interactive" {
-  inEmptyRepository "init-interactive"
-  run branchout init <<< "stickycode@example.com
-brname"
-  assert_success ""
+  inEmptyRepository "init-in-git-interactive"
+  run branchout init <<< "init-in-git-interactive
+stickycode@example.com"
+  assert_success "Please provide branchout name: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-interactive
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   run branchout status
-  assert_error "No projects to show, try branchout clone <project-name>"
+  assert_error "No projects to show, try branchout add <project-name>"
 }
 
 @test "branchout init - in git repository, add projects" {
-  inEmptyRepository "init-git-suggestion"
-  run branchout init <<< "stickycode@example.com
-brname"
-  assert_success
+  inEmptyRepository "init-in-git-add-project"
+  run branchout init <<< "
+stickycode@example.com"
+  assert_success "Please provide branchout name: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-add-project
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
   run branchout add frog-aleph
@@ -203,10 +210,13 @@ brname"
 }
 
 @test "branchout init - in git repository, clone projects" {
-  inEmptyRepository "init-git-suggestion"
-  run branchout init <<< "stickycode@example.com
-brname"
-  assert_success
+  inEmptyRepository "init-in-git-clone-projects"
+  run branchout init <<< "init-in-git-clone-projects
+stickycode@example.com"
+  assert_success "Please provide branchout name: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-clone-projects
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
   run branchout clone frog-aleph
@@ -283,15 +293,17 @@ stickycode@example.com"
   HOME=${BUILD_DIRECTORY}
   run branchout-init <<< "init-branchoutfile
 
+
 stickycode@example.com"
-  assert_success "Please provide projection name: 
-Branchout projection 'init-branchoutfile' created in ${BUILD_DIRECTORY}/projects/init-branchoutfile
+  assert_success "Please provide projection url: 
+Please provide local project name [init-branchoutfile]: 
+Branchout projection for 'init-branchoutfile' created in ${BUILD_DIRECTORY}/projects/init-branchoutfile
 Please provide branchout name [init-branchoutfile]: 
 Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/init-branchoutfile
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
-  cd target/projects/init-branchoutfile
+  cd "${BUILD_DIRECTORY}/projects/init-branchoutfile"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
-  assert_equal "BRANCHOUT_NAME=brname" "$(cat Branchoutfile)"
+  assert_equal "BRANCHOUT_NAME=init-branchoutfile" "$(cat Branchoutfile)"
 }

@@ -44,12 +44,16 @@ function branchoutInitFromUrl() {
 function branchoutExistingProjection() {
   PROJECT_NAME="$(basename "$(pwd)")"
   export PROJECTION_DIRECTORY="${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}"
-  if ! test -d .git; then
+  if ! test -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}/${PROJECT_NAME}/.git"; then
+    git init > /dev/null 2>&1
+    echo "Branchout projection created in $(pwd)"
+  fi
+  if git remote get-url origin >/dev/null 2>&1; then
+    DEFAULT_BRANCHOUT_NAME="$(basename "$(git remote get-url origin)" | sed -e 's,.git$,,')"
+  else
     readValue "projection url" PROJECTION_URL
     DEFAULT_BRANCHOUT_NAME="$(basename "${PROJECTION_URL}" | sed -e 's,.git$,,')"
-    git init > /dev/null 2>&1
     git remote add origin "${PROJECTION_URL}"
-    echo "Branchout projection created in $(pwd)"
   fi
 
   branchoutInit
@@ -65,6 +69,7 @@ function branchoutInitLocal() {
   git init "${PROJECTION_DIRECTORY}" >/dev/null 2>&1
   cd "${PROJECTION_DIRECTORY}" || usage "Cannot enter project directory ${PROJECTION_DIRECTORY}"
   echo "Branchout projection for '${PROJECTION_URL}' created in ${PROJECTION_DIRECTORY}"
+  git remote add origin "${PROJECTION_URL}"
 
   branchoutInit
 }
