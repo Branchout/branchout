@@ -56,9 +56,9 @@ Set the git author to stickycode@example.com"
 
 @test "branchout init - from url.git" {
   HOME=${BUILD_DIRECTORY}
-  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "
-stickycode@example.com"
-  assert_success "Branchout projected 'ghbase' into ${BUILD_DIRECTORY}/projects/ghbase
+  run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git <<< "stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/ghbase.git' into ${BUILD_DIRECTORY}/projects/ghbase
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/ghbase
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/ghbase"
@@ -71,8 +71,8 @@ Set the git author to stickycode@example.com"
 @test "branchout init - from url.git with local rename" {
   HOME=${BUILD_DIRECTORY}
   run branchout init file://${BUILD_DIRECTORY}/repositories/ghbase.git localname <<< "stickycode@example.com"
-  assert_success "Branchout projected 'ghbase' into ${BUILD_DIRECTORY}/projects/localname
-Please provide your git author email: 
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/ghbase.git' into ${BUILD_DIRECTORY}/projects/localname
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/ghbase
 Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/localname"
   run branchout status

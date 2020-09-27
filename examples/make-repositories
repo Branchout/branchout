@@ -28,7 +28,7 @@ makeBase() {
   echo "frog-aleph
 frog-gemel
 toad-aleph" > Branchoutprojects
-  echo "BRANCHOUT_NAME=${1}" > Branchoutfile
+  echo "BRANCHOUT_NAME=${2:-${1}}" > Branchoutfile
   git add README.md Branchoutprojects Branchoutfile;
   git commit --no-gpg-sign -a -m"Initial commit";
 
@@ -130,7 +130,7 @@ each=lion counter=aleph makeProject
 
 # Setup base projects for init testing
 makeBase base
-makeBase ghbase.git
+makeBase ghbase.git ghbase
 makeEmpty empty
 
 # Legacy files .branchout and .projects are supported
