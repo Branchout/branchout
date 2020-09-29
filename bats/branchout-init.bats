@@ -151,7 +151,8 @@ branchout-init [git-url] [relocation]
 @test "branchout init - new projection requires git url to setup git" {
   inEmptyProject init-new-requires-url
   run branchout init <<< ''
-  assert_failure "Please provide projection url: 
+  assert_failure "Branchout projection created in /home/michael/projects/branchout-project/branchout/branchout/target/projects/init-new-requires-url
+Please provide projection url: 
 Error: You must supply a value for projection url"
 }
 
@@ -160,8 +161,8 @@ Error: You must supply a value for projection url"
   run branchout init <<< 'https://github.com/Branchout/new-projection
 
 stickycode@example.com'
-  assert_success "Please provide projection url: 
-Branchout projection created in ${BUILD_DIRECTORY}/projects/init-new-projection
+  assert_success "Branchout projection created in ${BUILD_DIRECTORY}/projects/init-new-projection
+Please provide projection url: 
 Please provide branchout name [new-projection]: 
 Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/new-projection
 Please provide your git author email: 
@@ -171,23 +172,35 @@ Set the git author to stickycode@example.com"
 }
 
 function inEmptyRepository() {
+  test -d "${BUILD_DIRECTORY}/projects/${1}" && bail "project ${BUILD_DIRECTORY}/projects/${1} already exists"
   git clone "file://${BUILD_DIRECTORY}/repositories/empty" "${BUILD_DIRECTORY}/projects/${1}"
   cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
   HOME=${BUILD_DIRECTORY}
 }
 
+@test "branchout init - in git repository, no branchout requires name uses default" {
+  inEmptyRepository "init-in-git-require-name-uses-default"
+  run branchout init <<< ''
+  assert_success "Please provide branchout name [empty]: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/empty
+Set the git author to stickycode@example.com"
+}
+
 @test "branchout init - in git repository, no branchout requires name" {
   inEmptyRepository "init-in-git-require-name"
-  run branchout init <<< ''
-  assert_failure "Please provide branchout name: 
-Error: You must supply a value for branchout name"
+  run branchout init <<< 'init-in-git-require-name
+stickycode@example.com'
+  assert_success "Please provide branchout name [empty]: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-require-name
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
 }
 
 @test "branchout init - in git repository, interactive" {
   inEmptyRepository "init-in-git-interactive"
   run branchout init <<< "init-in-git-interactive
 stickycode@example.com"
-  assert_success "Please provide branchout name: 
+  assert_success "Please provide branchout name [empty]: 
 Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-interactive
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
@@ -199,9 +212,8 @@ Set the git author to stickycode@example.com"
   inEmptyRepository "init-in-git-add-project"
   run branchout init <<< "
 stickycode@example.com"
-  assert_success "Please provide branchout name: 
-Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-add-project
-Please provide your git author email: 
+  assert_success "Please provide branchout name [empty]: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/empty
 Set the git author to stickycode@example.com"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
@@ -213,7 +225,7 @@ Set the git author to stickycode@example.com"
   inEmptyRepository "init-in-git-clone-projects"
   run branchout init <<< "init-in-git-clone-projects
 stickycode@example.com"
-  assert_success "Please provide branchout name: 
+  assert_success "Please provide branchout name [empty]: 
 Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-in-git-clone-projects
 Please provide your git author email: 
 Set the git author to stickycode@example.com"
@@ -224,6 +236,7 @@ Set the git author to stickycode@example.com"
 }
 
 function inBaseRepository() {
+  test -d "${BUILD_DIRECTORY}/projects/${1}" && bail "project ${BUILD_DIRECTORY}/projects/${1} already exists"
   HOME=${BUILD_DIRECTORY}
   run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}" <<< "
 stickycode@example.com"
@@ -305,5 +318,5 @@ Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/init-branchoutfile"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
-  assert_equal "BRANCHOUT_NAME=init-branchoutfile" "$(cat Branchoutfile)"
+  assert_equal "BRANCHOUT_NAME=\"init-branchoutfile\"" "$(cat Branchoutfile)"
 }
