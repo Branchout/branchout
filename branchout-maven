@@ -57,8 +57,8 @@ function mavenSettings() {
 
   mkdir -p "${BRANCHOUT_HOME}/maven/"
   echo "writing ${BRANCHOUT_HOME}/maven/settings.xml"
-  if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/maven-settings.xml"; then
-    echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_HOME}/maven/settings.xml"
+  if test -f "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml"; then
+    echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_HOME}/maven/settings.xml"
   else
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"

@@ -12,7 +12,7 @@ function branchoutGroupDeriveStdin() {
 
 function branchoutGroupPull() {
   projectGroup="${1}"
-  if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
+  if test -d "${PROJECTION_DIRECTORY}/${projectGroup}"; then
     branchoutGroupUpdate
   else
     branchoutGroupClone
@@ -32,8 +32,8 @@ function groupUpdateError() {
 }
 
 function branchoutGroupUpdate() {
-  cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
-  if test ! -d "${BRANCHOUT_DIRECTORY}/${projectGroup}/.git"; then
+  cd "${PROJECTION_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
+  if test ! -d "${PROJECTION_DIRECTORY}/${projectGroup}/.git"; then
      echo -e "\\033[0mNothing ${projectGroup}\\033[70D\\033[70C\\033[35mNot a repository\\033[0m"
    elif git pull --rebase origin > /dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled  "
@@ -43,14 +43,14 @@ function branchoutGroupUpdate() {
 }
 
 function branchoutGroupClone() {
-  test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}" && usage "Trying to clone a group that already exists"
+  test -d "${PROJECTION_DIRECTORY}/${projectGroup}" && usage "Trying to clone a group that already exists"
   echo -e "\\033[0mCloning \\033[92m${projectGroup}\\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${BRANCHOUT_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
+  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${PROJECTION_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled  "
   else
     echo -e "\\033[0mCloning failed: \\033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\\033[0m"
     echo -e "\\033[0mJust using plain directory \\033[32m${projectGroup}\\033[0m"
-    mkdir "${BRANCHOUT_DIRECTORY}/${projectGroup}"
+    mkdir "${PROJECTION_DIRECTORY}/${projectGroup}"
   fi
 }
 
@@ -74,8 +74,8 @@ function branchoutGroupDerive() {
 
 function groupStatus() {
    projectGroup="${1}"
-   if test -d "${BRANCHOUT_DIRECTORY}/${projectGroup}"; then
-     cd "${BRANCHOUT_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
+   if test -d "${PROJECTION_DIRECTORY}/${projectGroup}"; then
+     cd "${PROJECTION_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
 
      if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
        if test "${projectBranch}" = "master"; then
@@ -88,7 +88,7 @@ function groupStatus() {
      else
        echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
      fi
-     cd "${BRANCHOUT_DIRECTORY}"
+     cd "${PROJECTION_DIRECTORY}"
    else
      echo -e "\\033[0m${2}${projectGroup}\\033[70D\\033[70C\\033[35mNot cloned\\033[0m"
    fi

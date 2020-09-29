@@ -58,12 +58,12 @@ function branchoutFiles() {
 }
 
 function branchoutDirectory() {
-  BRANCHOUT_DIRECTORY="${PWD}"
-  while test "${BRANCHOUT_DIRECTORY}" != '/'; do
-    if branchoutFiles "${BRANCHOUT_DIRECTORY}"; then
+  PROJECTION_DIRECTORY="${PWD}"
+  while test "${PROJECTION_DIRECTORY}" != '/'; do
+    if branchoutFiles "${PROJECTION_DIRECTORY}"; then
       return 0
     fi
-    BRANCHOUT_DIRECTORY=$(dirname "${BRANCHOUT_DIRECTORY}")
+    PROJECTION_DIRECTORY=$(dirname "${PROJECTION_DIRECTORY}")
   done
   usage "Branchoutfile configuration not found in parent hierarchy, run branchout init"
 }
@@ -80,12 +80,12 @@ test -n "${BRANCHOUT_LOADED}" && return 0
 
 branchoutDirectory
 
-export BRANCHOUT_DIRECTORY
+export PROJECTION_DIRECTORY
 export BRANCHOUT_PROJECTS
 export BRANCHOUT_FILE
 
 # shellcheck source=examples/Branchoutfile
-source "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
+source "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
 
 test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
 export BRANCHOUT_NAME
@@ -97,7 +97,7 @@ export BRANCHOUT_GIT_BASEURL
 export BRANCHOUT_PREFIX
 
 test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
-test -f "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
+test -f "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
 # shellcheck source=examples/branchoutrc
 test -f "${BRANCHOUT_HOME}/branchoutrc" && source "${BRANCHOUT_HOME}/branchoutrc"

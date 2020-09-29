@@ -4,8 +4,8 @@ test -n "${DEBUG}" && set -x
 set -e 
 
 function runYarn() {
-    if test -f "${BRANCHOUT_DIRECTORY}/.branchout/cacerts"; then
-      export NODE_EXTRA_CA_CERTS="${BRANCHOUT_DIRECTORY}/.branchout/cacerts"
+    if test -f "${PROJECTION_DIRECTORY}/.branchout/cacerts"; then
+      export NODE_EXTRA_CA_CERTS="${PROJECTION_DIRECTORY}/.branchout/cacerts"
 
       echo "NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}"
     fi
@@ -31,9 +31,9 @@ function yarnSettings() {
     fi
     
     echo "writing yarn config to ${BRANCHOUT_HOME}/node/yarnrc"
-    if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"; then
-        echo "using yarnrc template ${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc"
-        echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
+    if test -f "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"; then
+        echo "using yarnrc template ${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"
+        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
     else
         echo "registry \"${BRANCHOUT_NPM_REGISTRY}\"
 user \"${BRANCHOUT_CONFIG_NPM_USER}\"
@@ -45,9 +45,9 @@ disable-self-update-check true
 
     echo "writing npm config to ${BRANCHOUT_HOME}/node/.npmrc"
     BASE_64_AUTH=$(echo -n "${BRANCHOUT_CONFIG_NPM_USER}:${NPM_PASS}" | base64)
-    if test -f "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc"; then
-        echo "using npmrc template ${BRANCHOUT_DIRECTORY}/branchout-templates/npmrc"
-        echo <(cat "${BRANCHOUT_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
+    if test -f "${PROJECTION_DIRECTORY}/branchout-templates/.npmrc"; then
+        echo "using npmrc template ${PROJECTION_DIRECTORY}/branchout-templates/npmrc"
+        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
     else
         echo "_auth=${BASE_64_AUTH}
 always-auth=true" > "${BRANCHOUT_HOME}/node/.npmrc"

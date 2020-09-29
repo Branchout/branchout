@@ -26,18 +26,18 @@ function branchout_ensure() {
 }
 
 function branchout_get() {
-  grep "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+  grep "^${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
 }
 
 function branchout_set() {
-  grep -v "^${1}=" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
-  echo "${1}=\"${2}\"" >> "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}"
-  rm "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  grep -v "^${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
+  echo "${1}=\"${2}\"" >> "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
+  rm "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
 }
 
 function branchout_status() {
-  test -s "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
+  test -s "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "No projects to show, try branchout add <project-name>"
   exec "${BRANCHOUT_PATH}/branchout-project" list "${1}" | xargs -P"${BRANCHOUT_THREADS-10}" -I{} "${BRANCHOUT_PATH}/branchout-project" status {}
 }
 
@@ -48,15 +48,15 @@ function branchout_pull() {
 
 function branchout_add() {
   test -n "${1}" || usage "Specify the repository to add, try branchout add <project-name>"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function branchout_clone() {
   test -n "${1}" || usage "Specify the repository to clone, try branchout clone <project-name>"
-  sort "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
-  mv "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${BRANCHOUT_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
 }
 
