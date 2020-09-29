@@ -63,6 +63,12 @@ They will show as not cloned until you ```branchout pull```
 If you want to clone when you add 
 ```branchout clone <project-name>```
 
+### Need to trust a certificate or ca bundle
+
+If you have a corporate CA bundle that you need to trust just add it at `<metarepo>/.branchout/cacerts`
+
+branchout-yarn will configure the environment so that yarn can trust certificates in or signed by certificates in cacarts
+
 ## Grokking the code and contributing
 
 
