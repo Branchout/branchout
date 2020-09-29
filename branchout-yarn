@@ -4,6 +4,12 @@ test -n "${DEBUG}" && set -x
 set -e 
 
 function runYarn() {
+    if test -f "${BRANCHOUT_DIRECTORY}/.branchout/cacerts"; then
+      export NODE_EXTRA_CA_CERTS="${BRANCHOUT_DIRECTORY}/.branchout/cacerts"
+
+      echo "NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}"
+    fi
+
     HOME=${BRANCHOUT_HOME}/node 
     YARN_CACHE_FOLDER=${BRANCHOUT_HOME}/node/cache yarn --use-yarnrc "${BRANCHOUT_HOME}/node/yarnrc" "${@}"
 }
