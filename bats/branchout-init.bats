@@ -249,7 +249,7 @@ Set the git author to stickycode@example.com"
 }
 
 @test "branchout init - from url, then clone projects" {
-  inBaseRepository clone
+  inBaseRepository init-from-url-clone
 
   run branchout status
   assert_success_file_sort init/from-url
@@ -258,7 +258,7 @@ Set the git author to stickycode@example.com"
 }
 
 @test "branchout init - from url then clone projects with group folder" {
-  inBaseRepository clone-folder
+  inBaseRepository init-from-url-clone-folder
 
   run branchout status
   assert_success_file_sort init/from-url
