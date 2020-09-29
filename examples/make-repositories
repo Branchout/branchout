@@ -35,6 +35,25 @@ toad-aleph" > Branchoutprojects
   popd
 }
 
+makeProjects() {
+  rm -rf ${1}
+  mkdir ${1}
+  pushd ${1}
+  git init
+  git config user.email "someone@example.com";
+  git config user.name "hopefully_not_real";
+
+  echo "# ${each}" > README.md;
+  echo "frog-aleph
+frog-gemel
+toad-aleph" > Branchoutprojects
+  touch Branchoutfile
+  git add README.md Branchoutprojects Branchoutfile;
+  git commit --no-gpg-sign -a -m"Initial commit";
+
+  popd
+}
+
 makeLegacyBase() {
   rm -rf ${1}
   mkdir ${1}
@@ -132,6 +151,7 @@ each=lion counter=aleph makeProject
 makeBase base
 makeBase ghbase.git ghbase
 makeEmpty empty
+makeProjects projects
 
 # Legacy files .branchout and .projects are supported
 makeLegacyBase legacy

@@ -231,16 +231,20 @@ Please provide your git author email:
 Set the git author to stickycode@example.com"
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
-  run branchout clone frog-aleph
-  assert_success_file status/clone
+  run branchout clone toad-aleph
+  assert_success_file clone/clone-one
 }
 
 function inBaseRepository() {
   test -d "${BUILD_DIRECTORY}/projects/${1}" && bail "project ${BUILD_DIRECTORY}/projects/${1} already exists"
   HOME=${BUILD_DIRECTORY}
-  run branchout init "file://${BUILD_DIRECTORY}/repositories/base" "${1}" <<< "
+  run branchout init "file://${BUILD_DIRECTORY}/repositories/projects" "${1}" <<< "${1}
 stickycode@example.com"
-  assert_success "Branchout projected 'base' into ${BUILD_DIRECTORY}/projects/${1}"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/projects' into ${BUILD_DIRECTORY}/projects/${1}
+Please provide branchout name [projects]: 
+Branchout state will be stored in ${BUILD_DIRECTORY}/branchout/${1}
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
   cd "${BUILD_DIRECTORY}/projects/${1}" || exit 77
 }
 
