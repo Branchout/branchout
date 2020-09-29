@@ -280,9 +280,11 @@ Set the git author to stickycode@example.com"
   mkdir -p "${BUILD_DIRECTORY}/relocated/.config"
   echo "BRANCHOUT_PROJECTS_DIRECTORY=notprojects" > "${BUILD_DIRECTORY}/relocated/.config/branchoutrc"
 
-  run branchout init file://${BUILD_DIRECTORY}/repositories/frog <<< "
-stickycode@example.com"
-  assert_success "Branchout projected 'base' into ${BUILD_DIRECTORY}/relocated/${1}"
+  run branchout init file://${BUILD_DIRECTORY}/repositories/frog <<< "stickycode@example.com"
+  assert_success "Branchout projected 'file://${BUILD_DIRECTORY}/repositories/frog' into ${BUILD_DIRECTORY}/relocated/notprojects/frog
+Branchout state will be stored in ${BUILD_DIRECTORY}/relocated/branchout/frog
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
 
   cd "${BUILD_DIRECTORY}/relocated/notprojects/frog"
   run branchout pull frog
@@ -290,12 +292,19 @@ stickycode@example.com"
 }
 
 @test "branchout init - local then add projects" {
-  mkdir -p target/tests/add
-  cd target/tests/add
   HOME=${BUILD_DIRECTORY}
-  run branchout-init <<< "
+  run branchout-init <<< "file://${BUILD_DIRECTORY}/repositories/frog
+init-local-then-add
+init-local-then-add
 stickycode@example.com"
-  assert_success
+  assert_success "Please provide projection url: 
+Please provide local project name [frog]: 
+Branchout projection for 'file:///home/michael/projects/branchout-project/branchout/branchout/target/repositories/frog' created in /home/michael/projects/branchout-project/branchout/branchout/target/projects/init-local-then-add
+Please provide branchout name [frog]: 
+Branchout state will be stored in /home/michael/projects/branchout-project/branchout/branchout/target/branchout/init-local-then-add
+Please provide your git author email: 
+Set the git author to stickycode@example.com"
+  cd target/projects/init-local-then-add
   run branchout status
   assert_error "No projects to show, try branchout add <project-name>"
   run branchout add frog-aleph
