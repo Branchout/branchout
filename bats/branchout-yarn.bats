@@ -12,7 +12,7 @@ load helper
 }
 
 @test "branchout yarn - ask for settings" {
-  example yarn-settings
+  prefixExample yarn-settings
   run branchout yarn settings <<< "https://yarn.example.org/repository/npm-example
 npmuser
 supersecret
@@ -31,7 +31,7 @@ writing npm config to ../branchout/yarn-settings/node/.npmrc"
 }
 
 @test "branchout yarn - ask for settings again only asks for secret" {
-  example yarn-settings-twice
+  prefixExample yarn-settings-twice
   run branchout yarn settings <<< "https://yarn.example.org/repository/npm-example
 npmuser
 supersecret
@@ -58,8 +58,8 @@ writing npm config to ../branchout/yarn-settings-twice/node/.npmrc"
 }
 
 @test "branchout yarn - use existing settings" {
-  example yarn-use-existing-settings
-  run branchout set BRANCHOUT_NPM_REGISTRY "https://yarn.example.org/repository/npm-example"
+  prefixExample yarn-use-existing-settings
+  run branchout set NPM_REGISTRY "https://yarn.example.org/repository/npm-example"
   assert_success
   run branchout set-config NPM_USER npmuser
   assert_success
@@ -78,7 +78,7 @@ writing npm config to ../branchout/yarn-use-existing-settings/node/.npmrc"
 
 
 @test "branchout yarn - missing registry fails" {
-  example yarn-settings-missing-registry
+  prefixExample yarn-settings-missing-registry
   run branchout yarn clean <<<  "
 "
   assert_failure "Please provide your npm registry: 
@@ -86,7 +86,7 @@ Error: You must supply a value for your npm registry"
 }
 
 @test "branchout yarn - missing npm user fails" {
-  example yarn-settings-missing-npm-username
+  prefixExample yarn-settings-missing-npm-username
   run branchout yarn clean <<<  "https://yarn.example.org/repository/npm-example
 
 "
@@ -96,7 +96,7 @@ Error: You must supply a value for npm registry username"
 }
 
 @test "branchout yarn - missing npm pass fails" {
-  example yarn-settings-missing-npm-password
+  prefixExample yarn-settings-missing-npm-password
   run branchout yarn clean <<<  "https://yarn.example.org/repository/npm-example
 npmuser
 
@@ -108,7 +108,7 @@ Error: You must supply a value for npm registry secret"
 }
 
 @test "branchout yarn - missing npm email fails" {
-  example yarn-settings-missing-npm-email
+  prefixExample yarn-settings-missing-npm-email
   run branchout yarn clean <<<  "https://yarn.example.org/repository/npm-example
 npmuser
 supersecret
@@ -121,7 +121,7 @@ Error: You must supply a value for npm registry email (git commit author)"
 }
 
 @test "branchout yarn - ask for settings always https" {
-  example yarn-settings-https
+  prefixExample yarn-settings-https
   run branchout yarn clean <<<  "http://yarn.example.org/repository/npm-example
 npmuser
 supersecret

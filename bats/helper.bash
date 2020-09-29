@@ -154,7 +154,7 @@ prefixExample() {
   cd "target/${1}" || bail "Failed to enter target/${1}"
   git init 2>/dev/null 1>&2 || bail "failed to initilise the git repository"
   git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2 || bail "failed to set the origin which is needed to derive base url"
-  export HOME=../
+  export HOME=..
   echo "BRANCHOUT_NAME=\"${1}\"" > Branchoutfile
   echo "BRANCHOUT_PREFIX=\"prefix\"" >> Branchoutfile
   echo "toad-aleph
