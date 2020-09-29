@@ -9,17 +9,10 @@ load helper
 @test "branchout environment configuration missing BRANCHOUT_NAME fails" {
   mkdir -p target/missing-name
   cd target/missing-name
+  HOME=..
   touch Branchoutfile
   run branchout status
   assert_error "Branchout name not defined in Branchoutfile, run branchout init" 
-}
-
-@test "branchout environment configuration missing BRANCHOUT_GIT_BASEURL fails" {
-  mkdir -p target/missing-giturl target/branchout/missing-giturl 
-  cd target/missing-giturl
-  echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile 
-  run branchout status
-  assert_error "Git base url is not defined in Branchoutfile, run branchout init" 
 }
 
 @test "branchout environment home is missing fails" {
