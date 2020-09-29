@@ -89,18 +89,18 @@ source "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
 
 test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
 export BRANCHOUT_NAME
-BRANCHOUT_HOME="${HOME}/branchout/${BRANCHOUT_NAME}"
-export BRANCHOUT_HOME
+BRANCHOUT_STATE="${HOME}/branchout/${BRANCHOUT_NAME}"
+export BRANCHOUT_STATE
 
 test -z "${BRANCHOUT_GIT_BASEURL}" && usage "Git base url is not defined in ${BRANCHOUT_FILE}, run branchout init"
 export BRANCHOUT_GIT_BASEURL
 export BRANCHOUT_PREFIX
 
-test ! -d "${BRANCHOUT_HOME}" && usage "Branchout home '${BRANCHOUT_HOME}' does not exist, run branchout init"
+test ! -d "${BRANCHOUT_STATE}" && usage "Branchout home '${BRANCHOUT_STATE}' does not exist, run branchout init"
 test -f "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
 # shellcheck source=examples/branchoutrc
-test -f "${BRANCHOUT_HOME}/branchoutrc" && source "${BRANCHOUT_HOME}/branchoutrc"
+test -f "${BRANCHOUT_STATE}/branchoutrc" && source "${BRANCHOUT_STATE}/branchoutrc"
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY

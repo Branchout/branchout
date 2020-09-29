@@ -4,17 +4,17 @@ test -n "${DEBUG}" && set -x
 set -e
 
 function branchout_get-config() {
-  if test -f "${BRANCHOUT_HOME}/branchoutrc"; then
-    grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
+  if test -f "${BRANCHOUT_STATE}/branchoutrc"; then
+    grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_STATE}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
   fi
 }
 
 function branchout_set-config() {
   test -z "${2}" && usage "You must supply a value to set"
-  test -f "${BRANCHOUT_HOME}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_HOME}/branchoutrc" > "${BRANCHOUT_HOME}/branchoutrc.tmp" && true
-  echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_HOME}/branchoutrc.tmp"
-  sort "${BRANCHOUT_HOME}/branchoutrc.tmp" > "${BRANCHOUT_HOME}/branchoutrc"
-  rm "${BRANCHOUT_HOME}/branchoutrc.tmp"
+  test -f "${BRANCHOUT_STATE}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_STATE}/branchoutrc" > "${BRANCHOUT_STATE}/branchoutrc.tmp" && true
+  echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_STATE}/branchoutrc.tmp"
+  sort "${BRANCHOUT_STATE}/branchoutrc.tmp" > "${BRANCHOUT_STATE}/branchoutrc"
+  rm "${BRANCHOUT_STATE}/branchoutrc.tmp"
 }
 
 function branchout_ensure_config() {

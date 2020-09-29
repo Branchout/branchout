@@ -38,8 +38,8 @@ function runMaven() {
     esac
   done
 
-  echo "mvn -f ${POM_FILE} -s ${BRANCHOUT_HOME}/maven/settings.xml ${expandedCommands[*]}"
-  exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_HOME}/maven/settings.xml" "${expandedCommands[@]}"
+  echo "mvn -f ${POM_FILE} -s ${BRANCHOUT_STATE}/maven/settings.xml ${expandedCommands[*]}"
+  exec mvn -f "${POM_FILE}" -s "${BRANCHOUT_STATE}/maven/settings.xml" "${expandedCommands[@]}"
 }
 
 function mavenSettings() {
@@ -55,16 +55,16 @@ function mavenSettings() {
   readValue "your artifact repository username" "REPOSITORY_USER"
   readSecret "your artifact repository secret" "REPOSITORY_API_KEY"
 
-  mkdir -p "${BRANCHOUT_HOME}/maven/"
-  echo "writing ${BRANCHOUT_HOME}/maven/settings.xml"
+  mkdir -p "${BRANCHOUT_STATE}/maven/"
+  echo "writing ${BRANCHOUT_STATE}/maven/settings.xml"
   if test -f "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml"; then
-    echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_HOME}/maven/settings.xml"
+    echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_STATE}/maven/settings.xml"
   else
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
 
-  <localRepository>${BRANCHOUT_HOME}/maven/repository</localRepository>
+  <localRepository>${BRANCHOUT_STATE}/maven/repository</localRepository>
 
   <servers>
     <server>
@@ -92,7 +92,7 @@ function mavenSettings() {
   </pluginGroups>
 
 </settings>
-" > "${BRANCHOUT_HOME}/maven/settings.xml"
+" > "${BRANCHOUT_STATE}/maven/settings.xml"
   fi
 }
 
@@ -172,7 +172,7 @@ function main() {
 
   case "${1}" in
     version)
-      echo "Branchout $BRANCHOUT_HOME with $(java -version 2>&1 | head -n 1) as $GIT_AUTHOR_EMAIL"
+      echo "Branchout $BRANCHOUT_STATE with $(java -version 2>&1 | head -n 1) as $GIT_AUTHOR_EMAIL"
       runMaven --version
       ;;
     reactor)
@@ -182,10 +182,10 @@ function main() {
       mavenSettings "${*}"
       ;;
     show)
-      sed -e 's,<password>.*</password>,<password>XXXXX</password>,g' "${BRANCHOUT_HOME}/maven/settings.xml"
+      sed -e 's,<password>.*</password>,<password>XXXXX</password>,g' "${BRANCHOUT_STATE}/maven/settings.xml"
       ;;
     *)
-      test -f "${BRANCHOUT_HOME}/maven/settings.xml" || mavenSettings
+      test -f "${BRANCHOUT_STATE}/maven/settings.xml" || mavenSettings
       runMaven "${@}"
   esac
 }

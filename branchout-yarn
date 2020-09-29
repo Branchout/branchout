@@ -10,8 +10,8 @@ function runYarn() {
       echo "NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}"
     fi
 
-    HOME=${BRANCHOUT_HOME}/node 
-    YARN_CACHE_FOLDER=${BRANCHOUT_HOME}/node/cache yarn --use-yarnrc "${BRANCHOUT_HOME}/node/yarnrc" "${@}"
+    HOME=${BRANCHOUT_STATE}/node 
+    YARN_CACHE_FOLDER=${BRANCHOUT_STATE}/node/cache yarn --use-yarnrc "${BRANCHOUT_STATE}/node/yarnrc" "${@}"
 }
 
 function yarnSettings() {
@@ -25,32 +25,32 @@ function yarnSettings() {
     readSecret "npm registry secret" "NPM_PASS"
     ensureConfigValue "npm registry email (git commit author)" "GIT_EMAIL"
 
-    if test ! -d "${BRANCHOUT_HOME}/node/"; then
-      echo "create the branchout directory for node ${BRANCHOUT_HOME}/node/"
-      mkdir -p "${BRANCHOUT_HOME}/node/"
+    if test ! -d "${BRANCHOUT_STATE}/node/"; then
+      echo "create the branchout directory for node ${BRANCHOUT_STATE}/node/"
+      mkdir -p "${BRANCHOUT_STATE}/node/"
     fi
     
-    echo "writing yarn config to ${BRANCHOUT_HOME}/node/yarnrc"
+    echo "writing yarn config to ${BRANCHOUT_STATE}/node/yarnrc"
     if test -f "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"; then
         echo "using yarnrc template ${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"
-        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_HOME}/node/yarnrc"
+        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc") > "${BRANCHOUT_STATE}/node/yarnrc"
     else
         echo "registry \"${BRANCHOUT_NPM_REGISTRY}\"
 user \"${BRANCHOUT_CONFIG_NPM_USER}\"
 email \"${BRANCHOUT_CONFIG_GIT_EMAIL}\"
 always-auth true
 disable-self-update-check true
-" > "${BRANCHOUT_HOME}/node/yarnrc"
+" > "${BRANCHOUT_STATE}/node/yarnrc"
     fi
 
-    echo "writing npm config to ${BRANCHOUT_HOME}/node/.npmrc"
+    echo "writing npm config to ${BRANCHOUT_STATE}/node/.npmrc"
     BASE_64_AUTH=$(echo -n "${BRANCHOUT_CONFIG_NPM_USER}:${NPM_PASS}" | base64)
     if test -f "${PROJECTION_DIRECTORY}/branchout-templates/.npmrc"; then
         echo "using npmrc template ${PROJECTION_DIRECTORY}/branchout-templates/npmrc"
-        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_HOME}/node/.npmrc"
+        echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/.npmrc") > "${BRANCHOUT_STATE}/node/.npmrc"
     else
         echo "_auth=${BASE_64_AUTH}
-always-auth=true" > "${BRANCHOUT_HOME}/node/.npmrc"
+always-auth=true" > "${BRANCHOUT_STATE}/node/.npmrc"
     fi
 }
 
@@ -88,11 +88,11 @@ function main() {
       yarnSettings "${*}"
       ;;
     show)
-      grep -v '^auth ' "${BRANCHOUT_HOME}/node/yarnrc"
+      grep -v '^auth ' "${BRANCHOUT_STATE}/node/yarnrc"
       ;;
     *)
-      test -f "${BRANCHOUT_HOME}/node/.npmrc" || yarnSettings
-      test -f "${BRANCHOUT_HOME}/node/yarnrc" || yarnSettings
+      test -f "${BRANCHOUT_STATE}/node/.npmrc" || yarnSettings
+      test -f "${BRANCHOUT_STATE}/node/yarnrc" || yarnSettings
       runYarn "${@}"
   esac
 }
