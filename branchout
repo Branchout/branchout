@@ -4,36 +4,35 @@ test -n "${DEBUG}" && set -x
 set -e
 
 function branchout_get-config() {
-  if test -f "${BRANCHOUT_STATE}/branchoutrc"; then
-    grep "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_STATE}/branchoutrc" | sed -e 's,^.*="\(.*\)"$,\1,'
-  fi
+  getConfigValue "${1}"
 }
 
 function branchout_set-config() {
-  test -z "${2}" && usage "You must supply a value to set"
-  test -f "${BRANCHOUT_STATE}/branchoutrc" && grep -v "^BRANCHOUT_CONFIG_${1}=" "${BRANCHOUT_STATE}/branchoutrc" > "${BRANCHOUT_STATE}/branchoutrc.tmp" && true
-  echo "BRANCHOUT_CONFIG_${1}=\"${2}\"" >> "${BRANCHOUT_STATE}/branchoutrc.tmp"
-  sort "${BRANCHOUT_STATE}/branchoutrc.tmp" > "${BRANCHOUT_STATE}/branchoutrc"
-  rm "${BRANCHOUT_STATE}/branchoutrc.tmp"
+  setConfigValue "${1}" "${2}"
 }
 
-function branchout_ensure_config() {
-  ensureConfigValue "${1}" "${1}"
+function branchout_ensure-config() {
+  if test $# -eq 2; then
+    ensureConfigValue "${1}" "${1}" "${2}"
+  else
+    ensureConfigValue "${1}" "${1}"
+  fi
 }
 
 function branchout_ensure() {
-  ensureValue "${1}" "${1}"
+  if test $# -eq 2; then
+    ensureValue "${1}" "${1}" "${2}"
+  else
+    ensureValue "${1}" "${1}"
+  fi
 }
 
 function branchout_get() {
-  grep "^${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" | sed -e 's,^.*="\(.*\)"$,\1,'
+  getValue "${1}"
 }
 
 function branchout_set() {
-  grep -v "^${1}=" "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}".tmp && true
-  echo "${1}=\"${2}\"" >> "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
-  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp" > "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
-  rm "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}.tmp"
+  setValue "${1}" "${2}"
 }
 
 function branchout_status() {
@@ -102,7 +101,9 @@ function usage() {
 }
 
 function execute() {
-  if declare -f -F branchout_"${branchoutModule}" >/dev/null; then
+  if declare -f -F "branchout_${branchoutModule}" >/dev/null; then
+    # shellcheck source=branchout-configuration
+    . "${BRANCHOUT_PATH}/branchout-configuration"
     # shellcheck source=branchout-environment
     . "${BRANCHOUT_PATH}/branchout-environment"
     eval branchout_"${branchoutModule}" "${@}"
@@ -123,9 +124,6 @@ function main() {
   fi
 
   BRANCHOUT_PATH="$(dirname "$0")"
-
-  # shellcheck source=branchout-configuration
-  . "${BRANCHOUT_PATH}/branchout-configuration"
 
   case "${1}" in
     help)

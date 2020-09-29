@@ -18,7 +18,7 @@ function yarnSettings() {
     ensureValue "your npm registry" "NPM_REGISTRY"
     if [[ ${BRANCHOUT_NPM_REGISTRY} =~ ^http:// ]]; then
       export BRANCHOUT_NPM_REGISTRY="https:${BRANCHOUT_NPM_REGISTRY#*:}"
-      "${BRANCHOUT_PATH}/branchout" set "NPM_REGISTRY" "https${BRANCHOUT_NPM_REGISTRY}"
+      setValue "NPM_REGISTRY" "https${BRANCHOUT_NPM_REGISTRY}"
     fi
     
     ensureConfigValue "npm registry username" "NPM_USER"

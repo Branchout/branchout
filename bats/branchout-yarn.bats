@@ -59,7 +59,7 @@ writing npm config to ../branchout/yarn-settings-twice/node/.npmrc"
 
 @test "branchout yarn - use existing settings" {
   example yarn-use-existing-settings
-  run branchout set BRANCHOUT_NPM_REGISTRY "https://yarn.example.org/repository/npm-example"
+  run branchout set NPM_REGISTRY "https://yarn.example.org/repository/npm-example"
   assert_success
   run branchout set-config NPM_USER npmuser
   assert_success

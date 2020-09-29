@@ -3,43 +3,6 @@
 test -n "${DEBUG}" && set -x
 set -e
 
-function fail() {
-  test -n "${1}" && echo "${1}" && echo
-  exit 2
-}
-
-function readValue() {
-  printf "Please provide %s: " "${1}"
-  read -r VALUE
-  echo
-  test -z "${VALUE}" && fail "Error: You must supply a value for $1"
-  export "${2}=${VALUE}"
-}
-
-function readSecret() {
-  printf "Please provide %s: " "${1}"
-  read -s -r VALUE
-  echo
-  test -z "${VALUE}" && fail "Error: You must supply a value for $1"
-  export "${2}=${VALUE}"
-}
-
-ensureValue() {
-  configName="BRANCHOUT_${2}"
-  if test -z "${!configName}"; then
-    readValue "${1}" "${configName}"
-    "${BRANCHOUT_PATH}/branchout" set "${configName}" "${!configName}"
-  fi
-}
-
-ensureConfigValue() {
-  configName="BRANCHOUT_CONFIG_${2}"
-  if test -z "${!configName}"; then
-    readValue "${1}" "${configName}"
-    "${BRANCHOUT_PATH}/branchout" set-config "${2}" "${!configName}"
-  fi
-}
-
 # Check if the give directory contains the branchout files
 function branchoutFiles() {
   if test -f "${1}/Branchoutfile"; then
@@ -65,13 +28,11 @@ function branchoutDirectory() {
     fi
     PROJECTION_DIRECTORY=$(dirname "${PROJECTION_DIRECTORY}")
   done
-  usage "Branchoutfile configuration not found in parent hierarchy, run branchout init"
+  fail "Branchoutfile configuration not found in parent hierarchy, perhaps you need to be in a project directory $(ls -d "${HOME}/${BRANCHOUT_PROJECTS_DIRECTORY}" )"
 }
 
-function usage() {
+function fail() {
   test -n "${1}" && echo "${1}" && echo
-  echo "branchout-environment: load the environment
-"
   exit 1
 }
 
@@ -87,7 +48,7 @@ export BRANCHOUT_FILE
 # shellcheck source=examples/Branchoutfile
 source "${PROJECTION_DIRECTORY}/${BRANCHOUT_FILE}"
 
-test -z "${BRANCHOUT_NAME}" && usage "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
+test -z "${BRANCHOUT_NAME}" && fail "Branchout name not defined in ${BRANCHOUT_FILE}, run branchout init"
 export BRANCHOUT_NAME
 BRANCHOUT_STATE="${HOME}/branchout/${BRANCHOUT_NAME}"
 export BRANCHOUT_STATE

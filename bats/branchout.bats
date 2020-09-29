@@ -12,8 +12,10 @@ load helper
 
 @test "no Branchoutfile is error" {
   cd /tmp
+  mkdir -p projects/project-a projects/project-b
+  HOME=/tmp
   run branchout status
-  assert_error "Branchoutfile configuration not found in parent hierarchy, run branchout init"
+  assert_error "Branchoutfile configuration not found in parent hierarchy, perhaps you need to be in a project directory /tmp/projects"
 }
 
 @test "branchout configuration missing BRANCHOUT_NAME fails" {
@@ -22,14 +24,6 @@ load helper
   touch Branchoutfile
   run branchout status
   assert_error "Branchout name not defined in Branchoutfile, run branchout init"
-}
-
-@test "branchout configuration missing BRANCHOUT_GIT_BASEURL fails" {
-  mkdir -p target/missing-giturl target/branchout/missing-giturl
-  cd target/missing-giturl
-  echo 'BRANCHOUT_NAME="missing-giturl"' > Branchoutfile
-  run branchout status
-  assert_error "Git base url is not defined in Branchoutfile, run branchout init"
 }
 
 @test "branchout home is missing fails" {
@@ -74,38 +68,6 @@ load helper
   assert_success_file all/frog-aleph
 }
 
-@test "branchout init add to new branchout" {
-  mkdir -p target/tests/add
-  cd target/tests/add
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout-init <<< "brname
-gitty"
-  assert_success
-  run branchout status
-  assert_error "No projects to show, try branchout add <project-name>"
-  run branchout add frog-aleph
-  assert_success_file status/no-clone
-  run branchout status frog-aleph
-  assert_success_file status/no-clone
-  run branchout add frog-beta
-  assert_success_file_sort status/two-no-clone
-}
-
-@test "branchout init only sets url and name" {
-  mkdir -p target/tests/init-branchoutfile
-  cd target/tests/init-branchoutfile
-  HOME=${BUILD_DIRECTORY}
-  git init
-  run branchout-init <<< "brname
-gitty"
-  assert_success
-  run branchout status
-  assert_error "No projects to show, try branchout add <project-name>"
-  assert_equal "BRANCHOUT_NAME=brname
-BRANCHOUT_GIT_BASEURL=gitty" "$(cat Branchoutfile)"
-}
-
 @test "branchout add no params should error" {
   example add-no-parameters
   run branchout add
@@ -138,8 +100,8 @@ BRANCHOUT_GIT_BASEURL=gitty" "$(cat Branchoutfile)"
 
 @test "branchout getvalue" {
   example init-getvalue
-  run branchout get BRANCHOUT_GIT_BASEURL
-  assert_success "file://${BUILD_DIRECTORY}/repositories"
+  run branchout get NAME
+  assert_success "init-getvalue"
 }
 
 @test "branchout getvalue in child folder" {
@@ -148,15 +110,15 @@ BRANCHOUT_GIT_BASEURL=gitty" "$(cat Branchoutfile)"
   cd childfolder
   # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
   HOME=../../
-  run branchout get BRANCHOUT_GIT_BASEURL
-  assert_success "file://${BUILD_DIRECTORY}/repositories"
+  run branchout get NAME
+  assert_success "init-getvalue-childfolder"
 }
 
 @test "branchout setvalue" {
   example init-setvalue
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
@@ -164,7 +126,7 @@ BRANCHOUT_GIT_BASEURL=gitty" "$(cat Branchoutfile)"
   example init-ensure-setit
   run branchout ensure VALUE <<< "Example"
   assert_success "Please provide VALUE: "
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
@@ -177,12 +139,28 @@ Error: You must supply a value for VALUE"
 
 @test "branchout ensurevalue does nothing if set" {
   example init-ensure-idempotent
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
   run branchout ensure VALUE <<< ""
   assert_success ""
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
+}
+
+@test "branchout - ensurevalue uses default" {
+  example init-ensure-uses-default
+  run branchout ensure VALUE "default" <<< ""
+  assert_success "Please provide VALUE [default]: "
+  run branchout get VALUE
+  assert_success "default"
+}
+
+@test "branchout - ensure value when set overrides default" {
+  example init-ensure-overrides-default
+  run branchout ensure VALUE "default" <<< "notdefault"
+  assert_success "Please provide VALUE [default]: "
+  run branchout get VALUE
+  assert_success "notdefault"
 }
 
 @test "branchout setvalue from child folder" {
@@ -191,35 +169,35 @@ Error: You must supply a value for VALUE"
   cd childfolder
   # for the sake of the tests the HOME is relative, that way the messages can be deterministic, but that means if you shift directories you need to account for it
   HOME=../../
-  run branchout set BRANCHOUT_VALUE Example
+  run branchout set VALUE Example
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "Example"
 }
 
 @test "branchout setvalue twice" {
   example init-setvalue-twice
-  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  run branchout set VALUE "SAMESAME"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
-  run branchout set BRANCHOUT_VALUE "SAMESAME2"
+  run branchout set VALUE "SAMESAME2"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME2"
 }
 
 @test "branchout setvalue many values" {
   example init-setvalue-many
-  run branchout set BRANCHOUT_VALUE "SAMESAME"
+  run branchout set VALUE "SAMESAME"
   assert_success
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
-  run branchout set BRANCHOUT_VALUE2 "SAMESAME2"
+  run branchout set VALUE2 "SAMESAME2"
   assert_success
-  run branchout get BRANCHOUT_VALUE2
+  run branchout get VALUE2
   assert_success "SAMESAME2"
-  run branchout get BRANCHOUT_VALUE
+  run branchout get VALUE
   assert_success "SAMESAME"
 }
 
@@ -267,4 +245,45 @@ Error: You must supply a value for VALUE"
   assert_success "SAMESAME2"
   run branchout get-config VALUE
   assert_success "SAMESAME"
+}
+
+@test "branchout ensure config value - set it" {
+  example init-ensure-config-setit
+  run branchout ensure-config VALUE <<< "Example"
+  assert_success "Please provide VALUE: "
+  run branchout get-config VALUE
+  assert_success "Example"
+}
+
+@test "branchout ensure config value - fails with nothing" {
+  example init-ensure-config-fails-on-nothing
+  run branchout ensure-config VALUE <<< ""
+  assert_error "Please provide VALUE: 
+Error: You must supply a value for VALUE"
+}
+
+@test "branchout ensure config value - does nothing if set" {
+  example init-ensure-config-idempotent
+  run branchout set-config VALUE Example
+  assert_success
+  run branchout ensure-config VALUE <<< ""
+  assert_success ""
+  run branchout get-config VALUE
+  assert_success "Example"
+}
+
+@test "branchout - ensure config value uses default" {
+  example init-ensure-config-uses-default
+  run branchout ensure-config VALUE "default" <<< ""
+  assert_success "Please provide VALUE [default]: "
+  run branchout get-config VALUE
+  assert_success "default"
+}
+
+@test "branchout - ensure config value when set overrides default" {
+  example init-ensure-config-overrides-default
+  run branchout ensure-config VALUE "default" <<< "notdefault"
+  assert_success "Please provide VALUE [default]: "
+  run branchout get-config VALUE
+  assert_success "notdefault"
 }
