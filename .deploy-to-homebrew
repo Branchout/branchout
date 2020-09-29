@@ -2,7 +2,6 @@
 
 set -e
 
-if [ "$GITHUB_TOKEN" = "" ]; then echo "\$GITHUB_TOKEN isn't set"; exit 1; fi
 if [ "$VERSION" = "" ]; then echo "\$VERSION isn't set"; exit 1; fi
 
 ARCHIVE=$(mktemp /tmp/branchout.XXXXXX)
@@ -18,7 +17,7 @@ if ! tar xOf "$ARCHIVE" > /dev/null 2>/dev/null; then echo "$ARCHIVE isn't a val
 
 HASH=$(shasum -a 256 "$ARCHIVE" | cut -d\  -f1)
 
-git clone https://${GITHUB_TOKEN}@github.com/Branchout/homebrew-branchout.git "$CHECKOUT_DIR"
+git clone https://github.com/Branchout/homebrew-branchout.git "$CHECKOUT_DIR"
 echo "class Branchout < Formula
 
   desc \"Command-line git repository layout manage\"
@@ -105,4 +104,4 @@ echo "class BranchoutYarn < Formula
 end
 " > "$CHECKOUT_DIR/branchout-yarn.rb"
 
-#(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
+(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
