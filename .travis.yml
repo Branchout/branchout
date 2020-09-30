@@ -8,7 +8,7 @@ language: minimal
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck yq; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install yq; fi
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install yq shellcheck; fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install yq shellcheck make; fi
 
 script: 
 - make travis
