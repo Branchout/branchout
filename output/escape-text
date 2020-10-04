@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 for each in $(find output -name *.txt); do
   mkdir -p $(dirname "target/${each}")
   while IFS= read -r line; do echo -e "$line"; done < "$each" | sed -e "s,BASE_DIRECTORY,$(pwd)," > "target/${each%.txt}.output"
