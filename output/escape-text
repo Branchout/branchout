@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-set -x
 
 for each in $(find output -name *.txt); do
   mkdir -p $(dirname "target/${each}")
