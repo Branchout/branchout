@@ -8,6 +8,7 @@ canned: target/output
 
 clean:
 	rm -rf target
+	mkdir target
 
 repositories:
 	mkdir -p target
