@@ -7,6 +7,10 @@ language: minimal
 
 script: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    choco install bats shellcheck -y;
+    choco install shellcheck -y;
+    git clone https://github.com/bats-core/bats-core.git;
+    cd bats-core
+    bash ./install.sh $HOME
+    cd ..
     mingw32-make travis; 
   fi
