@@ -15,6 +15,6 @@ before_install:
   fi
 script: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    export PATH="${PATH}:${HOME}/bin"
+    export PATH="${PATH}:${HOME}/bin";
     mingw32-make travis; 
   fi
