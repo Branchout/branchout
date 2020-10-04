@@ -7,6 +7,6 @@ language: minimal
 
 script: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    choco install bats -y
+    choco install bats shellcheck -y;
     mingw32-make travis; 
   fi
