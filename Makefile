@@ -2,7 +2,7 @@ export PATH := $(PWD)/bats/bin:$(PWD):$(PATH)
 VERSION := $(shell git describe --tags --abbrev=0)
 
 target/output:
-	./output/escape-text
+	bash -c ./output/escape-text
 
 canned: target/output
 
