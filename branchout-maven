@@ -61,7 +61,7 @@ function mavenSettings() {
     echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_STATE}/maven/settings.xml"
   else
     if [ "$(command -v cygpath)" ]; then
-      MAVEN_LOCAL_REPOSITORY=$(cygpath "${BRANCHOUT_STATE}/maven/repository")
+      MAVEN_LOCAL_REPOSITORY=$(cygpath --windows "${BRANCHOUT_STATE}/maven/repository")
     else
       MAVEN_LOCAL_REPOSITORY="${BRANCHOUT_STATE}/maven/repository"
     fi
