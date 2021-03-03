@@ -60,11 +60,16 @@ function mavenSettings() {
   if test -f "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml"; then
     echo <(cat "${PROJECTION_DIRECTORY}/branchout-templates/maven-settings.xml") > "${BRANCHOUT_STATE}/maven/settings.xml"
   else
+    if [ "$(command -v cygpath)" ]; then
+      MAVEN_LOCAL_REPOSITORY=$(cygpath "${BRANCHOUT_STATE}/maven/repository")
+    else
+      MAVEN_LOCAL_REPOSITORY="${BRANCHOUT_STATE}/maven/repository"
+    fi
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\"
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
 
-  <localRepository>\${user.home}/branchout/${BRANCHOUT_NAME}/maven/repository</localRepository>
+  <localRepository>${MAVEN_LOCAL_REPOSITORY}</localRepository>
 
   <servers>
     <server>
