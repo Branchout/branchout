@@ -40,7 +40,7 @@ brew tap Branchout/homebrew-branchout
 brew install branchout
 ```
 
-### Initialise an existing organisation
+### Initialise an existing or new organisation
 
 To start with an existing project just init it from the git url
 
@@ -51,16 +51,18 @@ branchout status
 branchout pull
 ```
 
-This will create the Branchoutfile and Branchoutprojects if needed
+This will create the Branchoutfile and Branchoutprojects if needed, for example if the repo is new/empty and you're setting it up for the first time.
 
-The default branchout name is the name of the root project
+The default branchout name is the name of the root project, but can be overridden.
 
 You can now add projects
+
 ```branchout add <project-name>```
 
 They will show as not cloned until you ```branchout pull```
 
 If you want to clone when you add 
+
 ```branchout clone <project-name>```
 
 ### Need to trust a certificate or ca bundle
