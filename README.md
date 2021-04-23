@@ -105,9 +105,21 @@ Another might be that you already have a tree with your code and you want to kee
 In cases like these you can use the following two files to ????
 
 ```
-~/.config/Branchoutrc?
-${BRANCHOUT_BASE}/.branchoutrc
+~/.config/branchoutrc
+${BRANCHOUT_STATE}/.branchoutrc - Can the decision to make this a dot file be reversed? What was behind that? Seems like the sort of thing you'd want to wave a flag at you, not hide ready to bite.
 ```
+
+#### PROBABLY NOT TRUE:
+
+Branchout settings have an override hierarchy as follows:
+
+- Built in defaults and behaviours in scripts are the first layer intended to minimise config by convention
+- `Branchoutfile` is read next and all values used from here over the built-in ones
+- `~/.config/branchoutrc` is read next and any values here are used over either of the two sources above
+- `${BRANCHOUT_STATE}/.branchoutrc` is read next and is the final project-specific personal override possible
+
+Branchout then goes about performing its normal duties on the basis of this layered configuration approach.
+
 #### Moving the branchout projects base dir
 
 To set the root of where branchout initialises branchout repos do XXX
