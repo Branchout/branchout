@@ -45,7 +45,7 @@ brew install branchout
 To start with an existing project just init it from the git url
 
 ```
-branchout init https://github.com/Branchout/branchout-reactor.git
+branchout init https://github.com/Branchout/branchout-reactor.git [optionalDirName]
 cd ~/project/branchout-reactor
 branchout status
 branchout pull
@@ -70,6 +70,25 @@ If you want to clone when you add
 If you have a corporate CA bundle that you need to trust just add it at `<metarepo>/.branchout/cacerts`
 
 branchout-yarn will configure the environment so that yarn can trust certificates in or signed by certificates in cacarts
+
+### Common config in Branchoutfile
+
+#### Repo name prefixes
+
+If in your git structure your repos are all commonly prefixed with the same thing, and you'd like that to be ignored by Branchout as a prefix, then add:
+
+```BRANCHOUT_PREFIX=prefix-without-trailing-hyphen```
+
+to the Branchoutfile and you'll get whatever the next hyphen-separated part is used as the group for directory layout.
+
+#### Branchout name override
+
+In case of your branchout repository having a long name that you don't want as part of the two branchout paths, you can override by adding:
+
+```BRANCHOUT_NAME=shorter-name```
+
+to the Branchoutfile and ideally use the same value as the optionalDirName during branchout init.
+
 
 ## Grokking the code and contributing
 
