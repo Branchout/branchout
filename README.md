@@ -57,13 +57,17 @@ The default branchout name is the name of the root project, but can be overridde
 
 You can now add projects
 
-```branchout add <project-name>```
+```
+branchout add <project-name>
+```
 
-They will show as not cloned until you ```branchout pull```
+They will show as not cloned until you `branchout pull`
 
 If you want to clone when you add 
 
-```branchout clone <project-name>```
+```
+branchout clone <project-name>
+```
 
 ### Need to trust a certificate or ca bundle
 
@@ -77,7 +81,9 @@ branchout-yarn will configure the environment so that yarn can trust certificate
 
 If in your git structure your repos are all commonly prefixed with the same thing, and you'd like that to be ignored by Branchout as a prefix, then add:
 
-```BRANCHOUT_PREFIX=prefix-without-trailing-hyphen```
+```
+BRANCHOUT_PREFIX=prefix-without-trailing-hyphen
+```
 
 to the Branchoutfile and you'll get whatever the next hyphen-separated part is used as the group for directory layout.
 
@@ -85,7 +91,9 @@ to the Branchoutfile and you'll get whatever the next hyphen-separated part is u
 
 In case of your branchout repository having a long name that you don't want as part of the two branchout paths, you can override by adding:
 
-```BRANCHOUT_NAME=shorter-name```
+```
+BRANCHOUT_NAME=shorter-name
+```
 
 to the Branchoutfile and ideally use the same value as the optionalDirName during branchout init.
 
@@ -105,7 +113,7 @@ brew install git bats-core shellcheck
 
 The tests are written in bats https://github.com/bats-core/bats-core
 
-Note, the ```sstephenson/bats``` repository is unmaintained, bats-core is what you want.
+Note, the `sstephenson/bats` repository is unmaintained, bats-core is what you want.
 
 ```
 make test
