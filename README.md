@@ -97,6 +97,24 @@ BRANCHOUT_NAME=shorter-name
 
 to the Branchoutfile and ideally use the same value as the optionalDirName during branchout init.
 
+### Personal customisation
+
+Sometimes the branchout defaults don't work for a particular scenario even though they do work for most of your colleagues.
+One example is that the `${HOME}` places the two root directories on a very slow network drive.
+Another might be that you already have a tree with your code and you want to keep it all together.
+In cases like these you can use the following two files to ????
+
+```
+~/.config/Branchoutrc?
+${BRANCHOUT_BASE}/.branchoutrc
+```
+#### Moving the branchout projects base dir
+
+To set the root of where branchout initialises branchout repos do XXX
+
+#### Moving the branchout caching base dir
+
+To set the root of where branchout stores project specific caches and settings/credentials do YYY
 
 ## Grokking the code and contributing
 
