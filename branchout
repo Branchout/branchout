@@ -63,6 +63,29 @@ function branchout_version() {
   readlink "$(command -v branchout)" | sed -e 's,.*branchout/\(.*\)/bin/branchout,branchout-\1,'
 }
 
+# Typical use cases include:
+# - Are we on Windows of any sort? Act differently for certain scenarios.
+# - Are we on Mac with tools with different behaviour? Act differently for sed in-place and other cases.
+# - Are we on Linux? Default behaviour.
+# - Some other case? Just assume we're on something with GNU tooling: Default behaviour might work.
+# Note, OSX tooling is distinct from the other BSDs, they're a mess.
+# Note, WSL2 containers report as Linux, but that's usually correct anyway.
+function branchout_os() {
+  OS="unknown" # See above and draw your own conclusions or extend as needed.
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS="linux"
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="mac"
+  elif [[ "$OSTYPE" == "cygwin" ]]; then
+    OS="windows"
+  elif [[ "$OSTYPE" == "msys" ]]; then
+    OS="windows"
+  elif [[ "$OSTYPE" == "win32" ]]; then
+    OS="windows"
+  fi
+  echo "${OS}"
+}
+
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
