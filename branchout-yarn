@@ -5,9 +5,14 @@ set -e
 
 function runYarn() {
     if test -f "${PROJECTION_DIRECTORY}/.branchout/cacerts"; then
-      export NODE_EXTRA_CA_CERTS="${PROJECTION_DIRECTORY}/.branchout/cacerts"
+      if [ "$(command -v cygpath)" ]; then
+        NODE_EXTRA_CA_CERTS="$(cygpath --windows "${PROJECTION_DIRECTORY}/.branchout/cacerts")"
+      else
+        NODE_EXTRA_CA_CERTS="${PROJECTION_DIRECTORY}/.branchout/cacerts"
+      fi
 
       echo "NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}"
+      export NODE_EXTRA_CA_CERTS
     fi
 
     HOME=${BRANCHOUT_STATE}/node 
@@ -20,7 +25,7 @@ function yarnSettings() {
       export BRANCHOUT_NPM_REGISTRY="https:${BRANCHOUT_NPM_REGISTRY#*:}"
       setValue "NPM_REGISTRY" "https${BRANCHOUT_NPM_REGISTRY}"
     fi
-    
+
     ensureConfigValue "npm registry username" "NPM_USER"
     readSecret "npm registry secret" "NPM_PASS"
     ensureConfigValue "npm registry email (git commit author)" "GIT_EMAIL"
@@ -29,7 +34,7 @@ function yarnSettings() {
       echo "create the branchout directory for node ${BRANCHOUT_STATE}/node/"
       mkdir -p "${BRANCHOUT_STATE}/node/"
     fi
-    
+
     echo "writing yarn config to ${BRANCHOUT_STATE}/node/yarnrc"
     if test -f "${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"; then
         echo "using yarnrc template ${PROJECTION_DIRECTORY}/branchout-templates/yarnrc"
