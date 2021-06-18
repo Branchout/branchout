@@ -86,6 +86,69 @@ function branchout_os() {
   echo "${OS}"
 }
 
+# Update all Git URLs in 3 levels .git/config files that match the branchout Git base URL by prefix
+function branchout_relocate() {
+  if [ $# -ne 1 ]; then
+    fail "branchout relocate requires exactly one argument: The new Git URL base to apply to all remotes in all repos that currently use ${BRANCHOUT_GIT_BASEURL}"
+  fi
+
+  NEW_GIT_BASEURL="${1}"
+
+  if [ "${BRANCHOUT_GIT_BASEURL}" == "${NEW_GIT_BASEURL}" ]; then
+    fail "Old prefix and new prefix are the same, no point in continuing: ${BRANCHOUT_GIT_BASEURL}"
+  fi
+
+  echo "Relocating all Git repos from ${BRANCHOUT_GIT_BASEURL} to ${NEW_GIT_BASEURL}"
+  echo "in ${PROJECTION_DIRECTORY} and all nested repos 1 and 2 levels deep."
+
+  # Start with the entire git URL
+  OUR_FULL_URL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get-url origin 2>/dev/null)"
+  echo "This is the current Git URL for ${PROJECTION_DIRECTORY}: ${OUR_FULL_URL}"
+
+  # Build our new URL
+  NEW_FULL_URL="${OUR_FULL_URL//${BRANCHOUT_GIT_BASEURL}/${NEW_GIT_BASEURL}}"
+  echo "This is the new Git URL for ${PROJECTION_DIRECTORY}: ${NEW_FULL_URL}"
+
+  echo "Validating the Git repo pointed at by the new URL above works..."
+  if git ls-remote "${NEW_FULL_URL}" > /dev/null; then
+    echo "New URL exists and you have access, proceeding..."
+  else
+    fail "New URL is bad, repo does not exist, or you have no access to it: ${NEW_FULL_URL}"
+  fi
+
+  # Collect together all of the Git config files to process
+  CONFIG_FILES=("${PROJECTION_DIRECTORY}/.git/config")
+
+  GROUP_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/.git/config"
+  if compgen -G "${GROUP_CONFIG_FILE_PATTERN}" > /dev/null; then
+    mapfile -t GROUP_CONFIG_FILES < <(compgen -G "${GROUP_CONFIG_FILE_PATTERN}")
+    CONFIG_FILES=("${CONFIG_FILES[@]}" "${GROUP_CONFIG_FILES[@]}")
+    echo "Found ${#GROUP_CONFIG_FILES[@]} group .git/config files to process"
+  else
+    echo "No group .git/config files found to process."
+  fi
+
+  PROJECT_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/*/.git/config"
+  if compgen -G "${PROJECT_CONFIG_FILE_PATTERN}" > /dev/null; then
+    mapfile -t PROJECT_CONFIG_FILES < <(compgen -G "${PROJECT_CONFIG_FILE_PATTERN}")
+    CONFIG_FILES=("${CONFIG_FILES[@]}" "${PROJECT_CONFIG_FILES[@]}")
+    echo "Found ${#PROJECT_CONFIG_FILES[@]} project .git/config files to process"
+  else
+    echo "No project .git/config files found to process."
+  fi
+
+  echo "Processing a total of ${#CONFIG_FILES[@]} .git/config files, including the base directory"
+
+  if [ "$(branchout_os)" == "mac" ]; then
+    echo "We're on a mac, do weird OSX-specific sed in-place replacement"
+    sed -i '' "s,${BRANCHOUT_GIT_BASEURL},${NEW_GIT_BASEURL}," "${CONFIG_FILES[@]}"
+  else
+    echo "We're not on a mac, do normal sed in-place replacement"
+    sed -i "s,${BRANCHOUT_GIT_BASEURL},${NEW_GIT_BASEURL}," "${CONFIG_FILES[@]}"
+  fi
+  echo "Relocation complete. To reverse what you just did, run 'branchout relocate ${BRANCHOUT_GIT_BASEURL}'"
+}
+
 function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout: a tool for managing multi-repo projects
@@ -95,6 +158,8 @@ function usage() {
     pull <glob match>: pull all the matching projects and display their status, defaults to all
 
     clone <repository name>: add the repository to Branchoutprojects and clone it
+
+    relocate <new git clone URL base>: Repoint all matching remotes for all repos under the base dir to a new clone URL
 
     add: add a project to Branchoutprojects
 
