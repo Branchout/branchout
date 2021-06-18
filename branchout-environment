@@ -53,7 +53,7 @@ export BRANCHOUT_NAME
 BRANCHOUT_STATE="${HOME}/branchout/${BRANCHOUT_NAME}"
 export BRANCHOUT_STATE
 
-BRANCHOUT_GIT_BASEURL="$(git --git-dir ${PROJECTION_DIRECTORY}/.git remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
+BRANCHOUT_GIT_BASEURL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
 test -z "${BRANCHOUT_GIT_BASEURL}" && fail "The project directory is not a git repository, run branchout init"
 export BRANCHOUT_GIT_BASEURL
 export BRANCHOUT_PREFIX
