@@ -48,6 +48,8 @@ load helper
   mkdir -p target/prefix target/branchout/prefix
   cd target/prefix
   HOME=..
+  git init .
+  git remote add origin git@saas.tld:prefix.git
   echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile
   echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile
   echo 'prefix-frog-aleph' > Branchoutprojects
