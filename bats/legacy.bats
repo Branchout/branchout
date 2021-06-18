@@ -32,6 +32,8 @@ load helper
   mkdir -p target/legacy/prefix target/branchout/legacy-prefix 
   cd target/legacy/prefix
   HOME=${BUILD_DIRECTORY}
+  git init .
+  git remote add origin git@saas.tld:legacy/prefix.git
   echo 'BRANCHOUT_NAME="legacy-prefix"' > .branchout 
   echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> .branchout 
   echo 'BRANCHOUT_PREFIX="prefix"' >> .branchout 

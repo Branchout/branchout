@@ -53,16 +53,17 @@ export BRANCHOUT_NAME
 BRANCHOUT_STATE="${HOME}/branchout/${BRANCHOUT_NAME}"
 export BRANCHOUT_STATE
 
-BRANCHOUT_GIT_BASEURL="$(git remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
-test -z "${BRANCHOUT_GIT_BASEURL}" && fail "The project directory is not a git repository, run branchout init"
-export BRANCHOUT_GIT_BASEURL
-export BRANCHOUT_PREFIX
-
 test ! -d "${BRANCHOUT_STATE}" && usage "Branchout home '${BRANCHOUT_STATE}' does not exist, run branchout init"
 test -f "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PROJECTS} file missing, try branchout add [repository]"
 
 # shellcheck source=examples/branchoutrc
 test -f "${BRANCHOUT_STATE}/branchoutrc" && source "${BRANCHOUT_STATE}/branchoutrc"
+
+BRANCHOUT_GIT_BASEURL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
+test -z "${BRANCHOUT_GIT_BASEURL}" && fail "The projection directory is not a git repository, run branchout init."
+export BRANCHOUT_GIT_BASEURL
+export BRANCHOUT_PREFIX
+
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY

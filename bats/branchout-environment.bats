@@ -39,6 +39,8 @@ load helper
   mkdir -p target/prefix target/branchout/prefix 
   cd target/prefix
   HOME=..
+  git init . || true
+  git remote add origin git@sass.tld:prefix.git || true
   echo 'BRANCHOUT_NAME="prefix"' > Branchoutfile 
   echo 'BRANCHOUT_GIT_BASEURL="prefix"' >> Branchoutfile 
   echo 'BRANCHOUT_PREFIX="prefix"' >> Branchoutfile 
