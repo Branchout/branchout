@@ -40,7 +40,9 @@ assert_success_only() {
 
 assert_string_present() {
   if ! echo "$output" | grep -q "${1}"; then
-    bail "String '${1}' not found in output!"
+    { echo "String '${1}' not found in output:"
+      echo "$output"
+    } | bail
   fi
 }
 
