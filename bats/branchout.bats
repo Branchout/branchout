@@ -97,12 +97,6 @@ load helper
   run branchout relocate "${NEW_BASE}"
   assert_success_only # Command must succeed, then check details
 
-  # Covers all three layers and case of remotes not called origin and case of nested project URLs
-  assert_equal "$(git remote get-url origin)" "${NEW_BASE}/base"
-  assert_equal "$(git --git-dir=base/.git remote get-url origin)" "${NEW_BASE}/base"
-  assert_equal "$(git --git-dir=group/.git remote get-url sample)" "${NEW_BASE}/group"
-  assert_equal "$(git --git-dir=group/project/.git remote get-url upstream)" "${NEW_BASE}/group/project"
-
   # Validate the sanity check logic and human readable output. Note: dirs/URLs vary per test runner, so using partial matches
   assert_string_present "Relocating all Git repos from"
   assert_string_present "and all nested repos 1 and 2 levels deep."
@@ -116,6 +110,12 @@ load helper
   assert_string_present "Found 1 project .git/config files to process"
   assert_string_present "Processing a total of 4 .git/config files, including the base directory"
   assert_string_present "Relocation complete. To reverse what you just did, run 'branchout relocate"
+
+  # Covers all three layers and case of remotes not called origin and case of nested project URLs
+  assert_equal "$(git remote get-url origin)" "${NEW_BASE}/base"
+  assert_equal "$(git --git-dir=base/.git remote get-url origin)" "${NEW_BASE}/base"
+  assert_equal "$(git --git-dir=group/.git remote get-url sample)" "${NEW_BASE}/group"
+  assert_equal "$(git --git-dir=group/project/.git remote get-url upstream)" "${NEW_BASE}/group/project"
 }
 
 @test "branchout add no params should error" {
