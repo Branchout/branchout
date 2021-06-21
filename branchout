@@ -119,20 +119,18 @@ function branchout_relocate() {
   # Collect together all of the Git config files to process
   CONFIG_FILES=("${PROJECTION_DIRECTORY}/.git/config")
 
-  GROUP_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/.git/config"
-  if compgen -G "${GROUP_CONFIG_FILE_PATTERN}" > /dev/null; then
-    GROUP_CONFIG_FILES=()
-    while IFS='' read -r configFile; do GROUP_CONFIG_FILES+=("$configFile"); done < <(compgen -G "${GROUP_CONFIG_FILE_PATTERN}")
+  GROUP_CONFIG_FILES=()
+  while IFS='' read -r gitDirectory; do test -f "${gitDirectory}/config" && GROUP_CONFIG_FILES+=("${gitDirectory}/config"); done < <(find "${PROJECTION_DIRECTORY}" -mindepth 2 -maxdepth 2 -type d -name '.git')
+  if [ ${#GROUP_CONFIG_FILES[@]} -gt 0 ]; then
     CONFIG_FILES=("${CONFIG_FILES[@]}" "${GROUP_CONFIG_FILES[@]}")
     echo "Found ${#GROUP_CONFIG_FILES[@]} group .git/config files to process"
   else
     echo "No group .git/config files found to process."
   fi
 
-  PROJECT_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/*/.git/config"
-  if compgen -G "${PROJECT_CONFIG_FILE_PATTERN}" > /dev/null; then
-    PROJECT_CONFIG_FILES=()
-    while IFS='' read -r configFile; do PROJECT_CONFIG_FILES+=("$configFile"); done < <(compgen -G "${PROJECT_CONFIG_FILE_PATTERN}")
+  PROJECT_CONFIG_FILES=()
+  while IFS='' read -r gitDirectory; do test -f "${gitDirectory}/config" && PROJECT_CONFIG_FILES+=("${gitDirectory}/config"); done < <(find "${PROJECTION_DIRECTORY}" -mindepth 3 -maxdepth 3 -type d -name '.git')
+  if [ ${#PROJECT_CONFIG_FILES[@]} -gt 0 ]; then
     CONFIG_FILES=("${CONFIG_FILES[@]}" "${PROJECT_CONFIG_FILES[@]}")
     echo "Found ${#PROJECT_CONFIG_FILES[@]} project .git/config files to process"
   else
