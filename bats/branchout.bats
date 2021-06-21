@@ -93,7 +93,7 @@ load helper
   git --git-dir=group/project/.git remote add upstream "${OLD_BASE}/group/project" # Example of a project within a branchout group
 
   # Do the relocation and verify it worked
-  NEW_BASE="${PREFIX}/$(pwd)"
+  NEW_BASE="${PREFIX}$(pwd)"
   run branchout relocate "${NEW_BASE}"
   assert_success_only # Command must succeed, then check details
 
