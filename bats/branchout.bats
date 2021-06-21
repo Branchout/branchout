@@ -114,7 +114,7 @@ load helper
   # This has to match what we actually had on disk:
   assert_string_present "Found 2 group .git/config files to process"
   assert_string_present "Found 1 project .git/config files to process"
-  assert_string_present "Processsing a total of 4 .git/config files, including the base directory"
+  assert_string_present "Processing a total of 4 .git/config files, including the base directory"
   assert_string_present "Relocation complete. To reverse what you just did, run 'branchout relocate"
 }
 
