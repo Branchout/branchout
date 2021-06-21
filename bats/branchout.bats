@@ -112,10 +112,10 @@ load helper
   assert_string_present "Relocation complete. To reverse what you just did, run 'branchout relocate"
 
   # Covers all three layers and case of remotes not called origin and case of nested project URLs
-  assert_equal "$(git remote get-url origin)" "${NEW_BASE}/base"
-  assert_equal "$(git --git-dir=base/.git remote get-url origin)" "${NEW_BASE}/base"
-  assert_equal "$(git --git-dir=group/.git remote get-url sample)" "${NEW_BASE}/group"
-  assert_equal "$(git --git-dir=group/project/.git remote get-url upstream)" "${NEW_BASE}/group/project"
+  assert_equal "${NEW_BASE}/base" "$(git remote get-url origin)"
+  assert_equal "${NEW_BASE}/base" "$(git --git-dir=base/.git remote get-url origin)"
+  assert_equal "${NEW_BASE}/group" "$(git --git-dir=group/.git remote get-url sample)"
+  assert_equal "${NEW_BASE}/group/project" "$(git --git-dir=group/project/.git remote get-url upstream)"
 }
 
 @test "branchout add no params should error" {
