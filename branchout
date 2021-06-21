@@ -140,10 +140,10 @@ function branchout_relocate() {
   echo "Processing a total of ${#CONFIG_FILES[@]} .git/config files, including the base directory"
 
   if [ "$(branchout_os)" == "mac" ]; then
-    echo "We're on a mac, do weird OSX-specific sed in-place replacement"
+    test -n "${DEBUG}" && echo "We're on a mac, do weird OSX-specific sed in-place replacement"
     sed -i '' "s,${BRANCHOUT_GIT_BASEURL},${NEW_GIT_BASEURL}," "${CONFIG_FILES[@]}"
   else
-    echo "We're not on a mac, do normal sed in-place replacement"
+    test -n "${DEBUG}" && echo "We're not on a mac, do normal sed in-place replacement"
     sed -i "s,${BRANCHOUT_GIT_BASEURL},${NEW_GIT_BASEURL}," "${CONFIG_FILES[@]}"
   fi
   echo "Relocation complete. To reverse what you just did, run 'branchout relocate ${BRANCHOUT_GIT_BASEURL}'"
