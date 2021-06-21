@@ -74,6 +74,9 @@ load helper
   PREFIX='file://'
   OLD_BASE="${PREFIX}$(dirname $(pwd))/repositories"
 
+  # Politics does not belong in code, but here we are:
+  git config --global init.defaultBranch slave
+
   # Must have "base" dir/repo to make remote check work correctly
   mkdir base
   git init base > /dev/null
