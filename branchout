@@ -121,7 +121,8 @@ function branchout_relocate() {
 
   GROUP_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/.git/config"
   if compgen -G "${GROUP_CONFIG_FILE_PATTERN}" > /dev/null; then
-    mapfile -t GROUP_CONFIG_FILES < <(compgen -G "${GROUP_CONFIG_FILE_PATTERN}")
+    GROUP_CONFIG_FILES=()
+    while IFS='' read -r configFile; do GROUP_CONFIG_FILES+=("$configFile"); done < <(compgen -G "${GROUP_CONFIG_FILE_PATTERN}")
     CONFIG_FILES=("${CONFIG_FILES[@]}" "${GROUP_CONFIG_FILES[@]}")
     echo "Found ${#GROUP_CONFIG_FILES[@]} group .git/config files to process"
   else
@@ -130,7 +131,8 @@ function branchout_relocate() {
 
   PROJECT_CONFIG_FILE_PATTERN="${PROJECTION_DIRECTORY}/*/*/.git/config"
   if compgen -G "${PROJECT_CONFIG_FILE_PATTERN}" > /dev/null; then
-    mapfile -t PROJECT_CONFIG_FILES < <(compgen -G "${PROJECT_CONFIG_FILE_PATTERN}")
+    PROJECT_CONFIG_FILES=()
+    while IFS='' read -r configFile; do PROJECT_CONFIG_FILES+=("$configFile"); done < <(compgen -G "${PROJECT_CONFIG_FILE_PATTERN}")
     CONFIG_FILES=("${CONFIG_FILES[@]}" "${PROJECT_CONFIG_FILES[@]}")
     echo "Found ${#PROJECT_CONFIG_FILES[@]} project .git/config files to process"
   else
