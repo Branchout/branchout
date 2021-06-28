@@ -92,6 +92,18 @@ load helper
   git init group/project > /dev/null
   git --git-dir=group/project/.git remote add upstream "${OLD_BASE}/group/project" # Example of a project within a branchout group
 
+  # Extra group for extra projects to prove arrays expand correctly
+  mkdir arrays
+  git init arrays > /dev/null
+  git --git-dir=arrays/.git remote add downstream "${OLD_BASE}/group"
+
+  # Extra 3 projects inside the arrays group
+  mkdir arrays/list arrays/vector arrays/map
+  git init arrays/list
+  git init arrays/vector
+  git init arrays/map
+  # don't really need to set the remotes, sed will just find less to do
+
   # Do the relocation and verify it worked
   NEW_BASE="${PREFIX}$(pwd)"
   run branchout relocate "${NEW_BASE}"
@@ -106,9 +118,9 @@ load helper
   assert_string_present "Validating the Git repo pointed at by the new URL above works..."
   assert_string_present "New URL exists and you have access, proceeding..."
   # This has to match what we actually had on disk:
-  assert_string_present "Found 2 group .git/config files to process"
-  assert_string_present "Found 1 project .git/config files to process"
-  assert_string_present "Processing a total of 4 .git/config files, including the base directory"
+  assert_string_present "Found 3 group .git/config files to process"
+  assert_string_present "Found 4 project .git/config files to process"
+  assert_string_present "Processing a total of 8 .git/config files, including the base directory"
   assert_string_present "Relocation complete. To reverse what you just did, run 'branchout relocate"
 
   # Covers all three layers and case of remotes not called origin and case of nested project URLs
