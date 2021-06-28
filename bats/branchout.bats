@@ -67,6 +67,69 @@ load helper
   assert_success_file all/frog-aleph
 }
 
+@test "branchout relocate - three layers to local dir" {
+  example relocate-three-layers
+
+  # Set up fake git repos with remotes and realistic clone URLs that match our own origin
+  PREFIX='file://'
+  OLD_BASE="${PREFIX}$(dirname $(pwd))/repositories"
+
+  # Politics does not belong in code, but here we are:
+  git config --global init.defaultBranch slave
+
+  # Must have "base" dir/repo to make remote check work correctly
+  mkdir base
+  git init base > /dev/null
+  git --git-dir=base/.git remote add origin "${OLD_BASE}/base" # Same as our repo, but not important
+
+  # Disparate group to prove others work
+  mkdir group
+  git init group > /dev/null
+  git --git-dir=group/.git remote add sample "${OLD_BASE}/group" # Example of a branchout group
+
+  # Example project nested in a group
+  mkdir group/project
+  git init group/project > /dev/null
+  git --git-dir=group/project/.git remote add upstream "${OLD_BASE}/group/project" # Example of a project within a branchout group
+
+  # Extra group for extra projects to prove arrays expand correctly
+  mkdir arrays
+  git init arrays > /dev/null
+  git --git-dir=arrays/.git remote add downstream "${OLD_BASE}/group"
+
+  # Extra 3 projects inside the arrays group
+  mkdir arrays/list arrays/vector arrays/map
+  git init arrays/list
+  git init arrays/vector
+  git init arrays/map
+  # don't really need to set the remotes, sed will just find less to do
+
+  # Do the relocation and verify it worked
+  NEW_BASE="${PREFIX}$(pwd)"
+  run branchout relocate "${NEW_BASE}"
+  assert_success_only # Command must succeed, then check details
+
+  # Validate the sanity check logic and human readable output. Note: dirs/URLs vary per test runner, so using partial matches
+  assert_string_present "Relocating all Git repos from"
+  assert_string_present "and all nested repos 1 and 2 levels deep."
+  assert_string_present "This is the current Git URL for"
+  assert_string_present "This is the new Git URL for"
+  # This is important to not break your entire tree of repos:
+  assert_string_present "Validating the Git repo pointed at by the new URL above works..."
+  assert_string_present "New URL exists and you have access, proceeding..."
+  # This has to match what we actually had on disk:
+  assert_string_present "Found 3 group .git/config files to process"
+  assert_string_present "Found 4 project .git/config files to process"
+  assert_string_present "Processing a total of 8 .git/config files, including the base directory"
+  assert_string_present "Relocation complete. To reverse what you just did, run 'branchout relocate"
+
+  # Covers all three layers and case of remotes not called origin and case of nested project URLs
+  assert_equal "${NEW_BASE}/base" "$(git remote get-url origin)"
+  assert_equal "${NEW_BASE}/base" "$(git --git-dir=base/.git remote get-url origin)"
+  assert_equal "${NEW_BASE}/group" "$(git --git-dir=group/.git remote get-url sample)"
+  assert_equal "${NEW_BASE}/group/project" "$(git --git-dir=group/project/.git remote get-url upstream)"
+}
+
 @test "branchout add no params should error" {
   example add-no-parameters
   run branchout add

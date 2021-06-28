@@ -30,6 +30,22 @@ assert_success_firstline() {
   fi
 }
 
+assert_success_only() {
+  if [ "$status" -ne 0 ]; then
+    { echo "command failed with exit status $status"
+      echo "output: $output"
+    } | bail
+  fi
+}
+
+assert_string_present() {
+  if ! echo "$output" | grep -q "${1}"; then
+    { echo "String '${1}' not found in output:"
+      echo "$output"
+    } | bail
+  fi
+}
+
 assert_error_file() {
   if [ "$status" -eq 0 ]; then
     { echo "command should have failed"
