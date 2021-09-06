@@ -1,20 +1,13 @@
-dist:
-  bionic
+dist: bionic
 
 os:
 - linux
 - osx
 
-addons:
-  homebrew:
-    packages:
-    - bats-core
-    - shellcheck
-    - yq
-
 language: minimal
 
 before_install:
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install bats shellcheck yq; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install yq; fi
 
 script: 
