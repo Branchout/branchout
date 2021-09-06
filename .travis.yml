@@ -1,4 +1,5 @@
 dist: bionic
+osx_image: xcode12
 
 os:
 - linux
