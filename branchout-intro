@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Branchout is a fabulous tool for managing related sets of git repos in a clean and functional way."
+echo "It comes with a number of optional tool support modules: maven, node, yarn, and could do even more!"
+echo "For more info check out the git repo here: https://github.com/Branchout/branchout"
+echo "And if you're really keen, assist with homebrew packaging here: https://github.com/Branchout/homebrew-branchout"
+echo "Branchout is used in quite a few companies around the world and makes developer lives much easier."
+echo "Thanks for giving Branchout a try! We hope you like it :-)"
