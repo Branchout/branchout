@@ -47,14 +47,14 @@ function branchout_pull() {
 
 function branchout_add() {
   test -n "${1}" || usage "Specify the repository to add, try branchout add <project-name>"
-  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  sort -d "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" status "$("${BRANCHOUT_PATH}/branchout-group" derive "$1")"
 }
 
 function branchout_clone() {
   test -n "${1}" || usage "Specify the repository to clone, try branchout clone <project-name>"
-  sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
+  sort -d "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" <(echo "$1") | uniq > "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp"
   mv "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}.tmp" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   exec "${BRANCHOUT_PATH}/branchout" pull "$1"
 }
