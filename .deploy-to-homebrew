@@ -108,4 +108,9 @@ echo "class BranchoutYarn < Formula
 end
 " > "$CHECKOUT_DIR/branchout-yarn.rb"
 
-(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
+# Read email/name from the main branchout repo that we're in when this script is run
+userEmail="$(git config user.email)"
+userName="$(git config user.name)"
+
+# Then apply them to the freshly cloned repo
+(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
