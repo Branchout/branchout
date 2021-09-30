@@ -31,7 +31,7 @@ echo "class Branchout < Formula
   depends_on \"branchout/branchout/branchout-yarn\"
 
   def install
-    bin.install "README.md"
+    bin.install "branchout-intro"
   end
 
   def test
@@ -108,4 +108,13 @@ echo "class BranchoutYarn < Formula
 end
 " > "$CHECKOUT_DIR/branchout-yarn.rb"
 
-(cd "$CHECKOUT_DIR" && git config user.email "michael@stickycode.net" && git config user.name "Michael McCallum" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
+echo "Changes about to be committed:"
+git -C "$CHECKOUT_DIR" diff -U0
+read -p "Press enter to commit and push/publish the changes to homebrew, or ctrl C to cancel and bail out."
+
+# Read email/name from the main branchout repo that we're in when this script is run
+userEmail="$(git config user.email)"
+userName="$(git config user.name)"
+
+# Then apply them to the freshly cloned repo
+(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -a -m "$VERSION" && git tag -m "$VERSION" "$VERSION" HEAD && git push origin master "$VERSION")
