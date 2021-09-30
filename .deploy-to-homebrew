@@ -108,6 +108,10 @@ echo "class BranchoutYarn < Formula
 end
 " > "$CHECKOUT_DIR/branchout-yarn.rb"
 
+echo "Changes about to be committed:"
+git -C "$CHECKOUT_DIR" diff -U0
+read -p "Press enter to commit and push/publish the changes to homebrew, or ctrl C to cancel and bail out."
+
 # Read email/name from the main branchout repo that we're in when this script is run
 userEmail="$(git config user.email)"
 userName="$(git config user.name)"
