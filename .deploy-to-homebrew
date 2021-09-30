@@ -29,7 +29,11 @@ echo "class Branchout < Formula
   depends_on \"branchout/branchout/branchout-core\"
   depends_on \"branchout/branchout/branchout-maven\"
   depends_on \"branchout/branchout/branchout-yarn\"
-  
+
+  def install
+    bin.install "README.md"
+  end
+
   def test
     system \"#{bin}/branchout version\"
   end
@@ -46,7 +50,7 @@ echo "class BranchoutCore < Formula
 
   depends_on \"git\"
   depends_on \"bash\"
-  
+
   def install
     bin.install \"branchout\"
     bin.install \"branchout-project\"
@@ -55,7 +59,7 @@ echo "class BranchoutCore < Formula
     bin.install \"branchout-environment\"
     bin.install \"branchout-configuration\"
   end
-  
+
   def test
     system \"#{bin}/branchout version\"
   end
@@ -72,11 +76,11 @@ echo "class BranchoutMaven < Formula
 
   depends_on \"branchout/branchout/branchout-core\"
   depends_on \"maven\"
-  
+
   def install
     bin.install \"branchout-maven\"
   end
-  
+
   def test
     system \"#{bin}/branchout version\"
   end
@@ -93,11 +97,11 @@ echo "class BranchoutYarn < Formula
 
   depends_on \"branchout/branchout/branchout-core\"
   depends_on \"yarn\"
-  
+
   def install
     bin.install \"branchout-yarn\"
   end
-  
+
   def test
     system \"#{bin}/branchout version\"
   end
