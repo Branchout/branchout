@@ -113,4 +113,4 @@ userEmail="$(git config user.email)"
 userName="$(git config user.name)"
 
 # Then apply them to the freshly cloned repo
-(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -a -m "$VERSION" && git tag -a -m"$VERSION" "$VERSION" && git push origin master --tags)
+(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -a -m "$VERSION" && git tag -m "$VERSION" "$VERSION" HEAD && git push origin master --tags)
