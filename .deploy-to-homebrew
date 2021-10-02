@@ -31,7 +31,7 @@ echo "class Branchout < Formula
   depends_on \"branchout/branchout/branchout-yarn\"
 
   def install
-    bin.install "branchout-intro"
+    bin.install \"branchout-intro\"
   end
 
   def test
