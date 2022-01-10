@@ -5,14 +5,14 @@ set -e
 
 function projectList() {
   if test $# -eq 0; then
-    sort "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
+    sort -u "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}"
   else
-    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort
+    grep -e "^${1}" -e "^${BRANCHOUT_PREFIX}-${1}" "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" | sort -u
   fi
 }
 
 function projectListWithGroups() {
-  sort <(cat "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
+  sort -u <(cat "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}") <(branchout_project groups)
 }
 
 function projectContextStatus() {
