@@ -40,7 +40,7 @@ function projectUpdateError() {
     if test "${projectBranch}" = "HEAD"; then
       echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
     else
-      echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --rebase origin 2>&1| head -n1)\\033[0m"
+      echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --ff-only origin 2>&1| head -n1)\\033[0m"
     fi
   else
     echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
@@ -49,7 +49,7 @@ function projectUpdateError() {
 
 function projectUpdate() {
   cd "${PROJECTION_DIRECTORY}/${projectContext}" || usage "Failed to enter project directory"
-  if git pull --rebase origin > /dev/null 2>&1; then
+  if git pull --ff-only origin > /dev/null 2>&1; then
     projectContextStatus "${projectName}" "Pulled  "
   else
     projectUpdateError "${projectName}" "Failed  "
