@@ -58,8 +58,8 @@ frog-gemel"
   assert_success_file pull/fresh-clone-then-pull
 }
 
-@test "a project in rebase" {
-  example rebase
+@test "a project with conflicts" {
+  example conflicts
   run branchout project pull frog-bet
   cd frog/frog-bet
   git reset --hard step-2
@@ -69,9 +69,9 @@ frog-gemel"
   git commit -a -m"conflict"
   cd ../..
   run branchout project pull frog-bet
-  assert_success_file pull/rebase
+  assert_success_file pull/conflicts
   run branchout project status frog-bet
-  assert_success_file status/rebase
+  assert_success_file status/conflicts
 }
 
 @test "a project on master" {

@@ -1,1 +1,0 @@
-\033[0mFailed  frog/frog-bet\033[70D\033[70C\033[38;5;202m<rebase>\033[0m
