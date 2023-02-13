@@ -66,7 +66,7 @@ function branchoutGroupDerive() {
     echo "${1%%-*}"
 
   else
-    noPrefix="${1#${BRANCHOUT_PREFIX}-}"
+    noPrefix="${1#"${BRANCHOUT_PREFIX}"-}"
     echo "${noPrefix%%-*}"
   fi
 
