@@ -35,7 +35,7 @@ test-group: clean canned repositories
 test-current: clean canned repositories
 	$(BATS) --pretty bats/current.bats
 
-travis: clean canned repositories
+ci: clean canned repositories
 	$(BATS) --tap bats
 
 deploy-to-homebrew:
