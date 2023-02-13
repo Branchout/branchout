@@ -20,6 +20,9 @@ test: clean canned repositories
 test-branchout: clean canned repositories
 	$(BATS) --pretty bats/branchout.bats
 
+test-branchout-projects: clean canned repositories
+	$(BATS) --pretty bats/branchout-projects.bats
+
 test-branchout-maven: clean canned repositories
 	$(BATS) --pretty bats/branchout-maven.bats
 
