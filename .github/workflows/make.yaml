@@ -1,0 +1,36 @@
+name: Make on push
+run-name: ${{ github.actor }} pushed to ${{ github.ref }}, running Make 🚀
+on: [push]
+jobs:
+  build-on-ubuntu:
+    runs-on: ubuntu-latest
+    env:
+      TERM: xterm-256color
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: bats shellcheck
+          version: 1.0
+
+      - name: Run the bats tests
+        shell: bash -l {0}
+        run: make ci
+
+  build-on-macos:
+    runs-on: macos-latest
+    env:
+      TERM: xterm-256color
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install packages
+        run: |
+          env HOMEBREW_NO_AUTO_UPDATE=1 brew install bats-core shellcheck
+      - name: Run the bats tests
+        shell: bash -l {0}
+        run: |
+          make --version
+          make ci
