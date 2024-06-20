@@ -58,6 +58,17 @@ frog-gemel"
   assert_success_file pull/fresh-clone-then-pull
 }
 
+@test "project clone then reset to previous commit then pull again" {
+  example fresh-clone-reset-then-pull
+  run branchout project pull frog-gemel
+  assert_success_file pull/fresh-clone
+  cd frog/frog-gemel
+  git reset --hard HEAD^1
+  cd ../..
+  run branchout project pull frog-gemel
+  assert_success_file pull/fresh-clone-reset-then-pull
+}
+
 @test "a project with conflicts" {
   example conflicts
   run branchout project pull frog-bet

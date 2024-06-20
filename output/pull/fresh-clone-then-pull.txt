@@ -1,1 +1,1 @@
-\033[0mPulled  frog/frog-gemel\033[70D\033[70Cmaster\033[0m
+\033[0mGood    frog/frog-gemel\033[70D\033[70Cmaster\033[0m
