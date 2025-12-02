@@ -132,5 +132,23 @@ toad"
 @test "group with prefix pull" {
   prefixExample branchout-a-prefix-group
   run branchout pull sheep
-  assert_success_file_sort pull/sheep-clone 
+  assert_success_file_sort pull/sheep-clone
+}
+
+@test "group pull with BRANCHOUT_GROUPS_ARE_DIRS creates plain directory" {
+  example branchout-groups-are-dirs
+  echo 'BRANCHOUT_GROUPS_ARE_DIRS="true"' >> Branchoutfile
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-clone-plain-dir
+  # Verify it's a plain directory, not a git repo
+  [ ! -d rabbit/.git ]
+}
+
+@test "group update with BRANCHOUT_GROUPS_ARE_DIRS shows directory only" {
+  example branchout-groups-are-dirs-update
+  echo 'BRANCHOUT_GROUPS_ARE_DIRS="true"' >> Branchoutfile
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-clone-plain-dir
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-update-plain-dir
 }

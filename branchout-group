@@ -34,8 +34,12 @@ function groupUpdateError() {
 function branchoutGroupUpdate() {
   cd "${PROJECTION_DIRECTORY}/${projectGroup}" || usage "Failed to enter group directory"
   if test ! -d "${PROJECTION_DIRECTORY}/${projectGroup}/.git"; then
-     echo -e "\\033[0mNothing ${projectGroup}\\033[70D\\033[70C\\033[35mNot a repository\\033[0m"
-   elif git pull --rebase origin > /dev/null 2>&1; then
+    if test "${BRANCHOUT_GROUPS_ARE_DIRS}" = "true"; then
+      echo -e "\\033[0m        ${projectGroup}\\033[70D\\033[70C\\033[35mDirectory only\\033[0m"
+    else
+      echo -e "\\033[0mNothing ${projectGroup}\\033[70D\\033[70C\\033[35mNot a repository\\033[0m"
+    fi
+  elif git pull --rebase origin > /dev/null 2>&1; then
     groupStatus "${projectGroup}" "Pulled  "
   else
     groupUpdateError "${projectGroup}" "Failed  "
@@ -44,13 +48,20 @@ function branchoutGroupUpdate() {
 
 function branchoutGroupClone() {
   test -d "${PROJECTION_DIRECTORY}/${projectGroup}" && usage "Trying to clone a group that already exists"
-  echo -e "\\033[0mCloning \\033[92m${projectGroup}\\033[0m"
-  if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${PROJECTION_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
-    groupStatus "${projectGroup}" "Pulled  "
+
+  if test "${BRANCHOUT_GROUPS_ARE_DIRS}" = "true"; then
+    echo -e "\\033[0mCreating directory \\033[92m${projectGroup}\\033[0m"
+    mkdir -p "${PROJECTION_DIRECTORY}/${projectGroup}"
+    echo -e "\\033[0mCreated dir ${projectGroup}\\033[70D\\033[70C\\033[35mDirectory only\\033[0m"
   else
-    echo -e "\\033[0mCloning failed: \\033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\\033[0m"
-    echo -e "\\033[0mJust using plain directory \\033[32m${projectGroup}\\033[0m"
-    mkdir "${PROJECTION_DIRECTORY}/${projectGroup}"
+    echo -e "\\033[0mCloning \\033[92m${projectGroup}\\033[0m"
+    if git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" "${PROJECTION_DIRECTORY}/${projectGroup}" >/dev/null 2>&1; then
+      groupStatus "${projectGroup}" "Pulled  "
+    else
+      echo -e "\\033[0mCloning failed: \\033[31m$(git clone "${BRANCHOUT_GIT_BASEURL}/${projectGroup}" 2>&1)\\033[0m"
+      echo -e "\\033[0mJust using plain directory \\033[32m${projectGroup}\\033[0m"
+      mkdir "${PROJECTION_DIRECTORY}/${projectGroup}"
+    fi
   fi
 }
 

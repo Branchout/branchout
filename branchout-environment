@@ -63,7 +63,7 @@ BRANCHOUT_GIT_BASEURL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get
 test -z "${BRANCHOUT_GIT_BASEURL}" && fail "The projection directory is not a git repository, run branchout init."
 export BRANCHOUT_GIT_BASEURL
 export BRANCHOUT_PREFIX
-
+export BRANCHOUT_GROUPS_ARE_DIRS
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY

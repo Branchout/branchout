@@ -11,3 +11,7 @@ BRANCHOUT_NAME="something"
 
 # Optional: Docker registry URL for container operations
 # BRANCHOUT_DOCKER_REGISTRY="registry.example.com"
+
+# Optional: Create group directories with mkdir instead of attempting git clone
+# Useful when groups are not actual repositories to avoid error messages
+# BRANCHOUT_GROUPS_ARE_DIRS="true"
