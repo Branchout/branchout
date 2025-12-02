@@ -1,1 +1,13 @@
 BRANCHOUT_NAME="something"
+
+# Optional: Strip this prefix from project names when deriving group names
+# BRANCHOUT_PREFIX="myorg"
+
+# Optional: Number of parallel threads for pull/status operations (default: 10)
+# BRANCHOUT_THREADS="10"
+
+# Optional: Maven repository URL for branchout-maven integration
+# BRANCHOUT_MAVEN_REPOSITORY="https://maven.example.com/repository"
+
+# Optional: Docker registry URL for container operations
+# BRANCHOUT_DOCKER_REGISTRY="registry.example.com"
