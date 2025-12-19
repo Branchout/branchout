@@ -38,12 +38,12 @@ function projectContextStatus() {
 function projectUpdateError() {
   if projectBranch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
     if test "${projectBranch}" = "HEAD"; then
-      echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
+      echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<rebase>\\033[0m"
     else
-      echo -e "\\033[0m${2}\\033[31m${projectGroup}/${1}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --ff-only origin 2>&1| head -n1)\\033[0m"
+      echo -e "\\033[0m${2}\\033[31m${projectContext}\\033[0m \\033[70D\\033[70C\\033[1m $( git pull --ff-only origin 2>&1| head -n1)\\033[0m"
     fi
   else
-    echo -e "\\033[0m${2}${projectGroup}/${1}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
+    echo -e "\\033[0m${2}${projectContext}\\033[70D\\033[70C\\033[38;5;202m<empty>\\033[0m"
   fi
 }
 
@@ -71,7 +71,7 @@ function projectContext() {
   projectName=$("${BRANCHOUT_PATH}/branchout-group" deriveProject "${1}")
   projectGroup=$("${BRANCHOUT_PATH}/branchout-group" derive "${1}")
 
-  if test "${BRANCHOUT_NAME}" = "${projectGroup}"; then
+  if test "${BRANCHOUT_NAME}" = "${projectGroup}" && test "${BRANCHOUT_GROUPS_ARE_DIRS}" != "true"; then
     projectContext="${projectName}"
   else
     projectContext="${projectGroup}/${projectName}"

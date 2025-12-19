@@ -154,7 +154,7 @@ function main() {
       ;;
     pull)
       test -n "${2}" || usage "Must provide group"
-      if test "${BRANCHOUT_NAME}" != "${2}"; then
+      if test "${BRANCHOUT_NAME}" != "${2}" || test "${BRANCHOUT_GROUPS_ARE_DIRS}" = "true"; then
         branchoutGroupPull "${2}"
       fi
       ;;
