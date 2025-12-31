@@ -59,11 +59,20 @@ test -f "${PROJECTION_DIRECTORY}/${BRANCHOUT_PROJECTS}" || usage "${BRANCHOUT_PR
 # shellcheck source=examples/branchoutrc
 test -f "${BRANCHOUT_STATE}/branchoutrc" && source "${BRANCHOUT_STATE}/branchoutrc"
 
-BRANCHOUT_GIT_BASEURL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
-test -z "${BRANCHOUT_GIT_BASEURL}" && fail "The projection directory is not a git repository, run branchout init."
+# Only derive from git if not already set in Branchoutfile
+if test -z "${BRANCHOUT_GIT_BASEURL}"; then
+  BRANCHOUT_GIT_BASEURL="$(git --git-dir "${PROJECTION_DIRECTORY}/.git" remote get-url origin 2>/dev/null | sed -e 's,/[^/]*$,,')"
+fi
+
+# Better error message if still not available
+test -z "${BRANCHOUT_GIT_BASEURL}" && fail "Git base URL not configured. Either:
+  1. Add a git remote: git remote add origin <url>
+  2. Set BRANCHOUT_GIT_BASEURL in your Branchoutfile:
+     - For HTTPS: BRANCHOUT_GIT_BASEURL=\"https://github.com/yourorg\"
+     - For SSH: BRANCHOUT_GIT_BASEURL=\"git@github.com:yourorg\""
 export BRANCHOUT_GIT_BASEURL
 export BRANCHOUT_PREFIX
-
+export BRANCHOUT_GROUPS_ARE_DIRS
 
 export BRANCHOUT_MAVEN_REPOSITORY
 export BRANCHOUT_DOCKER_REGISTRY

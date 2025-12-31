@@ -6,7 +6,7 @@ makeEmpty() {
   rm -rf ${1}
   mkdir ${1}
   pushd ${1}
-  git init
+  git init -b master
   git config user.email "someone@example.com";
   git config user.name "hopefully_not_real";
 
@@ -20,7 +20,7 @@ makeBase() {
   rm -rf ${1}
   mkdir ${1}
   pushd ${1}
-  git init
+  git init -b master
   git config user.email "someone@example.com";
   git config user.name "hopefully_not_real";
 
@@ -39,7 +39,7 @@ makeProjects() {
   rm -rf ${1}
   mkdir ${1}
   pushd ${1}
-  git init
+  git init -b master
   git config user.email "someone@example.com";
   git config user.name "hopefully_not_real";
 
@@ -58,7 +58,7 @@ makeLegacyBase() {
   rm -rf ${1}
   mkdir ${1}
   pushd ${1}
-  git init
+  git init -b master
   git config user.email "someone@example.com";
   git config user.name "hopefully_not_real";
 
@@ -77,7 +77,7 @@ makeGroup() {
   rm -rf ${1}
   mkdir ${1}
   pushd ${1}
-  git init
+  git init -b master
   git config user.email "someone@example.com";
   git config user.name "hopefully_not_real";
 
@@ -93,7 +93,7 @@ makeProject() {
     mkdir ${each}-${counter};
     pushd ${each}-${counter};
 
-    git init;
+    git init -b master;
     git config user.email "someone@example.com";
     git config user.name "hopefully_not_real";
 
@@ -119,8 +119,8 @@ mkdir -p target/repositories
 cd target/repositories
 
 # These are bare repositories
-git init bear
-git init bear-aleph
+git init -b master bear
+git init -b master bear-aleph
 
 # Standard projects with a bunch of commits
 for each in frog toad; do

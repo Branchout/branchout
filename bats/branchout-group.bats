@@ -132,5 +132,44 @@ toad"
 @test "group with prefix pull" {
   prefixExample branchout-a-prefix-group
   run branchout pull sheep
-  assert_success_file_sort pull/sheep-clone 
+  assert_success_file_sort pull/sheep-clone
+}
+
+@test "group pull with BRANCHOUT_GROUPS_ARE_DIRS creates plain directory" {
+  example branchout-groups-are-dirs
+  echo 'BRANCHOUT_GROUPS_ARE_DIRS="true"' >> Branchoutfile
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-clone-plain-dir
+  # Verify it's a plain directory, not a git repo
+  [ ! -d rabbit/.git ]
+}
+
+@test "group update with BRANCHOUT_GROUPS_ARE_DIRS shows directory only" {
+  example branchout-groups-are-dirs-update
+  echo 'BRANCHOUT_GROUPS_ARE_DIRS="true"' >> Branchoutfile
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-clone-plain-dir
+  run branchout pull rabbit
+  assert_success_file pull/rabbit-update-plain-dir
+}
+
+@test "BRANCHOUT_GROUPS_ARE_DIRS creates group dir even when BRANCHOUT_NAME matches group" {
+  # Setup: BRANCHOUT_NAME=snake, which matches the group derived from snake-aleph
+  test -d "target/branchout-name-matches-group" && bail "example already exists"
+  mkdir -p "target/branchout-name-matches-group" "target/branchout/snake"
+  echo 'BRANCHOUT_CONFIG_GIT_EMAIL="test@example.com"' > "target/branchout/snake/branchoutrc"
+  cd "target/branchout-name-matches-group" || bail "Failed to enter target dir"
+  git init 2>/dev/null 1>&2
+  git remote add origin file://${BUILD_DIRECTORY}/repositories/base 2>/dev/null 1>&2
+  export HOME=..
+  echo 'BRANCHOUT_NAME="snake"' > Branchoutfile
+  echo 'BRANCHOUT_GROUPS_ARE_DIRS="true"' >> Branchoutfile
+  echo "snake-aleph" > Branchoutprojects
+
+  run branchout pull snake
+  assert_success_file pull/snake-clone-matching-name
+
+  # Verify the directory structure: snake/snake-aleph should exist, not just snake-aleph
+  [ -d snake/snake-aleph ]
+  [ ! -d snake-aleph ] || bail "snake-aleph should be in snake/ subdirectory, not base"
 }

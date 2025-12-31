@@ -1,0 +1,2 @@
+# Ignore .claude as it's settings files that are personal - not global ignored because repo dependent
+.claude
