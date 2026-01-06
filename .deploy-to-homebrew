@@ -75,7 +75,7 @@ echo "class BranchoutMaven < Formula
   version \"${VERSION:1}\"
 
   depends_on \"branchout/branchout/branchout-core\"
-  depends_on \"branchout/branchout/maven@3.8.1\"
+  depends_on \"maven\"
 
   def install
     bin.install \"branchout-maven\"
