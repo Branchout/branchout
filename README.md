@@ -37,8 +37,13 @@ Brew is a handy tool for consistent tooling, it can be run on OSX and Linux
 
 ```
 brew tap Branchout/homebrew-branchout
+brew trust Branchout/homebrew-branchout
 brew install branchout
 ```
+
+Homebrew requires `brew trust` for third-party taps before installs will proceed
+without prompting. Trust only taps that you have verified are safe and do not
+set `HOMEBREW_NO_REQUIRE_TAP_TRUST=1` which would remove the check for all taps.
 
 ### Initialise an existing organisation
 
