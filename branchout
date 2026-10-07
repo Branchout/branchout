@@ -184,6 +184,8 @@ function usage() {
       maven: see branchout maven help
 
       yarn: set branchout yarn help
+
+      claude: run claude with this projection's login and shared .claude config, see branchout claude where
     "
   exit 1
 }

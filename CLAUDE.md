@@ -38,6 +38,7 @@ Branchout is a tool for managing organizations with many repositories in a struc
 - **branchout-maven**: Maven-specific integration
 - **branchout-yarn**: Yarn-specific integration with CA bundle support
 - **branchout-node**: Node.js-specific integration
+- **branchout-claude**: Runs Claude Code with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`) and injects the projection root's shared `.claude/settings.json`, `.claude/skills` (via `--add-dir`) and `.mcp.json`. Subcommands: `env`, `where`, `--`.
 
 ### Configuration Files
 - **Branchoutfile** (or `.branchout`): Stores projection-level configuration
@@ -70,6 +71,7 @@ make test-branchout-projects # Project management tests
 make test-branchout-init     # Init command tests
 make test-branchout-maven    # Maven integration tests
 make test-branchout-yarn     # Yarn integration tests
+make test-branchout-claude   # Claude integration tests
 make test-branchout-group    # Group management tests
 
 # Run tests in CI format (TAP output)
@@ -83,7 +85,7 @@ make clean
 - Tests are written in bats (Bash Automated Testing System)
 - Test files located in `bats/` directory
 - Test helper functions in `bats/helper.bash`
-- Mock binaries for testing in `bats/bin/` (e.g., mvn, yarn)
+- Mock binaries for testing in `bats/bin/` (e.g., mvn, yarn, claude)
 - Test fixtures and expected output in `output/` directory
 - Test repositories created by `examples/make-repositories`
 
@@ -137,6 +139,11 @@ The `branchout_os` function detects platform for OS-specific behavior:
 For corporate environments with custom CA certificates:
 - Place certificates in `${PROJECTION_DIRECTORY}/.branchout/cacerts`
 - `branchout-yarn` configures yarn to trust these certificates
+
+### Claude Integration
+- User state (login, history, memory, plugins) is isolated per projection in `${BRANCHOUT_STATE}/claude`; nothing is inherited from `~/.claude`
+- Shared, version-controlled config lives in the projection root `.claude/` and `.mcp.json`, applied from any repo in the projection
+- Injected flags use `--flag=value` because `--add-dir` and `--mcp-config` are variadic and would swallow subcommands like `auth status`
 
 ## Common Workflows
 

@@ -69,6 +69,23 @@ If you have a corporate CA bundle that you need to trust just add it at `<metare
 
 branchout-yarn will configure the environment so that yarn can trust certificates in or signed by certificates in cacarts
 
+### Claude Code per projection
+
+`branchout claude` runs Claude Code with a login and state that belong to the projection, so each
+branchout can use a different account. Log in once per projection with `/login`.
+
+```
+cd ~/projects/<projection>/<group>/<project>
+branchout claude
+```
+
+Shared skills, settings and MCP servers for everyone go in the projection root's `.claude/` and
+`.mcp.json`; they apply from any repo in the projection.
+
+* `branchout claude where` shows what is being used
+* `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's state
+* `branchout claude -- <args>` passes arguments straight through
+
 ## Grokking the code and contributing
 
 
