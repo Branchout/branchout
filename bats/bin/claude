@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "CLAUDE_CONFIG_DIR=${CLAUDE_CONFIG_DIR}"
+for each in "${@}"; do
+  echo "arg: ${each}"
+done

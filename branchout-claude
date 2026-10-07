@@ -1,0 +1,60 @@
+#!/bin/bash
+
+test -n "${DEBUG}" && set -x
+set -e
+
+function usage() {
+  test -n "${1}" && echo "${1}" && echo
+  echo "branchout-claude [env|where|--] [claude arguments]
+
+  Run claude with this projection's own login and state, plus the shared
+  .claude configuration from the projection root.
+
+  env
+
+      Print an export of CLAUDE_CONFIG_DIR for eval or IDE configuration
+
+  where
+
+      Show the projection, the claude config directory and the shared files found
+
+  -- [claude arguments]
+
+      Pass everything after -- straight to claude
+  "
+
+  exit 1
+}
+
+# Each projection gets its own claude login, history, memory and plugins
+function claudeConfigDirectory() {
+  mkdir -p "${BRANCHOUT_STATE}/claude"
+  CLAUDE_CONFIG_DIR="$(cd "${BRANCHOUT_STATE}/claude" && pwd)"
+  export CLAUDE_CONFIG_DIR
+}
+
+# Flags use --flag=value because --add-dir and --mcp-config are variadic and
+# would otherwise swallow following arguments such as "auth status"
+function runClaude() {
+  CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+  command -v "${CLAUDE_BIN}" > /dev/null || fail "claude not found on PATH, install Claude Code: https://claude.com/claude-code"
+
+  CLAUDE_FLAGS=("--add-dir=${PROJECTION_DIRECTORY}")
+
+  exec "${CLAUDE_BIN}" "${CLAUDE_FLAGS[@]}" "${@}"
+}
+
+function main() {
+  BRANCHOUT_PATH="$(dirname "$0")"
+
+  # shellcheck source=branchout-configuration
+  . "${BRANCHOUT_PATH}/branchout-configuration"
+  # shellcheck source=branchout-environment
+  . "${BRANCHOUT_PATH}/branchout-environment"
+
+  claudeConfigDirectory
+
+  runClaude "${@}"
+}
+
+main "${@}"
