@@ -33,6 +33,27 @@ function claudeConfigDirectory() {
   export CLAUDE_CONFIG_DIR
 }
 
+function claudeEnv() {
+  echo "export CLAUDE_CONFIG_DIR=\"${CLAUDE_CONFIG_DIR}\""
+}
+
+# Print the path when it exists, otherwise "not found"
+function sharedFile() {
+  if test -e "${1}"; then
+    echo "${1}"
+  else
+    echo "not found"
+  fi
+}
+
+function claudeWhere() {
+  echo "projection: ${PROJECTION_DIRECTORY}"
+  echo "claude config: ${CLAUDE_CONFIG_DIR}"
+  echo "settings: $(sharedFile "${PROJECTION_DIRECTORY}/.claude/settings.json")"
+  echo "skills: $(sharedFile "${PROJECTION_DIRECTORY}/.claude/skills")"
+  echo "mcp: $(sharedFile "${PROJECTION_DIRECTORY}/.mcp.json")"
+}
+
 # Flags use --flag=value because --add-dir and --mcp-config are variadic and
 # would otherwise swallow following arguments such as "auth status"
 function runClaude() {
@@ -60,7 +81,21 @@ function main() {
 
   claudeConfigDirectory
 
-  runClaude "${@}"
+  case "${1}" in
+    env)
+      claudeEnv
+      ;;
+    where)
+      claudeWhere
+      ;;
+    --)
+      shift
+      runClaude "${@}"
+      ;;
+    *)
+      runClaude "${@}"
+      ;;
+  esac
 }
 
 main "${@}"

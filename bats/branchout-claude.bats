@@ -97,3 +97,42 @@ arg: --mcp-config=${BUILD_DIRECTORY}/claude-all-shared/.mcp.json
 arg: mcp
 arg: list"
 }
+
+@test "branchout claude env prints the export without needing claude" {
+  example claude-env
+  export CLAUDE_BIN=claude-does-not-exist
+  run branchout claude env
+  assert_success "export CLAUDE_CONFIG_DIR=\"${BUILD_DIRECTORY}/branchout/claude-env/claude\""
+}
+
+@test "branchout claude where with no shared config" {
+  example claude-where-empty
+  export CLAUDE_BIN=claude-does-not-exist
+  run branchout claude where
+  assert_success "projection: ${BUILD_DIRECTORY}/claude-where-empty
+claude config: ${BUILD_DIRECTORY}/branchout/claude-where-empty/claude
+settings: not found
+skills: not found
+mcp: not found"
+}
+
+@test "branchout claude where shows all shared config" {
+  example claude-where-all
+  mkdir -p .claude/skills
+  echo '{}' > .claude/settings.json
+  echo '{"mcpServers":{}}' > .mcp.json
+  run branchout claude where
+  assert_success "projection: ${BUILD_DIRECTORY}/claude-where-all
+claude config: ${BUILD_DIRECTORY}/branchout/claude-where-all/claude
+settings: ${BUILD_DIRECTORY}/claude-where-all/.claude/settings.json
+skills: ${BUILD_DIRECTORY}/claude-where-all/.claude/skills
+mcp: ${BUILD_DIRECTORY}/claude-where-all/.mcp.json"
+}
+
+@test "branchout claude -- forces passthrough of intercepted words" {
+  example claude-double-dash
+  run branchout claude -- env
+  assert_success "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-double-dash/claude
+arg: --add-dir=${BUILD_DIRECTORY}/claude-double-dash
+arg: env"
+}
