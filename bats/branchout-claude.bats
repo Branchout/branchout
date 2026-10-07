@@ -64,3 +64,36 @@ arg: --add-dir=${BUILD_DIRECTORY}/claude-nested"
   run branchout claude
   assert_error "Branchoutfile configuration not found in parent hierarchy, perhaps you need to be in a project directory ${NO_PROJECTION}/projects"
 }
+
+@test "branchout claude injects the projection settings when present" {
+  example claude-settings
+  mkdir -p .claude
+  echo '{}' > .claude/settings.json
+  run branchout claude
+  assert_success "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-settings/claude
+arg: --add-dir=${BUILD_DIRECTORY}/claude-settings
+arg: --settings=${BUILD_DIRECTORY}/claude-settings/.claude/settings.json"
+}
+
+@test "branchout claude injects the projection mcp config when present" {
+  example claude-mcp
+  echo '{"mcpServers":{}}' > .mcp.json
+  run branchout claude
+  assert_success "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-mcp/claude
+arg: --add-dir=${BUILD_DIRECTORY}/claude-mcp
+arg: --mcp-config=${BUILD_DIRECTORY}/claude-mcp/.mcp.json"
+}
+
+@test "branchout claude injects all shared config before user arguments" {
+  example claude-all-shared
+  mkdir -p .claude
+  echo '{}' > .claude/settings.json
+  echo '{"mcpServers":{}}' > .mcp.json
+  run branchout claude mcp list
+  assert_success "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-all-shared/claude
+arg: --add-dir=${BUILD_DIRECTORY}/claude-all-shared
+arg: --settings=${BUILD_DIRECTORY}/claude-all-shared/.claude/settings.json
+arg: --mcp-config=${BUILD_DIRECTORY}/claude-all-shared/.mcp.json
+arg: mcp
+arg: list"
+}

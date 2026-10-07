@@ -40,6 +40,12 @@ function runClaude() {
   command -v "${CLAUDE_BIN}" > /dev/null || fail "claude not found on PATH, install Claude Code: https://claude.com/claude-code"
 
   CLAUDE_FLAGS=("--add-dir=${PROJECTION_DIRECTORY}")
+  if test -f "${PROJECTION_DIRECTORY}/.claude/settings.json"; then
+    CLAUDE_FLAGS+=("--settings=${PROJECTION_DIRECTORY}/.claude/settings.json")
+  fi
+  if test -f "${PROJECTION_DIRECTORY}/.mcp.json"; then
+    CLAUDE_FLAGS+=("--mcp-config=${PROJECTION_DIRECTORY}/.mcp.json")
+  fi
 
   exec "${CLAUDE_BIN}" "${CLAUDE_FLAGS[@]}" "${@}"
 }
