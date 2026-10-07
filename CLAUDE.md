@@ -38,7 +38,7 @@ Branchout is a tool for managing organizations with many repositories in a struc
 - **branchout-maven**: Maven-specific integration
 - **branchout-yarn**: Yarn-specific integration with CA bundle support
 - **branchout-node**: Node.js-specific integration
-- **branchout-claude**: Runs Claude Code with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`) and injects the projection root's shared `.claude/settings.json`, `.claude/skills` (via `--add-dir`) and `.mcp.json`. Subcommands: `env`, `where`, `--`.
+- **branchout-claude**: Runs Claude Code with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`) and injects the projection root's shared `.claude/settings.json` and `.mcp.json`, and adds the projection root via `--add-dir` so its `.claude/skills` are discovered. Subcommands: `env`, `where`, `--`.
 
 ### Configuration Files
 - **Branchoutfile** (or `.branchout`): Stores projection-level configuration
@@ -144,6 +144,8 @@ For corporate environments with custom CA certificates:
 - User state (login, history, memory, plugins) is isolated per projection in `${BRANCHOUT_STATE}/claude`; nothing is inherited from `~/.claude`
 - Shared, version-controlled config lives in the projection root `.claude/` and `.mcp.json`, applied from any repo in the projection
 - Injected flags use `--flag=value` because `--add-dir` and `--mcp-config` are variadic and would swallow subcommands like `auth status`
+- The branchout environment variables (`BRANCHOUT_LOADED`, `PROJECTION_DIRECTORY`, `BRANCHOUT_STATE`, etc.) are unset before exec so branchout commands run by Claude re-detect their projection
+- Shared config is passed as CLI-flag config, which takes precedence over a sub-repo's own `.claude/settings.json`/`settings.local.json`; hooks and MCP servers in the projection's `.claude/` and `.mcp.json` run for every developer, so review changes to them (e.g. CODEOWNERS on those paths)
 
 ## Common Workflows
 

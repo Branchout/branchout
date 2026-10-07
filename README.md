@@ -84,7 +84,10 @@ Shared skills, settings and MCP servers for everyone go in the projection root's
 
 * `branchout claude where` shows what is being used
 * `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's state
-* `branchout claude -- <args>` passes arguments straight through
+* `branchout claude <args>` passes arguments to claude; `--` is only needed when the first argument is `env` or `where`
+
+Shared hooks and MCP servers in the projection's `.claude/` and `.mcp.json` run for everyone using
+`branchout claude`, so review changes to them like code.
 
 ## Grokking the code and contributing
 
