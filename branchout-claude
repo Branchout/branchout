@@ -13,10 +13,12 @@ function usage() {
   env
 
       Print an export of CLAUDE_CONFIG_DIR for eval or IDE configuration
+      (creates the claude config directory if missing)
 
   where
 
       Show the projection, the claude config directory and the shared files found
+      (creates the claude config directory if missing)
 
   -- [claude arguments]
 
@@ -29,7 +31,8 @@ function usage() {
 # Each projection gets its own claude login, history, memory and plugins
 function claudeConfigDirectory() {
   mkdir -p "${BRANCHOUT_STATE}/claude"
-  CLAUDE_CONFIG_DIR="$(cd "${BRANCHOUT_STATE}/claude" && pwd)"
+  chmod 700 "${BRANCHOUT_STATE}/claude"
+  CLAUDE_CONFIG_DIR="$(CDPATH='' cd -- "${BRANCHOUT_STATE}/claude" && pwd)"
   export CLAUDE_CONFIG_DIR
 }
 
@@ -37,10 +40,10 @@ function claudeEnv() {
   echo "export CLAUDE_CONFIG_DIR=\"${CLAUDE_CONFIG_DIR}\""
 }
 
-# Print the path when it exists, otherwise "not found"
+# Print the path when it passes the test flag (-f file, -d directory), otherwise "not found"
 function sharedFile() {
-  if test -e "${1}"; then
-    echo "${1}"
+  if test "${1}" "${2}"; then
+    echo "${2}"
   else
     echo "not found"
   fi
@@ -49,9 +52,9 @@ function sharedFile() {
 function claudeWhere() {
   echo "projection: ${PROJECTION_DIRECTORY}"
   echo "claude config: ${CLAUDE_CONFIG_DIR}"
-  echo "settings: $(sharedFile "${PROJECTION_DIRECTORY}/.claude/settings.json")"
-  echo "skills: $(sharedFile "${PROJECTION_DIRECTORY}/.claude/skills")"
-  echo "mcp: $(sharedFile "${PROJECTION_DIRECTORY}/.mcp.json")"
+  echo "settings: $(sharedFile -f "${PROJECTION_DIRECTORY}/.claude/settings.json")"
+  echo "skills: $(sharedFile -d "${PROJECTION_DIRECTORY}/.claude/skills")"
+  echo "mcp: $(sharedFile -f "${PROJECTION_DIRECTORY}/.mcp.json")"
 }
 
 # Flags use --flag=value because --add-dir and --mcp-config are variadic and
@@ -67,6 +70,10 @@ function runClaude() {
   if test -f "${PROJECTION_DIRECTORY}/.mcp.json"; then
     CLAUDE_FLAGS+=("--mcp-config=${PROJECTION_DIRECTORY}/.mcp.json")
   fi
+
+  # Claude must not inherit our environment or branchout commands it runs would short-circuit to this projection
+  unset BRANCHOUT_LOADED PROJECTION_DIRECTORY BRANCHOUT_STATE BRANCHOUT_NAME BRANCHOUT_FILE BRANCHOUT_PROJECTS \
+    BRANCHOUT_GIT_BASEURL BRANCHOUT_PREFIX BRANCHOUT_GROUPS_ARE_DIRS BRANCHOUT_MAVEN_REPOSITORY BRANCHOUT_DOCKER_REGISTRY
 
   exec "${CLAUDE_BIN}" "${CLAUDE_FLAGS[@]}" "${@}"
 }

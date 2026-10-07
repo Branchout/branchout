@@ -10,6 +10,8 @@ load helper
   run branchout claude
   assert_success_firstline "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-config-dir/claude"
   test -d "${BUILD_DIRECTORY}/branchout/claude-config-dir/claude" || bail "claude config directory was not created"
+  mode="$(ls -ld "${BUILD_DIRECTORY}/branchout/claude-config-dir/claude" | cut -c1-10)"
+  test "${mode}" = "drwx------" || bail "claude config directory mode was ${mode}, expected drwx------"
 }
 
 @test "branchout claude always adds the projection directory" {
@@ -63,6 +65,7 @@ arg: --add-dir=${BUILD_DIRECTORY}/claude-nested"
   export HOME="${NO_PROJECTION}"
   run branchout claude
   assert_error "Branchoutfile configuration not found in parent hierarchy, perhaps you need to be in a project directory ${NO_PROJECTION}/projects"
+  rm -rf "${NO_PROJECTION}"
 }
 
 @test "branchout claude injects the projection settings when present" {
@@ -135,4 +138,35 @@ mcp: ${BUILD_DIRECTORY}/claude-where-all/.mcp.json"
   assert_success "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-double-dash/claude
 arg: --add-dir=${BUILD_DIRECTORY}/claude-double-dash
 arg: env"
+}
+
+@test "branchout claude does not leak the branchout environment into claude" {
+  example claude-isolated
+  PROBE="${BUILD_DIRECTORY}/claude-env-probe"
+  cat > "${PROBE}" <<'PROBE_EOF'
+#!/bin/bash
+echo "BRANCHOUT_LOADED=[${BRANCHOUT_LOADED}]"
+echo "PROJECTION_DIRECTORY=[${PROJECTION_DIRECTORY}]"
+echo "CLAUDE_CONFIG_DIR=[${CLAUDE_CONFIG_DIR}]"
+PROBE_EOF
+  chmod +x "${PROBE}"
+  export CLAUDE_BIN="${PROBE}"
+  run branchout claude
+  assert_success "BRANCHOUT_LOADED=[]
+PROJECTION_DIRECTORY=[]
+CLAUDE_CONFIG_DIR=[${BUILD_DIRECTORY}/branchout/claude-isolated/claude]"
+}
+
+@test "branchout claude where only trusts regular files for settings and mcp" {
+  example claude-where-mcp
+  mkdir -p .claude/settings.json
+  touch .claude/skills
+  echo '{"mcpServers":{}}' > .mcp.json
+  export CLAUDE_BIN=claude-does-not-exist
+  run branchout claude where
+  assert_success "projection: ${BUILD_DIRECTORY}/claude-where-mcp
+claude config: ${BUILD_DIRECTORY}/branchout/claude-where-mcp/claude
+settings: not found
+skills: not found
+mcp: ${BUILD_DIRECTORY}/claude-where-mcp/.mcp.json"
 }
