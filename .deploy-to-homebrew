@@ -29,6 +29,7 @@ echo "class Branchout < Formula
   depends_on \"branchout/branchout/branchout-core\"
   depends_on \"branchout/branchout/branchout-maven\"
   depends_on \"branchout/branchout/branchout-yarn\"
+  depends_on \"branchout/branchout/branchout-claude\"
 
   def install
     bin.install \"branchout-intro\"
@@ -108,8 +109,29 @@ echo "class BranchoutYarn < Formula
 end
 " > "$CHECKOUT_DIR/branchout-yarn.rb"
 
+echo "class BranchoutClaude < Formula
+
+  desc \"Command-line git repository layout manager\"
+  homepage \"https://github.com/Branchout/branchout\"
+  url \"https://github.com/StickySource/branchout/archive/${VERSION}.tar.gz\"
+  sha256 \"${HASH}\"
+  version \"${VERSION:1}\"
+
+  depends_on \"branchout/branchout/branchout-core\"
+
+  def install
+    bin.install \"branchout-claude\"
+  end
+
+  def test
+    system \"#{bin}/branchout version\"
+  end
+end
+" > "$CHECKOUT_DIR/branchout-claude.rb"
+
 echo "Changes about to be committed:"
-git -C "$CHECKOUT_DIR" diff -U0
+git -C "$CHECKOUT_DIR" add -A
+git -C "$CHECKOUT_DIR" diff --cached -U0
 read -p "Press enter to commit and push/publish the changes to homebrew, or ctrl C to cancel and bail out."
 
 # Read email/name from the main branchout repo that we're in when this script is run
@@ -117,4 +139,4 @@ userEmail="$(git config user.email)"
 userName="$(git config user.name)"
 
 # Then apply them to the freshly cloned repo
-(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -a -m "$VERSION" && git tag -m "$VERSION" "$VERSION" HEAD && git push origin master "$VERSION")
+(cd "$CHECKOUT_DIR" && git config user.email "${userEmail}" && git config user.name "${userName}" && git commit -m "$VERSION" && git tag -m "$VERSION" "$VERSION" HEAD && git push origin master "$VERSION")
