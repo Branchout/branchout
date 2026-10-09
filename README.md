@@ -75,19 +75,20 @@ branchout-yarn will configure the environment so that yarn can trust certificate
 branchout can use a different account. Log in once per projection with `/login`.
 
 ```
-cd ~/projects/<projection>/<group>/<project>
+cd ~/projects/<projection>
 branchout claude
 ```
 
-Shared skills, settings and MCP servers for everyone go in the projection root's `.claude/` and
-`.mcp.json`; they apply from any repo in the projection.
+Claude always starts in the projection root, even if you run `branchout claude` from inside a
+project, so the root's `.claude/` (settings, skills, agents, commands) and `.mcp.json` are the
+shared configuration for everyone. Your personal `~/.claude` is not used.
 
 * `branchout claude where` shows what is being used
 * `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's state
 * `branchout claude <args>` passes arguments to claude; `--` is only needed when the first argument is `env` or `where`
 
-Shared hooks and MCP servers in the projection's `.claude/` and `.mcp.json` run for everyone using
-`branchout claude`, so review changes to them like code.
+Shared hooks in the projection's `.claude/settings.json` run for everyone using `branchout claude`,
+and its MCP servers are offered to everyone, so review changes to them like code.
 
 ## Grokking the code and contributing
 

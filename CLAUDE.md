@@ -38,7 +38,7 @@ Branchout is a tool for managing organizations with many repositories in a struc
 - **branchout-maven**: Maven-specific integration
 - **branchout-yarn**: Yarn-specific integration with CA bundle support
 - **branchout-node**: Node.js-specific integration
-- **branchout-claude**: Runs Claude Code with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`) and injects the projection root's shared `.claude/settings.json` and `.mcp.json`, and adds the projection root via `--add-dir` so its `.claude/skills` are discovered. Subcommands: `env`, `where`, `--`.
+- **branchout-claude**: Runs Claude Code from the projection root with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`), so the root's `.claude/` settings, skills, agents, commands and `.mcp.json` load as the project config. Subcommands: `env`, `where`, `--`.
 
 ### Configuration Files
 - **Branchoutfile** (or `.branchout`): Stores projection-level configuration
@@ -141,11 +141,11 @@ For corporate environments with custom CA certificates:
 - `branchout-yarn` configures yarn to trust these certificates
 
 ### Claude Integration
-- User state (login, history, memory, plugins) is isolated per projection in `${BRANCHOUT_STATE}/claude`; nothing is inherited from `~/.claude`
-- Shared, version-controlled config lives in the projection root `.claude/` and `.mcp.json`, applied from any repo in the projection
-- Injected flags use `--flag=value` because `--add-dir` and `--mcp-config` are variadic and would swallow subcommands like `auth status`
+- User state (login, history, memory, plugins) is isolated per projection in `${BRANCHOUT_STATE}/claude` (mode 700); nothing is inherited from `~/.claude`
+- Claude is always launched from the projection root, whatever directory `branchout claude` is run from; the root's `.claude/` and `.mcp.json` are the shared, version-controlled config. Sub-repo `CLAUDE.md` files load when Claude works in them; a sub-repo's own `.claude/settings.json` does not apply
+- Claude loads `CLAUDE.md` files from every directory above its cwd, which would include `~/.claude/CLAUDE.md` once `CLAUDE_CONFIG_DIR` is moved; the wrapper passes `--settings={"claudeMdExcludes":[...]}` listing `CLAUDE.md`, `CLAUDE.local.md` and `.claude/**` for every directory above the projection
 - The branchout environment variables (`BRANCHOUT_LOADED`, `PROJECTION_DIRECTORY`, `BRANCHOUT_STATE`, etc.) are unset before exec so branchout commands run by Claude re-detect their projection
-- Shared config is passed as CLI-flag config, which takes precedence over a sub-repo's own `.claude/settings.json`/`settings.local.json`; hooks and MCP servers in the projection's `.claude/` and `.mcp.json` run for every developer, so review changes to them (e.g. CODEOWNERS on those paths)
+- Hooks in the projection's `.claude/settings.json` run for every developer, and its `.mcp.json` servers are offered to everyone (Claude still asks for approval), so review changes to them (e.g. CODEOWNERS on those paths)
 
 ## Common Workflows
 
