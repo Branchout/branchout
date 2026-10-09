@@ -6,11 +6,15 @@
 
 **Architecture:** A new module script `branchout-claude` (same shape as `branchout-yarn`) sources `branchout-configuration` and `branchout-environment`, exports `CLAUDE_CONFIG_DIR=${BRANCHOUT_STATE}/claude` (absolute), builds an array of injected flags from files present in `${PROJECTION_DIRECTORY}`, and `exec`s claude. Three intercepted first arguments (`env`, `where`, `--`) provide shell/IDE integration and an escape hatch. The dispatcher already routes `branchout claude` to `branchout-claude`.
 
+> **Superseded in part:** the flag-injection design below was replaced by launching from the projection root — see "Revision 2026-10-09" near the end of this plan.
+
 **Tech Stack:** Bash 3.2+, bats-core, shellcheck, Claude Code CLI (verified against 2.1.292).
 
 **Spec:** `docs/superpowers/specs/2026-10-07-branchout-claude-design.md`
 
 ## Global Constraints
+
+> **Superseded in part:** the flag-injection design below was replaced by launching from the projection root — see "Revision 2026-10-09" near the end of this plan.
 
 - Bash 3.2 compatible: no `declare -A`, `mapfile`, `readarray`, `;&`. Indexed arrays are fine.
 - `shellcheck -x branchout-claude` passes with no exceptions.

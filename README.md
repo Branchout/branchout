@@ -84,8 +84,12 @@ project, so the root's `.claude/` (settings, skills, agents, commands) and `.mcp
 shared configuration for everyone. Your personal `~/.claude` is not used.
 
 * `branchout claude where` shows what is being used
-* `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's state
+* `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's login and state only; excluding ancestor `CLAUDE.md` files and launching from the root happen only through `branchout claude`, so plain `claude` may still load `~/.claude/CLAUDE.md` and, from a sub-repo, won't see the root `.claude/` config
 * `branchout claude <args>` passes arguments to claude; `--` is only needed when the first argument is `env` or `where`
+
+`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` or `CLAUDE_CODE_OAUTH_TOKEN` in your environment override the
+projection's login; `branchout claude where` reports which are set. Passing your own `--settings` to
+`branchout claude` replaces the injected `claudeMdExcludes` settings (the last `--settings` wins).
 
 Shared hooks in the projection's `.claude/settings.json` run for everyone using `branchout claude`,
 and its MCP servers are offered to everyone, so review changes to them like code.

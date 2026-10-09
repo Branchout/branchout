@@ -83,7 +83,8 @@ projection up to `/`:
 
 (at `/` these are `/CLAUDE.md`, `/CLAUDE.local.md`, `/.claude/**`). Paths are JSON-escaped (`\` and
 `"`). Verified on Claude Code 2.1.295: absolute paths and globs in `claudeMdExcludes` passed via
-`--settings=<json>` suppress an ancestor `.claude/CLAUDE.md`.
+`--settings=<json>` suppress an ancestor `.claude/CLAUDE.md`. Entries are globs, so glob metacharacters
+(`[ ] { } * ?`) in ancestor directory names are not escaped: a known limitation.
 
 ### Environment hygiene
 
@@ -99,7 +100,9 @@ re-detect their own projection. `CLAUDE_CONFIG_DIR` is kept. The config director
 branchout claude [claude args...]   run claude from the projection root with the projection's state
 branchout claude env                print: export CLAUDE_CONFIG_DIR="<state>/claude"
 branchout claude where              print projection dir, Claude config dir, and which shared
-                                    files (settings.json, skills/, .mcp.json) the root provides
+                                    files (settings.json, skills/, .mcp.json) the root provides, and any ambient credential
+                                    variables (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN,
+                                    CLAUDE_CODE_OAUTH_TOKEN) that override the login, by name only
 branchout claude -- [claude args]   force passthrough (escape hatch if claude gains env/where)
 ```
 
@@ -107,6 +110,9 @@ Only the exact first arguments `env`, `where` and `--` are intercepted; anything
 through untouched. `--` is stripped before passing the remaining args.
 
 `env` output is suitable for `eval "$(branchout claude env)"` and for configuring IDE extensions.
+It only switches the login and state: ancestor `CLAUDE.md` exclusion and launching from the root
+happen only through `branchout claude`, so plain `claude` may still load `~/.claude/CLAUDE.md` and,
+from a sub-repo, won't see the root `.claude/` config.
 
 ### Error handling
 
@@ -127,6 +133,10 @@ through untouched. `--` is stripped before passing the remaining args.
 4. **macOS keychain isolation** — unverified on macOS; Linux isolation confirmed
    (`${CLAUDE_CONFIG_DIR}/.credentials.json`, fresh dir reports "Not logged in"). Check on first
    macOS use and document if shared.
+5. **Symlinked ancestors** — verified on Claude Code 2.1.295: with cwd reached through a symlinked
+   ancestor, a `claudeMdExcludes` entry written with either the logical or the physical path
+   suppresses the ancestor `.claude/CLAUDE.md` (control without the exclude loads it), so the
+   wrapper's logical-path excludes are sufficient.
 
 ## Testing
 
@@ -144,6 +154,7 @@ Full bats coverage, following existing module test patterns.
   - does not leak the branchout environment into claude
   - `env` prints the correct export line and does not invoke claude
   - `where` prints projection dir, config dir and shared files, does not invoke claude
+  - `where` reports ambient credential override variables by name only
   - `--` forces passthrough (e.g. `branchout claude -- env` invokes claude with `env`)
   - `branchout-claude` and `branchout claude` behave identically
   - fails with the environment error outside a projection
