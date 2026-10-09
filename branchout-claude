@@ -7,8 +7,8 @@ function usage() {
   test -n "${1}" && echo "${1}" && echo
   echo "branchout-claude [env|where|--] [claude arguments]
 
-  Run claude with this projection's own login and state, plus the shared
-  .claude configuration from the projection root.
+  Run claude from the projection root with this projection's own login and state.
+  The root's .claude configuration, skills and .mcp.json load as the project config.
 
   env
 
@@ -57,19 +57,35 @@ function claudeWhere() {
   echo "mcp: $(sharedFile -f "${PROJECTION_DIRECTORY}/.mcp.json")"
 }
 
-# Flags use --flag=value because --add-dir and --mcp-config are variadic and
-# would otherwise swallow following arguments such as "auth status"
+# Print a value as a JSON string
+function jsonString() {
+  local value="${1//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  echo "\"${value}\""
+}
+
+# Claude loads CLAUDE.md files from every directory above its cwd; with CLAUDE_CONFIG_DIR moved
+# that includes ~/.claude/CLAUDE.md, so exclude everything above the projection to keep it isolated
+function claudeMdExcludes() {
+  local directory base excludes=""
+  directory="$(dirname "${PROJECTION_DIRECTORY}")"
+  while true; do
+    base="${directory%/}"
+    excludes="${excludes}${excludes:+,}$(jsonString "${base}/CLAUDE.md"),$(jsonString "${base}/CLAUDE.local.md"),$(jsonString "${base}/.claude/**")"
+    test "${directory}" = "/" && break
+    directory="$(dirname "${directory}")"
+  done
+  echo "{\"claudeMdExcludes\":[${excludes}]}"
+}
+
+# Launch from the projection root so its .claude configuration is the project configuration
 function runClaude() {
   CLAUDE_BIN="${CLAUDE_BIN:-claude}"
   command -v "${CLAUDE_BIN}" > /dev/null || fail "claude not found on PATH, install Claude Code: https://claude.com/claude-code"
+  CLAUDE_BIN="$(command -v "${CLAUDE_BIN}")"
 
-  CLAUDE_FLAGS=("--add-dir=${PROJECTION_DIRECTORY}")
-  if test -f "${PROJECTION_DIRECTORY}/.claude/settings.json"; then
-    CLAUDE_FLAGS+=("--settings=${PROJECTION_DIRECTORY}/.claude/settings.json")
-  fi
-  if test -f "${PROJECTION_DIRECTORY}/.mcp.json"; then
-    CLAUDE_FLAGS+=("--mcp-config=${PROJECTION_DIRECTORY}/.mcp.json")
-  fi
+  CLAUDE_FLAGS=("--settings=$(claudeMdExcludes)")
+  cd "${PROJECTION_DIRECTORY}"
 
   # Claude must not inherit our environment or branchout commands it runs would short-circuit to this projection
   unset BRANCHOUT_LOADED PROJECTION_DIRECTORY BRANCHOUT_STATE BRANCHOUT_NAME BRANCHOUT_FILE BRANCHOUT_PROJECTS \
