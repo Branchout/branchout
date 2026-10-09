@@ -84,17 +84,20 @@ PWD=${BUILD_DIRECTORY}/claude-nested" "$(withoutExcludes)"
 
 @test "branchout claude where with no shared config" {
   example claude-where-empty
+  unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN
   export CLAUDE_BIN=claude-does-not-exist
   run branchout claude where
   assert_success "projection: ${BUILD_DIRECTORY}/claude-where-empty
 claude config: ${BUILD_DIRECTORY}/branchout/claude-where-empty/claude
 settings: not found
 skills: not found
-mcp: not found"
+mcp: not found
+credentials override: none"
 }
 
 @test "branchout claude where shows all shared config" {
   example claude-where-all
+  unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN
   mkdir -p .claude/skills
   echo '{}' > .claude/settings.json
   echo '{"mcpServers":{}}' > .mcp.json
@@ -103,7 +106,19 @@ mcp: not found"
 claude config: ${BUILD_DIRECTORY}/branchout/claude-where-all/claude
 settings: ${BUILD_DIRECTORY}/claude-where-all/.claude/settings.json
 skills: ${BUILD_DIRECTORY}/claude-where-all/.claude/skills
-mcp: ${BUILD_DIRECTORY}/claude-where-all/.mcp.json"
+mcp: ${BUILD_DIRECTORY}/claude-where-all/.mcp.json
+credentials override: none"
+}
+
+@test "branchout claude where reports ambient credential overrides by name only" {
+  example claude-where-credentials
+  export CLAUDE_BIN=claude-does-not-exist
+  export ANTHROPIC_API_KEY=secret-value
+  export CLAUDE_CODE_OAUTH_TOKEN=other-secret
+  run branchout claude where
+  assert_success_only
+  assert_equal "credentials override: ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN" "${lines[${#lines[@]}-1]}"
+  [[ "${output}" != *secret-value* ]]
 }
 
 @test "branchout claude -- forces passthrough of intercepted words" {
@@ -134,6 +149,7 @@ CLAUDE_CONFIG_DIR=[${BUILD_DIRECTORY}/branchout/claude-isolated/claude]"
 
 @test "branchout claude where only trusts regular files for settings and mcp" {
   example claude-where-mcp
+  unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN
   mkdir -p .claude/settings.json
   touch .claude/skills
   echo '{"mcpServers":{}}' > .mcp.json
@@ -143,7 +159,8 @@ CLAUDE_CONFIG_DIR=[${BUILD_DIRECTORY}/branchout/claude-isolated/claude]"
 claude config: ${BUILD_DIRECTORY}/branchout/claude-where-mcp/claude
 settings: not found
 skills: not found
-mcp: ${BUILD_DIRECTORY}/claude-where-mcp/.mcp.json"
+mcp: ${BUILD_DIRECTORY}/claude-where-mcp/.mcp.json
+credentials override: none"
 }
 
 @test "branchout claude excludes CLAUDE.md files from every directory above the projection" {

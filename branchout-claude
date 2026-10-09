@@ -17,7 +17,8 @@ function usage() {
 
   where
 
-      Show the projection, the claude config directory and the shared files found
+      Show the projection, the claude config directory and the shared files found,
+      and any ambient credential variables that override the login (names only)
       (creates the claude config directory if missing)
 
   -- [claude arguments]
@@ -49,12 +50,24 @@ function sharedFile() {
   fi
 }
 
+# Names (never values) of ambient credentials that override the projection's /login
+function credentialOverrides() {
+  local name overrides=""
+  for name in ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN; do
+    if test -n "${!name}"; then
+      overrides="${overrides}${overrides:+ }${name}"
+    fi
+  done
+  echo "${overrides:-none}"
+}
+
 function claudeWhere() {
   echo "projection: ${PROJECTION_DIRECTORY}"
   echo "claude config: ${CLAUDE_CONFIG_DIR}"
   echo "settings: $(sharedFile -f "${PROJECTION_DIRECTORY}/.claude/settings.json")"
   echo "skills: $(sharedFile -d "${PROJECTION_DIRECTORY}/.claude/skills")"
   echo "mcp: $(sharedFile -f "${PROJECTION_DIRECTORY}/.mcp.json")"
+  echo "credentials override: $(credentialOverrides)"
 }
 
 # Print a value as a JSON string
