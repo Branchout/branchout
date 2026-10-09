@@ -1,7 +1,7 @@
 # branchout-claude — Design Spec
 
 Date: 2026-10-07
-Status: Approved design, pending implementation
+Status: Approved design, revised 2026-10-09 (launch from the projection root)
 
 ## Problem
 
@@ -47,33 +47,59 @@ New module script `branchout-claude` in the branchout repo root, alongside `bran
 - Holds credentials, history, memory, user-scope settings and installed plugins. Nothing is read
   from `~/.claude`. First run behaves like a fresh install; the user logs in with `/login`.
 
-### Shared projection config
+### Shared projection config (launch from the projection root)
 
 The projection's existing `.claude/` directory (current convention) is the shared, controlled
-config. The wrapper injects:
-
-| Condition | Injected flag |
-|---|---|
-| `${PROJECTION_DIRECTORY}/.claude/settings.json` exists | `--settings "${PROJECTION_DIRECTORY}/.claude/settings.json"` |
-| always | `--add-dir "${PROJECTION_DIRECTORY}"` (exposes the projection, including `.claude/skills`) |
-| `${PROJECTION_DIRECTORY}/.mcp.json` exists | `--mcp-config "${PROJECTION_DIRECTORY}/.mcp.json"` |
-
-Flags are built in an indexed bash array (bash 3.2 safe) and placed before the user's arguments:
+config. The wrapper always launches claude **from the projection root**, whatever directory it was
+run from:
 
 ```
-exec "${CLAUDE_BIN:-claude}" "${flags[@]}" "${@}"
+cd "${PROJECTION_DIRECTORY}"
+exec "${CLAUDE_BIN:-claude}" --settings="<claudeMdExcludes json>" "${@}"
 ```
 
-The current sub-repo's own `.claude/` config continues to load normally. CLAUDE.md files in the
-projection root are already loaded by Claude as parent-directory memory when cwd is inside it.
+Because the projection root is claude's project, Claude loads the shared config natively as
+project scope: `.claude/settings.json`, `.claude/skills`, `.claude/agents`, `.claude/commands`,
+`CLAUDE.md` and `.mcp.json` (with Claude's normal project MCP approval prompt). No
+`--add-dir`/`--settings <file>`/`--mcp-config` injection is needed. Sub-repo `CLAUDE.md` files load
+on demand when Claude works in them; a sub-repo's own `.claude/settings.json` does not apply (the
+projection root is the unit of work).
+
+Revised from flag injection: launching from the root is how projections are normally used, and it
+makes the shared config load natively instead of relying on `--add-dir` to surface skills.
+
+### Ancestor CLAUDE.md isolation
+
+Claude loads `CLAUDE.md`, `CLAUDE.local.md` and `.claude/CLAUDE.md` from every directory above its
+cwd. With `CLAUDE_CONFIG_DIR` moved, the user's personal `~/.claude/CLAUDE.md` is no longer user
+config but is still an ancestor file (home is above `~/projects/...`), so it would leak in and
+prompt for its external `@` imports. To keep the projection fully isolated the wrapper passes a
+flag-settings JSON with `claudeMdExcludes` listing, for every directory strictly above the
+projection up to `/`:
+
+- `<dir>/CLAUDE.md`
+- `<dir>/CLAUDE.local.md`
+- `<dir>/.claude/**`
+
+(at `/` these are `/CLAUDE.md`, `/CLAUDE.local.md`, `/.claude/**`). Paths are JSON-escaped (`\` and
+`"`). Verified on Claude Code 2.1.295: absolute paths and globs in `claudeMdExcludes` passed via
+`--settings=<json>` suppress an ancestor `.claude/CLAUDE.md`.
+
+### Environment hygiene
+
+Before exec the wrapper unsets the variables `branchout-environment` exports (`BRANCHOUT_LOADED`,
+`PROJECTION_DIRECTORY`, `BRANCHOUT_STATE`, `BRANCHOUT_NAME`, `BRANCHOUT_FILE`,
+`BRANCHOUT_PROJECTS`, `BRANCHOUT_GIT_BASEURL`, `BRANCHOUT_PREFIX`, `BRANCHOUT_GROUPS_ARE_DIRS`,
+`BRANCHOUT_MAVEN_REPOSITORY`, `BRANCHOUT_DOCKER_REGISTRY`) so `branchout` commands Claude runs
+re-detect their own projection. `CLAUDE_CONFIG_DIR` is kept. The config directory is `chmod 700`.
 
 ### Interface
 
 ```
-branchout claude [claude args...]   run claude with the projection's state and shared config
+branchout claude [claude args...]   run claude from the projection root with the projection's state
 branchout claude env                print: export CLAUDE_CONFIG_DIR="<state>/claude"
 branchout claude where              print projection dir, Claude config dir, and which shared
-                                    files (settings.json, skills/, .mcp.json) were detected
+                                    files (settings.json, skills/, .mcp.json) the root provides
 branchout claude -- [claude args]   force passthrough (escape hatch if claude gains env/where)
 ```
 
@@ -91,36 +117,33 @@ through untouched. `--` is stripped before passing the remaining args.
 
 ### Implementation-time verifications
 
-These must be checked against the installed Claude Code version before finalising, and the
-outcome recorded in the module's comments or the PR:
-
-1. **Subcommands accept injected flags.** Check `claude --settings X --add-dir Y auth status`,
-   `mcp list`, `plugin list`. If any reject the flags, inject flags only when the first user
-   argument is not one of a known subcommand list (`auth`, `mcp`, `plugin`, `doctor`, `update`,
-   `install`, `setup-token`, `config`); those still receive `CLAUDE_CONFIG_DIR`.
-2. **Skills via `--add-dir`.** Confirm `${PROJECTION_DIRECTORY}/.claude/skills` are discovered
-   when launching from a sub-repo. If not, document the limitation and ship shared skills via a
-   plugin enabled in the projection `settings.json`.
-3. **macOS keychain isolation.** Confirm credentials are stored separately per
-   `CLAUDE_CONFIG_DIR` on macOS (Linux uses `${CLAUDE_CONFIG_DIR}/.credentials.json`). If shared,
-   document it as a known limitation.
+1. **Subcommands accept injected flags** — verified on Claude Code 2.1.292: yes, when flags use
+   `--flag=value`; the space form of variadic `--add-dir`/`--mcp-config` swallows subcommands such
+   as `auth status`. The revised design injects only `--settings=<json>`, still in `=` form.
+2. **Skills via `--add-dir`** — not verified; superseded by launching from the projection root,
+   where `.claude/skills` load as ordinary project skills (observed with a probe skill).
+3. **Ancestor CLAUDE.md** — found during verification: `~/.claude/CLAUDE.md` loads as an ancestor
+   file once `CLAUDE_CONFIG_DIR` is moved. Resolved with `claudeMdExcludes` (verified 2.1.295).
+4. **macOS keychain isolation** — unverified on macOS; Linux isolation confirmed
+   (`${CLAUDE_CONFIG_DIR}/.credentials.json`, fresh dir reports "Not logged in"). Check on first
+   macOS use and document if shared.
 
 ## Testing
 
 Full bats coverage, following existing module test patterns.
 
-- Stub `bats/bin/claude`: prints `CLAUDE_CONFIG_DIR=<value>` and each argument on its own line,
-  so tests assert exact injected flags and ordering.
+- Stub `bats/bin/claude`: prints `CLAUDE_CONFIG_DIR=<value>`, `PWD=<cwd>` and each argument on its
+  own line, so tests assert the launch directory and exact injected flags.
 - New `bats/branchout-claude.bats`, plus a `test-branchout-claude` Makefile target.
 - Cases:
-  - sets `CLAUDE_CONFIG_DIR` to `${BRANCHOUT_STATE}/claude` and creates the directory
-  - injects `--settings` only when projection `.claude/settings.json` exists
-  - injects `--mcp-config` only when projection `.mcp.json` exists
-  - always injects `--add-dir <projection>`
-  - user args are passed through after injected flags, preserving quoting/spaces
-  - works when run from a nested group/project directory (resolves projection root)
+  - sets `CLAUDE_CONFIG_DIR` to `${BRANCHOUT_STATE}/claude`, creates it with mode 700
+  - launches from the projection root, including when run from a nested group/project directory
+  - injects exactly one `--settings=` claudeMdExcludes JSON before user args, covering the
+    directories above the projection and not the projection itself
+  - user args are passed through after the injected flag, preserving quoting/spaces
+  - does not leak the branchout environment into claude
   - `env` prints the correct export line and does not invoke claude
-  - `where` prints projection dir, config dir and detected shared files, does not invoke claude
+  - `where` prints projection dir, config dir and shared files, does not invoke claude
   - `--` forces passthrough (e.g. `branchout claude -- env` invokes claude with `env`)
   - `branchout-claude` and `branchout claude` behave identically
   - fails with the environment error outside a projection
@@ -129,9 +152,11 @@ Full bats coverage, following existing module test patterns.
 
 ## Documentation
 
-- Add `claude: see branchout claude where` to the dispatcher `usage` Modules list.
+- Add a `claude` line to the dispatcher `usage` Modules list.
 - Add `branchout-claude` to CLAUDE.md "Main Scripts" and describe the state/shared split.
-- README: short usage section (log in once per projection, `eval "$(branchout claude env)"`).
+- README: short usage section (log in once per projection, launches from the root,
+  `eval "$(branchout claude env)"`, trust note for shared hooks/MCP).
+- Homebrew: `BranchoutClaude` formula in `.deploy-to-homebrew`, depended on by `branchout`.
 
 ## Delivery
 

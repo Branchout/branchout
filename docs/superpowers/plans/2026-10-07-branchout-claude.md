@@ -612,3 +612,311 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 6: Finish the branch
 
 - [ ] **Step 1:** Use superpowers:finishing-a-development-branch. Expected outcome: push `feature/branchout-claude` with an explicit refspec (`git push origin feature/branchout-claude` — bare `git push` fails because `push.default = nothing`) and open a PR against `master` with `gh pr create`. PR body ends with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`. Do not merge without the user's approval.
+
+---
+
+## Revision 2026-10-09: launch from the projection root
+
+Tasks 1–4 and the final-review fixes are complete. Real-CLI verification changed the design (see the
+spec's "Shared projection config (launch from the projection root)" and "Ancestor CLAUDE.md
+isolation"): the wrapper now `cd`s to the projection root and injects only one flag,
+`--settings=<claudeMdExcludes json>`. Tasks 7–8 implement that; Task 6 (finish the branch) runs after
+them.
+
+Revised global constraints (replace the flag-injection ones above):
+
+- The wrapper launches claude with cwd = `${PROJECTION_DIRECTORY}`.
+- The only injected flag is `--settings=<json>` (one argv element, `=` form), placed before the
+  user's arguments. No `--add-dir`, no `--settings=<file>`, no `--mcp-config`.
+- The JSON is exactly `{"claudeMdExcludes":[...]}` listing, for each directory strictly above the
+  projection up to and including `/`, in order from the projection's parent upwards:
+  `<dir>/CLAUDE.md`, `<dir>/CLAUDE.local.md`, `<dir>/.claude/**` (for `/`: `/CLAUDE.md`,
+  `/CLAUDE.local.md`, `/.claude/**`). Values are JSON-escaped (`\` → `\\`, `"` → `\"`).
+- The branchout environment unset before exec and the 700 config dir stay as they are.
+
+### Task 7: Launch from the projection root with ancestor CLAUDE.md excludes
+
+**Files:**
+- Modify: `branchout-claude` (`usage`, add `jsonString` and `claudeMdExcludes`, `runClaude`)
+- Modify: `bats/bin/claude` (also print the cwd)
+- Modify: `bats/branchout-claude.bats` (rework flag tests)
+
+**Interfaces:**
+- Consumes: existing `claudeConfigDirectory`, `claudeEnv`, `claudeWhere`, `main` (unchanged).
+- Produces: `jsonString <value>` prints a quoted JSON string; `claudeMdExcludes` prints the JSON
+  object; `runClaude` execs `${CLAUDE_BIN}` with `CLAUDE_FLAGS=("--settings=$(claudeMdExcludes)")`
+  from `${PROJECTION_DIRECTORY}`. Stub output: line 1 `CLAUDE_CONFIG_DIR=<value>`, line 2
+  `PWD=<cwd>`, then `arg: <x>` per argument.
+
+- [ ] **Step 1: Update the stub**
+
+`bats/bin/claude`:
+
+```bash
+#!/bin/bash
+
+echo "CLAUDE_CONFIG_DIR=${CLAUDE_CONFIG_DIR}"
+echo "PWD=${PWD}"
+for each in "${@}"; do
+  echo "arg: ${each}"
+done
+```
+
+- [ ] **Step 2: Rework the tests**
+
+In `bats/branchout-claude.bats`, directly after `load helper` add:
+
+```bash
+# Stub output without the claudeMdExcludes settings argument, which has its own tests
+withoutExcludes() {
+  echo "${output}" | grep -v '^arg: --settings={"claudeMdExcludes":'
+}
+
+# The single claudeMdExcludes settings argument passed to the stub
+excludesArgument() {
+  echo "${output}" | grep '^arg: --settings={"claudeMdExcludes":' | sed -e 's,^arg: --settings=,,'
+}
+```
+
+Delete these tests (their behaviour no longer exists):
+`branchout claude always adds the projection directory`,
+`branchout claude injects the projection settings when present`,
+`branchout claude injects the projection mcp config when present`,
+`branchout claude injects all shared config before user arguments`.
+
+Replace these tests' bodies so they assert via `withoutExcludes` (keep their names):
+
+```bash
+@test "branchout claude passes user arguments after the injected flags preserving spaces" {
+  example claude-passthrough
+  run branchout claude -p "hello world" --model opus
+  assert_success_only
+  assert_equal "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-passthrough/claude
+PWD=${BUILD_DIRECTORY}/claude-passthrough
+arg: -p
+arg: hello world
+arg: --model
+arg: opus" "$(withoutExcludes)"
+  assert_equal "arg: --settings=$(excludesArgument)" "$(echo "${output}" | sed -n 3p)"
+}
+
+@test "branchout-claude behaves the same as branchout claude" {
+  example claude-direct
+  run branchout-claude auth status
+  assert_success_only
+  assert_equal "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-direct/claude
+PWD=${BUILD_DIRECTORY}/claude-direct
+arg: auth
+arg: status" "$(withoutExcludes)"
+}
+
+@test "branchout claude from a nested project directory launches from the projection root" {
+  example claude-nested
+  mkdir -p frog/frog-aleph
+  cd frog/frog-aleph
+  export HOME="${BUILD_DIRECTORY}"
+  run branchout claude
+  assert_success_only
+  assert_equal "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-nested/claude
+PWD=${BUILD_DIRECTORY}/claude-nested" "$(withoutExcludes)"
+}
+
+@test "branchout claude -- forces passthrough of intercepted words" {
+  example claude-double-dash
+  run branchout claude -- env
+  assert_success_only
+  assert_equal "CLAUDE_CONFIG_DIR=${BUILD_DIRECTORY}/branchout/claude-double-dash/claude
+PWD=${BUILD_DIRECTORY}/claude-double-dash
+arg: env" "$(withoutExcludes)"
+}
+```
+
+(The nested test was previously named "...resolves the projection root"; rename it as above.)
+
+Append these new tests:
+
+```bash
+@test "branchout claude excludes CLAUDE.md files from every directory above the projection" {
+  example claude-excludes
+  run branchout claude
+  assert_success_only
+  excludes="$(excludesArgument)"
+  test "$(echo "${output}" | grep -c '^arg: --settings=')" -eq 1 || bail "expected exactly one --settings argument: ${output}"
+  for expected in "\"${BUILD_DIRECTORY}/CLAUDE.md\"" "\"${BUILD_DIRECTORY}/CLAUDE.local.md\"" "\"${BUILD_DIRECTORY}/.claude/**\"" \
+      "\"$(dirname "${BUILD_DIRECTORY}")/.claude/**\"" '"/CLAUDE.md"' '"/CLAUDE.local.md"' '"/.claude/**"'; do
+    case "${excludes}" in
+      *"${expected}"*) ;;
+      *) bail "missing ${expected} in ${excludes}" ;;
+    esac
+  done
+  case "${excludes}" in
+    *"${BUILD_DIRECTORY}/claude-excludes/"*) bail "projection itself must not be excluded: ${excludes}" ;;
+  esac
+}
+
+@test "branchout claude excludes start with the projection parent and end with the filesystem root" {
+  example claude-excludes-order
+  run branchout claude
+  assert_success_only
+  assert_equal "{\"claudeMdExcludes\":[\"${BUILD_DIRECTORY}/CLAUDE.md\"," "$(excludesArgument | cut -c1-$((${#BUILD_DIRECTORY} + 34)))"
+  assert_equal '"/CLAUDE.md","/CLAUDE.local.md","/.claude/**"]}' "$(excludesArgument | sed -e 's,.*\("/CLAUDE.md"\),\1,')"
+}
+```
+
+(`{"claudeMdExcludes":["` is 22 characters, `/CLAUDE.md",` is 12, so the prefix is
+`${#BUILD_DIRECTORY} + 34` characters.)
+
+Leave the remaining tests (shellcheck, config dir/700, missing claude, outside projection, env,
+both `where` tests, environment leak) unchanged — except the first assertion of
+`branchout claude sets an absolute per projection CLAUDE_CONFIG_DIR and creates it`, which uses
+`assert_success_firstline` and still holds.
+
+- [ ] **Step 3: Run tests to verify they fail**
+
+Run: `make test-branchout-claude`
+Expected: the reworked and new tests fail (output still contains `arg: --add-dir=…`, no `PWD=` of
+the projection when nested, no `--settings={"claudeMdExcludes"…` argument); others pass.
+
+- [ ] **Step 4: Implement**
+
+In `branchout-claude`, change the first paragraph of the `usage` text to:
+
+```
+  Run claude from the projection root with this projection's own login and state.
+  The root's .claude configuration, skills and .mcp.json load as the project config.
+```
+
+Replace the comment above `runClaude` and `runClaude` itself with:
+
+```bash
+# Print a value as a JSON string
+function jsonString() {
+  local value="${1//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  echo "\"${value}\""
+}
+
+# Claude loads CLAUDE.md files from every directory above its cwd; with CLAUDE_CONFIG_DIR moved
+# that includes ~/.claude/CLAUDE.md, so exclude everything above the projection to keep it isolated
+function claudeMdExcludes() {
+  local directory base excludes=""
+  directory="$(dirname "${PROJECTION_DIRECTORY}")"
+  while true; do
+    base="${directory%/}"
+    excludes="${excludes}${excludes:+,}$(jsonString "${base}/CLAUDE.md"),$(jsonString "${base}/CLAUDE.local.md"),$(jsonString "${base}/.claude/**")"
+    test "${directory}" = "/" && break
+    directory="$(dirname "${directory}")"
+  done
+  echo "{\"claudeMdExcludes\":[${excludes}]}"
+}
+
+# Launch from the projection root so its .claude configuration is the project configuration
+function runClaude() {
+  CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+  command -v "${CLAUDE_BIN}" > /dev/null || fail "claude not found on PATH, install Claude Code: https://claude.com/claude-code"
+
+  CLAUDE_FLAGS=("--settings=$(claudeMdExcludes)")
+  cd "${PROJECTION_DIRECTORY}"
+
+  # Claude must not inherit our environment or branchout commands it runs would short-circuit to this projection
+  unset BRANCHOUT_LOADED PROJECTION_DIRECTORY BRANCHOUT_STATE BRANCHOUT_NAME BRANCHOUT_FILE BRANCHOUT_PROJECTS \
+    BRANCHOUT_GIT_BASEURL BRANCHOUT_PREFIX BRANCHOUT_GROUPS_ARE_DIRS BRANCHOUT_MAVEN_REPOSITORY BRANCHOUT_DOCKER_REGISTRY
+
+  exec "${CLAUDE_BIN}" "${CLAUDE_FLAGS[@]}" "${@}"
+}
+```
+
+If `CLAUDE_BIN` is a relative path it would break after `cd`; resolve it first with
+`CLAUDE_BIN="$(command -v "${CLAUDE_BIN}")"` right after the `command -v … || fail` check.
+
+- [ ] **Step 5: Run tests to verify they pass**
+
+Run: `make test-branchout-claude` then `make test`
+Expected: all pass (module suite count = previous 17 − 4 deleted + 2 new = 15; full suite 145),
+`shellcheck -x branchout-claude` clean.
+
+- [ ] **Step 6: Real-CLI smoke check**
+
+```bash
+cd /home/michael/projects/branchout/branchout && ./branchout-claude auth status
+```
+
+Expected: JSON auth status (no "must provide input" error) — confirms the injected `--settings=` JSON
+does not swallow subcommands.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add branchout-claude bats/bin/claude bats/branchout-claude.bats
+git commit -m "Launch claude from the projection root and exclude ancestor CLAUDE.md files
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 8: Update docs for the root launch
+
+**Files:**
+- Modify: `CLAUDE.md` (the `branchout-claude` Main Scripts bullet; the "### Claude Integration" section)
+- Modify: `README.md` ("### Claude Code per projection" section)
+
+- [ ] **Step 1: CLAUDE.md bullet**
+
+Replace the `- **branchout-claude**: …` bullet with:
+
+```markdown
+- **branchout-claude**: Runs Claude Code from the projection root with a per-projection login/state (`CLAUDE_CONFIG_DIR=~/branchout/${BRANCHOUT_NAME}/claude`), so the root's `.claude/` settings, skills, agents, commands and `.mcp.json` load as the project config. Subcommands: `env`, `where`, `--`.
+```
+
+- [ ] **Step 2: CLAUDE.md "Claude Integration" section**
+
+Replace the section's bullets with:
+
+```markdown
+- User state (login, history, memory, plugins) is isolated per projection in `${BRANCHOUT_STATE}/claude` (mode 700); nothing is inherited from `~/.claude`
+- Claude is always launched from the projection root, whatever directory `branchout claude` is run from; the root's `.claude/` and `.mcp.json` are the shared, version-controlled config. Sub-repo `CLAUDE.md` files load when Claude works in them; a sub-repo's own `.claude/settings.json` does not apply
+- Claude loads `CLAUDE.md` files from every directory above its cwd, which would include `~/.claude/CLAUDE.md` once `CLAUDE_CONFIG_DIR` is moved; the wrapper passes `--settings={"claudeMdExcludes":[...]}` listing `CLAUDE.md`, `CLAUDE.local.md` and `.claude/**` for every directory above the projection
+- The branchout environment variables (`BRANCHOUT_LOADED`, `PROJECTION_DIRECTORY`, `BRANCHOUT_STATE`, etc.) are unset before exec so branchout commands run by Claude re-detect their projection
+- Hooks in the projection's `.claude/settings.json` run for every developer, and its `.mcp.json` servers are offered to everyone (Claude still asks for approval), so review changes to them (e.g. CODEOWNERS on those paths)
+```
+
+- [ ] **Step 3: README section**
+
+Replace the "### Claude Code per projection" section (up to, not including, "## Grokking the code
+and contributing") with:
+
+````markdown
+### Claude Code per projection
+
+`branchout claude` runs Claude Code with a login and state that belong to the projection, so each
+branchout can use a different account. Log in once per projection with `/login`.
+
+```
+cd ~/projects/<projection>
+branchout claude
+```
+
+Claude always starts in the projection root, even if you run `branchout claude` from inside a
+project, so the root's `.claude/` (settings, skills, agents, commands) and `.mcp.json` are the
+shared configuration for everyone. Your personal `~/.claude` is not used.
+
+* `branchout claude where` shows what is being used
+* `eval "$(branchout claude env)"` points plain `claude` (or your IDE) at the projection's state
+* `branchout claude <args>` passes arguments to claude; `--` is only needed when the first argument is `env` or `where`
+
+Shared hooks in the projection's `.claude/settings.json` run for everyone using `branchout claude`,
+and its MCP servers are offered to everyone, so review changes to them like code.
+
+````
+
+- [ ] **Step 4: Verify and commit**
+
+Run: `make test` (expect 145 tests, 0 failures).
+
+```bash
+git add CLAUDE.md README.md
+git commit -m "Document launching branchout-claude from the projection root
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
